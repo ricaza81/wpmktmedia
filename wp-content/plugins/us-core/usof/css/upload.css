@@ -1,0 +1,97 @@
+
+/* TYPE Upload */
+.usof-upload-preview {
+	position: relative;
+	padding: 7px 10px;
+	border-radius: 3px;
+	border: 1px solid #eee;
+	border-top-color: #ddd;
+	background-color: #f1f1f1;
+	}
+.usof-upload.preview_image .usof-upload-preview {
+	min-height: 60px;
+	}
+	.usof-upload-preview > .usof-preloader {
+		opacity: 1;
+		}
+	.usof-upload img {
+		display: block;
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		max-height: 200px;
+		margin: 0 auto;
+		position: relative;
+		background-color: #f1f1f1;
+		}
+	.usof-upload.preview_image .usof-upload-controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		align-content: center;
+		justify-content: center;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		visibility: hidden;
+		}
+	.usof-upload-preview:hover .usof-upload-controls {
+		visibility: visible !important;
+		}
+		.usof-upload.preview_image .usof-upload-controls .usof-button {
+			margin: 4px;
+			background-color: #999;
+			color: #fff;
+			}
+		.usof-upload.preview_image .usof-upload-controls .usof-button:hover {
+			background-color: #777;
+			text-decoration: none;
+			}
+.usof-upload.preview_text .usof-upload-preview {
+	display: flex;
+	align-items: center;
+	}
+	.usof-upload-file {
+		margin-right: 15px;
+		}
+		.usof-upload-file > span {
+			display: block;
+			line-height: 18px;
+			padding: 3px 0;
+			}
+			.usof-upload-file > span:before {
+				content: '\f15b';
+				font-family: fontawesome;
+				font-weight: 900;
+				vertical-align: top;
+				margin-right: 5px;
+				color: #999;
+				}
+	.usof-upload.preview_text .usof-upload-controls {
+		visibility: hidden;
+		}
+		.usof-upload.preview_text .usof-upload-controls .usof-button {
+			line-height: inherit;
+			padding: 0 5px;
+			background: none;
+			box-shadow: none;
+			}
+
+/* TYPE Backup */
+.usof-backup-status {
+	padding: 8px 0;
+	}
+	.usof-backup-status span {
+		font-weight: bold;
+		}
+	.usof-backup .usof-button.type_backup,
+	.usof-backup .usof-button.type_restore {
+		margin: 0 10px 10px 0;
+		}
+
+/* TYPE Transfer */
+.usof-transfer .usof-button.type_import {
+	margin: 10px 10px 10px 0;
+	}

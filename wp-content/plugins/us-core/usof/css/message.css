@@ -1,0 +1,45 @@
+
+/* TYPE Message */
+.usof-form-row.type_message .usof-form-row-desc {
+	display: block;
+	font-size: 15px;
+	line-height: 1.5;
+	padding: 20px 25px;
+	background-color: #e5e5e5;
+	}
+.usof-form-row.type_message.color_blue .usof-form-row-desc {
+	background-color: #e1f5ff;
+	}
+.usof-form-row.type_message.color_green .usof-form-row-desc {
+	background-color: #c9f7b2;
+	}
+.usof-form-row.type_message.color_red .usof-form-row-desc {
+	background-color: #ffd9d9;
+	}
+.usof-form-row.type_message.color_yellow .usof-form-row-desc {
+	background-color: #fff2b2;
+	}
+
+.usof-form-row.type_message.string {
+	margin-top: -15px;
+	padding-top: 0;
+	}
+	.usof-form-row.type_message.string .usof-form-row-desc {
+		font-weight: 600;
+		padding: 0;
+		background: none;
+		color: #f90;
+		}
+
+.usof-form-row[data-name="used_in_locations"] {
+	padding: 0 !important;
+	}
+	.usof-form-row[data-name="used_in_locations"] .usof-form-row-desc {
+		font-size: 13px;
+		line-height: 1.4;
+		padding: 0;
+		background: none;
+		}
+	.usof-form-row[data-name="used_in_locations"] .usof-form-row-desc-text > div {
+		margin-bottom: 8px;
+		}

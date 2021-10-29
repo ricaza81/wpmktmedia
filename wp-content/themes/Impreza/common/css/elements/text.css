@@ -1,0 +1,21 @@
+/* 
+ * Text
+ */
+
+/* Text */
+.w-text {
+	padding: 0;
+	}
+	.w-text.has_text_color a {
+		color: inherit;
+		}
+	.w-text i {
+		vertical-align: top;
+		line-height: inherit;
+		}
+	i + .w-text-value {
+		margin-left: 0.4em;
+		}
+	.w-text-value:empty {
+		display: none;
+		}

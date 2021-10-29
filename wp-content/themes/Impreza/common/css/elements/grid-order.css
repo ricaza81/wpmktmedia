@@ -1,0 +1,56 @@
+
+/* Grid Order
+---------------------------------------------------------------------------*/
+.w-order {
+	display: flex;
+	align-items: center;
+	}
+	.w-order > label {
+		margin-right: 0.6em;
+		}
+	.w-order-select {
+		position: relative;
+		}
+		.w-order-select > select {
+			-webkit-appearance: none;
+			}
+		body:not(.rtl) .w-order-select > select {
+			padding-right: 2.8em;
+			}
+		.w-order-select > select::-ms-expand {
+			display: none; /* remove dropdown arrow in IE11 */
+			}
+		.w-order-select:after {
+			content: '';
+			position: absolute;
+			top: 56%;
+			transform: translateY(-50%);
+			right: 0;
+			pointer-events: none;
+			border: 0.4em solid;
+			border-left-color: transparent;
+			border-right-color: transparent;
+			border-bottom-color: transparent;
+			border-radius: 2px;
+			}
+
+.w-order.width_full {
+	display: block;
+	width: 100%;
+	}
+	.w-order.width_full > label {
+		display: block;
+		font-weight: bold;
+		margin: 0 0 0.5em;
+		}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 480px) {
+.w-order {
+	width: 100%;
+	}
+.w-order-select {
+	flex-grow: 1;
+	}
+}

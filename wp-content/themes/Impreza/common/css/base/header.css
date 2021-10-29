@@ -1,0 +1,70 @@
+/*
+ * Header (layout & elements)
+ */
+.l-header a,
+.l-header .g-preloader {
+	color: inherit;
+	}
+
+.l-subheader-cell {
+	display: flex;
+	align-items: center;
+	flex-grow: 1;
+	}
+.l-subheader-cell.at_left {
+	justify-content: flex-start;
+	}
+	.header_hor .l-subheader-cell.at_left > * {
+		margin-right: 1.4rem;
+		}
+.l-subheader-cell.at_center {
+	justify-content: center;
+	}
+	.l-subheader-cell.at_center > * {
+		margin-left: 0.7rem;
+		margin-right: 0.7rem;
+		}
+.l-subheader-cell.at_right {
+	justify-content: flex-end;
+	}
+	.header_hor .l-subheader-cell.at_right > * {
+		margin-left: 1.4rem;
+		}
+.l-subheader:not(.with_centering) .l-subheader-cell:empty {
+	display: none;
+	}
+
+/* Header Elements
+   ========================================================================== */
+.l-header.sticky .hide-for-sticky {
+	display: none !important;
+	}
+.l-header:not(.sticky) .hide-for-not-sticky {
+	display: none !important;
+	}
+/* It is necessary to transfer value to JS */
+.l-header:before {
+	content: 'auto';
+	left: -100%;
+	position: absolute;
+	top: -100%;
+	visibility: hidden !important;
+	}
+
+/* HTML */
+.w-html {
+	line-height: 1.5;
+	}
+
+/* Button */
+.l-header .w-btn {
+	display: block;
+	}
+
+/* Text */
+.l-header .w-text {
+	line-height: 1.5;
+	}
+.l-header .w-text:not(.wrap) {
+	white-space: nowrap;
+	}

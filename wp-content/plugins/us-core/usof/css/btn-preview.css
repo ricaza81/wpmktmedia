@@ -1,0 +1,57 @@
+
+/* Buttons Preview */
+.usof-btn-preview {
+	display: flex;
+	align-items: center;
+	min-height: 60px;
+	max-height: 20vh;
+	cursor: pointer;
+	}
+	.usof-btn {
+		text-align: center;
+		line-height: 1.2; /* fallback value */
+		padding: 0.8em 1.8em; /* fallback value */
+		position: relative;
+		overflow: hidden;
+		transform: translateZ(0); /* fix fo Safari */
+		transition-property: background, border, box-shadow, color, opacity, transform;
+		transition-duration: 0.3s;
+		-webkit-tap-highlight-color: rgba(0,0,0,0);
+		}
+		.usof-btn:before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			border-radius: inherit;
+			border-style: solid;
+			border-color: inherit;
+			border-image: inherit;
+			}
+		.usof-btn-label {
+			position: relative;
+			z-index: 1;
+			}
+		.usof-btn:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			transition: height 0.3s, opacity 0.3s;
+			}
+		.usof-btn-preview.hov_fade .usof-btn:after {
+			bottom: 0;
+			opacity: 0;
+			}
+		.usof-btn-preview.hov_fade .usof-btn:hover:after {
+			opacity: 1;
+			}
+		.usof-btn-preview.hov_slide .usof-btn:after {
+			height: 0;
+			}
+		.usof-btn-preview.hov_slide .usof-btn:hover:after {
+			height: 100%;
+			}

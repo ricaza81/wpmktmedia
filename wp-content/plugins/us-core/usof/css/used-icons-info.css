@@ -1,0 +1,63 @@
+/* TYPE Used icons info */
+.usof-icons-info .usof-form-wrapper {
+	margin: 15px 0 0;
+	}
+.usof-icons-info-group {
+	padding: 0 20px;
+	}
+.usof-icons-info-group-name {
+	font-weight: bold;
+	}
+.usof-icons-info-group-list {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	align-content: flex-start;
+	margin: 5px 0 20px;
+	}
+	.usof-icons-info-group-list li {
+		flex-shrink: 0;
+		display: flex;
+		position: relative;
+		line-height: 20px;
+		height: 20px;
+		width: 33.33%;
+		}
+		.usof-icons-info-group-list li > i {
+			flex-shrink: 0;
+			line-height: inherit;
+			width: 1.6em;
+			user-select: none;
+			}
+		.usof-icons-info-group-list li.type_fallback > i {
+			color: green;
+			}
+		.usof-icons-info-group-list li > i.material-icons {
+			margin-top: 1px; /* visual fix */
+			}
+		.usof-icons-info-group-list li > span {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding-right: 10px;
+			}
+		.usof-icons-info-group-list .usof-tooltip-text {
+			top: 28px;
+			width: auto;
+			max-width: 250px;
+			user-select: none;
+			}
+			.usof-icons-info-group-list .usof-tooltip-text > a {
+				display: block;
+				line-height: 16px;
+				}
+			.usof-icons-info-group-list .usof-tooltip-text > a:not(:last-child) {
+				margin-bottom: 5px;
+				}
+		.usof-icons-info-group-list li:hover > span {
+			color: #0073aa;
+			}
+		.usof-icons-info-group-list li:hover .usof-tooltip-text {
+			opacity: 1;
+			visibility: visible;
+			}

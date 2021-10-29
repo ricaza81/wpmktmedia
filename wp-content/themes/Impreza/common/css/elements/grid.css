@@ -1,0 +1,196 @@
+/*
+ * Grid
+ */
+
+.w-grid {
+	clear: both; /* used in WooCommerce lists */
+	}
+.w-grid[class*="cols_"] .w-grid-list {
+	display: flex;
+	flex-wrap: wrap;
+	}
+.w-grid.valign_center .w-grid-list,
+.w-grid.valign_center .owl-stage {
+	align-items: center;
+	}
+	.w-grid-item {
+		flex-shrink: 0;
+		}
+		.w-grid-item-h {
+			position: relative;
+			height: 100%;
+			}
+		.w-grid.overflow_hidden .w-grid-item-h {
+			overflow: hidden;
+			}
+			.w-grid-item-h time {
+				display: block;
+				}
+			.w-grid-item-anchor {
+				position: absolute;
+				z-index: 10;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				}
+			.w-grid .w-post-elm > p:only-of-type {
+				display: inline-block;
+				}
+.w-grid > .pagination {
+	margin-top: 2rem;
+	}
+.w-grid[class*="cols_"] > .pagination .nav-links {
+	justify-content: center;
+	}
+h4.w-grid-none {
+	text-align: center;
+	padding: 2rem;
+	margin: 0;
+	}
+.l-section.color_primary .w-grid-none,
+.l-section.color_secondary .w-grid-none {
+	background: rgba(255,255,255,0.1);
+	}
+
+/* TYPE: Masonry */
+.w-grid.type_masonry .w-grid-item-h {
+	height: auto;
+	}
+	/* reset aspect ratio for video */
+	.w-grid.type_masonry .post_image .w-video-h,
+	.w-grid:not([class*="cols_"]) .post_image .w-video-h {
+		padding-bottom: 56.25% !important;
+		}
+
+/* TYPE: Metro */
+.w-grid.type_metro .w-grid-list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	}
+.w-grid.type_metro .w-grid-item {
+	width: 25%;
+	}
+.w-grid.type_metro .w-grid-item:nth-child(6n-3) {
+	width: 50%;
+	}
+.w-grid.type_metro .w-grid-item:nth-child(6n-2) {
+	width: 50%;
+	margin-top: -25%;
+	}
+
+/* TYPE: Carousel */
+.w-grid.type_carousel .g-preloader {
+	display: none;
+	}
+.w-grid.type_carousel .w-grid-list {
+	display: flex;
+	flex-wrap: nowrap;
+	overflow: hidden;
+	}
+.w-grid-list.with_dots {
+	margin-bottom: 0 !important;
+	padding-bottom: calc(1rem + 20px); /* gap needed for dots container on load */
+	}
+.l-section.width_full > div > div > .vc_col-sm-12 > div > div > .w-grid.type_carousel .w-grid-list {
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	}
+	/* stretch carousel items to the equal height */
+	.w-grid-list:not(.autoheight) .owl-stage {
+		display: flex;
+		}
+		.w-grid-list:not(.autoheight) .owl-item > .w-grid-item {
+			height: 100%;
+			}
+
+/* Fixed Aspect Ratio */
+.w-grid[class*="ratio_"] .w-grid-item-h {
+	overflow: hidden;
+	height: auto;
+	}
+.w-grid[class*="ratio_"] .w-grid-item-h:before {
+	content: '';
+	float: left;
+	height: 0;
+	width: 1px;
+	margin-left: -1px;
+	}
+	.w-grid[class*="ratio_"] .post_image img,
+	.w-grid[class*="ratio_"] .w-post-elm.type_image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		}
+
+/* Grid items size for Portfolio Pages */
+.w-grid.cols_6 .w-grid-item.size_2x1,
+.w-grid.cols_6 .w-grid-item.size_2x2 {
+	width: 33.3333%;
+	}
+.w-grid.cols_5 .w-grid-item.size_2x1,
+.w-grid.cols_5 .w-grid-item.size_2x2 {
+	width: 40%;
+	}
+.w-grid.cols_4 .w-grid-item.size_2x1,
+.w-grid.cols_4 .w-grid-item.size_2x2 {
+	width: 50%;
+	}
+.w-grid.cols_3 .w-grid-item.size_2x1,
+.w-grid.cols_3 .w-grid-item.size_2x2 {
+	width: 66.6666%;
+	}
+.w-grid.cols_2 .w-grid-item.size_2x1,
+.w-grid.cols_2 .w-grid-item.size_2x2 {
+	width: 100%;
+	}
+
+/* Preloader */
+.w-grid-preloader {
+	position: relative;
+	height: 0;
+	width: 100%;
+	overflow: hidden;
+	}
+	.w-grid-preloader .g-preloader {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%,-50%);
+		}
+.w-grid-preloader.active {
+	height: 20rem;
+	}
+.w-grid-preloader.active ~ .g-loadmore,
+.w-grid-preloader.active ~ .pagination {
+	display: none;
+	}
+
+/* Grid element: Wrappers */
+.w-grid-item .w-hwrapper,
+.w-grid-item .w-vwrapper {
+	position: relative;
+	z-index: 1;
+	}
+.w-grid-item-h > .w-vwrapper:only-child {
+	height: 100%;
+	}
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) { /* fix for IE11 */
+.w-grid .w-vwrapper:not(.grid_wrapper_circle),
+.w-grid .w-vwrapper > * {
+	width: 100%;
+	}
+}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+.w-grid.type_metro .w-grid-item {
+	width: 50%;
+	margin: 0 !important;
+	}
+.w-grid.type_metro .w-grid-item:nth-child(3n) {
+	width: 100%;
+	}
+}

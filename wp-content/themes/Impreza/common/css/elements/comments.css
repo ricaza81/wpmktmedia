@@ -1,0 +1,118 @@
+/* 
+ * Comments
+ */
+
+.w-comments-title {
+	margin-bottom: 1em;
+	}
+	.w-comments-title > span {
+		display: inline-block;
+		vertical-align: top;
+		}
+	.w-comments-title a {
+		border-bottom: 1px dotted;
+		}
+.w-comments-list {
+	margin: 0 0 1em;
+	}
+	.w-comments-item {
+		padding: 1em 0;
+		margin: 0;
+		list-style: none;
+		}
+		.w-comments .children {
+			margin: 1em 0 -1em;
+			padding-left: 2em;
+			border-left: 1px dashed;
+			}
+		.w-comments-item-meta {
+			position: relative;
+			line-height: 25px; /* don't change to 'rem' units */
+			margin-bottom: 0.6em;
+			}
+			.w-comments-item-meta img {
+				position: absolute;
+				width: 50px; /* don't change to 'rem' units */
+				border-radius: 50%;
+				}
+			.w-comments-item-author {
+				font-weight: bold;
+				}
+				.bypostauthor > .w-comments-item-meta .w-comments-item-author span {
+					padding: 0 0.3em;
+					color: #fff;
+					}
+			.w-comments .w-comments-item-date {
+				vertical-align: top;
+				font-size: 0.8em;
+				color: inherit;
+				opacity: 0.66;
+				}
+			img ~ .w-comments-item-author,
+			img ~ .w-comments-item-date {
+				margin-left: 60px;
+				}
+			.no-touch .w-comments-item-date:hover {
+				opacity: 1;
+				}
+		.w-comments-item-text {
+			margin-bottom: 0.6em;
+			}
+			.w-comments-item-text > *:last-child {
+				margin-bottom: 0;
+				}
+			.w-comments-item-text > .w-message {
+				padding: 0.6em 1em;
+				margin-bottom: 1em;
+				}
+		.w-comments .comment-reply-link {
+			vertical-align: top;
+			font-size: 0.8em;
+			color: inherit;
+			opacity: 0.66;
+			}
+		.no-touch .w-comments .comment-reply-link:hover {
+			opacity: 1;
+			}
+.w-comments-pagination {
+	font-size: 0.9em;
+	text-align: center;
+	}
+	.w-comments-pagination a {
+		margin: 0 0.6em;
+		}
+.comment-reply-title small {
+	display: inline-block;
+	font-size: 0.8em;
+	font-weight: normal;
+	margin-left: 0.3em;
+	}
+.w-comments-list .comment-respond {
+	margin-bottom: 1.5em;
+	}
+.w-comments .comment-reply-title,
+.w-comments .comment-notes {
+	margin-bottom: 1em;
+	}
+
+.w-comments .form-submit {
+	margin-bottom: 0;
+	}
+
+/* Links Hover Underline 
+   ========================================================================== */
+.no-touch .links_underline .w-comments a:hover {
+	border-bottom: 1px solid;
+	}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+.w-comments-childlist {
+	margin-left: 1em;
+	}
+.rtl .w-comments-childlist {
+	margin-left: 0;
+	margin-right: 1em;
+	}
+}

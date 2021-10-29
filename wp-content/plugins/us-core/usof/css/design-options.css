@@ -1,0 +1,135 @@
+
+/* TYPE Design Options */
+.usof-form-row-control > .usof-design-options {
+	margin: 0 -15px;
+	}
+.usof-design-options * {
+	box-sizing: border-box;
+	}
+.usof-design-options .hidden {
+	display: none !important;
+	}
+	.usof-design-options:after {
+		content: '';
+		display: block;
+		margin: 0 -15px;
+		border-top: 1px solid #e5e5e5;
+		}
+
+/* Header */
+.usof-design-options-header {
+	display: flex;
+	line-height: 30px;
+	padding: 10px 30px;
+	margin: 0 -15px;
+	position: relative;
+	cursor: pointer;
+	border-top: 1px solid #e5e5e5;
+	}
+	.usof-design-options-header:hover {
+		background: radial-gradient(farthest-side at 50% 0%, #f1f1f1, transparent);
+		}
+	.usof-design-options-header-title {
+		vertical-align: top;
+		font-size: 18px;
+		font-weight: 600;
+		margin-right: auto;
+		}
+	.usof-design-options-header.changed .usof-design-options-header-title {
+		color: #0073aa;
+		}
+
+	/* reset */
+	.usof-design-options-reset {
+		visibility: hidden;
+		font-size: 12px;
+		padding: 0 10px;
+		border-radius: 3px;
+		color: #0073aa;
+		}
+	.usof-design-options-reset:hover {
+		background: #ffcaca;
+		}
+	.usof-design-options-header.changed .usof-design-options-reset {
+		visibility: visible;
+		}
+
+	/* responsive */
+	.usof-design-options-responsive {
+		padding: 0 10px;
+		color: #aaa;
+		}
+		.usof-design-options-responsive:after {
+			vertical-align: top;
+			content: '\f3cd';
+			font-family: fontawesome;
+			font-weight: 900;
+			font-size: 16px;
+			}
+	.usof-design-options-responsive:hover {
+		background: #e5e5e5;
+		color: #333;
+		}
+	.usof-design-options-header.responsive .usof-design-options-responsive {
+		visibility: visible;
+		color: #0073aa;
+		}
+
+/* content */
+.usof-design-options-content {
+	display: none;
+	padding-bottom: 20px;
+	}
+.usof-design-options-content.active {
+	display: block;
+	}
+	.usof-design-options-content-fields {
+		display: flex;
+		flex-wrap: wrap;
+		}
+		.usof-design-options-content-fields > .usof-form-row {
+			height: auto !important;
+			}
+
+/* Responsive states */
+.usof-design-options-content .us-bld-states {
+	display: none;
+	line-height: 15px;
+	margin: 5px 15px 10px;
+	border: 1px solid #e5e5e5;
+	background: #f1f1f1;
+	}
+.responsive + .usof-design-options-content > .us-bld-states {
+	display: flex;
+	}
+	.usof-design-options-content .us-bld-state {
+		font-size: inherit;
+		}
+
+/* control rows */
+.usof-design-options .usof-form-row {
+	flex-shrink: 0;
+	padding: 10px 15px;
+	position: relative;
+	}
+	.usof-design-options .usof-form-row > i {
+		cursor: pointer;
+		position: absolute;
+		z-index: 1;
+		top: 38px;
+		right: -14px;
+		width: 28px;
+		line-height: 40px;
+		text-align: center;
+		}
+	.usof-design-options .usof-form-row > i:hover {
+		background: #f1f1f1;
+		}
+	.usof-design-options .usof-form-row > i.fa-link {
+		color: #0073aa;
+		}
+
+/* Always 4 columns for margin, padding, border, position inputs */
+.usof-design-options .usof-form-row.cols_4 {
+	width: 25%;
+	}

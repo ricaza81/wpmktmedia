@@ -1,0 +1,27 @@
+/* 
+ * Vertical Wrapper
+ */
+
+.w-vwrapper {
+	display: flex;
+	flex-direction: column;
+	}
+.w-vwrapper.align_center {
+	align-items: center;
+	}
+.w-vwrapper.align_left {
+	align-items: flex-start;
+	}
+.w-vwrapper.align_right {
+	align-items: flex-end;
+	}
+.w-vwrapper.valign_middle {
+	justify-content: center;
+	}
+.w-vwrapper.valign_bottom {
+	justify-content: flex-end;
+	}
+	.w-vwrapper > *:not(:last-child) {
+		margin-bottom: 0.7rem; /* fallback for IE11 */
+		margin-bottom: var(--vwrapper-gap, 0.7rem);
+		}

@@ -1,0 +1,204 @@
+
+/* WordPress Admin UI customizations
+   ========================================================================== */
+
+/* Media editing window */
+.wp-list-table th.column-us_preview {
+	width: 50px;
+	}
+.wp-list-table td.column-us_preview img {
+	width: 50px;
+	height: auto;
+	}
+
+/* Media editing window */
+.media-types-required-info {
+	display: none;
+	}
+.us-media-none {
+	padding-top: 7px;
+	}
+.us-media-list {
+	margin: 5px 0 0;
+	}
+	.us-media-list li input[type="checkbox"] {
+		margin: -4px 4px 0 0 !important;
+		}
+	.us-media-list .children {
+		margin: 6px 0 0 16px;
+		}
+
+/* Media modal window and toolbar */
+.media-modal-content .media-toolbar-secondary {
+	white-space: nowrap;
+	}
+.media-modal-content select.attachment-filters {
+	width: auto !important;
+	}
+@media( max-width: 1100px ) {
+.media-modal-content select.attachment-filters.for_us_media {
+	display: none;
+	}
+}
+
+/* Show SVG as Featured Image */
+#postimagediv .inside img[width="1"] {
+	width: 254px;
+	}
+
+/* Remove border on metaboxes */
+.postbox-container .postbox .hndle {
+	border: none;
+	}
+
+/* Custom Sidebar on Widgets page */
+.sidebar-name .sidebar-name-arrow:before {
+	line-height: 28px !important;
+	}
+.sidebar-us-custom-area {
+	position: relative;
+	}
+	.us-custom-area-delete {
+		position: absolute;
+		top: 10px;
+		right: 40px;
+		height: 30px;
+		width: 30px;
+		text-align: center;
+		cursor: pointer;
+		opacity: 0.33;
+		}
+	.rtl .us-custom-area-delete {
+		right: auto;
+		left: 40px;
+		}
+	.us-custom-area-delete:hover {
+		opacity: 1;
+		color: red;
+		}
+	.us-custom-area-delete:before {
+		content: '\f335';
+		font: 24px/30px dashicons;
+		vertical-align: top;
+		}
+.us-custom-area-form {
+	text-align: center;
+	padding: 30px 30px 26px;
+	margin-top: 10px;
+	max-width: 859px;
+	}
+	.us-custom-area-form input[type="text"] {
+		min-width: 250px;
+		margin: 0 1px 4px;
+		}
+
+/* "Menus" admin screen
+   ========================================================================== */
+
+/* Remove default options for "Page Block" menu items */
+#menu-to-edit .menu-item-us_page_block p:not(.field-us-custom) {
+	display: none;
+	}
+
+.us-mm-btn {
+	display: inline-block;
+	vertical-align: top;
+	font-size: 12px;
+	line-height: 40px;
+	font-weight: normal;
+	margin: -10px 5px;
+	}
+.nav-menus-php #TB_overlay {
+	cursor: zoom-out;
+	}
+.usof-container#TB_window {
+	top: 5vh;
+	max-width: 668px;
+	width: 90vw !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	transform: translateX(-50%);
+	}
+	.usof-container #TB_title {
+		display: none;
+		}
+	.usof-container #TB_ajaxContent {
+		padding: 0;
+		height: auto !important;
+		width: auto !important;
+		overflow: hidden;
+		}
+	.rtl .usof-container#TB_window,
+	.rtl .usof-container #TB_ajaxContent {
+		text-align: right;
+		}
+
+#TB_window .usof-header {
+	position: static;
+	}
+	#TB_window .usof-header h2 {
+		margin: 0 20px;
+		color: inherit;
+		}
+		#TB_window .usof-header h2 span {
+			font-weight: 400;
+			color: #b4b9be;
+			}
+		@media (max-width: 600px) {
+		#TB_window .usof-header h2 span {
+			display: none;
+			}
+		}
+
+.us-mm-body {
+	line-height: 24px;
+	max-height: calc(90vh - 60px);
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	}
+	.us-mm-settings {
+		padding: 15px 0 25px;
+		display: flex;
+		flex-wrap: wrap;
+		}
+
+
+
+/* USOF META BOXES
+   ========================================================================== */
+
+.usof-container.for_meta {
+	max-width: 860px;
+	padding-top: 0;
+	}
+.usof-container.for_meta .usof-form-row {
+	padding: 10px;
+	}
+.usof-container.for_meta input,
+.usof-container.for_meta textarea,
+.usof-container.for_meta select {
+	font-size: inherit;
+	}
+
+/* Remove meta boxe title for Testimonials */
+#us_testimonials_settings > h2,
+#us_testimonials_settings > button {
+	display: none;
+	}
+
+/* Disable meta boxes for WPML translating pages */
+.us_lang_non_default .for_meta .usof-form-row.type_select,
+.us_lang_non_default .for_meta .usof-form-row.type_slider,
+.us_lang_non_default .for_meta .usof-form-row.type_checkboxes,
+.us_lang_non_default .for_meta .usof-form-row.type_switch,
+.us_lang_non_default .for_meta .usof-form-row.type_radio,
+.us_lang_non_default .for_meta .usof-form-row.type_color {
+	opacity: 0.33;
+	pointer-events: none;
+	}
+
+/* Terms meta title */
+.us-term-meta-title td {
+	font-size: 20px;
+	padding: 20px 0 10px;
+	}

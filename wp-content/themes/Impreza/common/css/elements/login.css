@@ -1,0 +1,58 @@
+/* 
+ * Login
+ */
+
+.w-login > .g-preloader {
+	display: block;
+	margin: 0 auto;
+	}
+
+.w-form.for_login .w-form-h {
+	margin-left: 0;
+	margin-right: 0;
+	}
+	.w-form.for_login .w-form-row {
+		padding-left: 0;
+		padding-right: 0;
+		}
+
+.w-profile {
+	position: relative;
+	line-height: 1.3;
+	min-height: 64px;
+	}
+	.w-profile-link.for_user {
+		display: block;
+		padding-top: 8px;
+		}
+	.w-profile-avatar {
+		position: absolute;
+		top: 0;
+		overflow: hidden;
+		background: rgba(0,0,0,0.2);
+		max-width: 6em;
+		border-radius: 50%;
+		}
+		.w-profile-avatar img {
+			display: block;
+			}
+	.w-profile-name {
+		display: block;
+		font-weight: 600;
+		margin-left: 76px;
+		}
+	.w-profile-link.for_logout {
+		font-size: 0.8em;
+		margin-left: 76px;
+		color: inherit;
+		opacity: 0.66;
+		}
+	.no-touch .w-profile-link.for_logout:hover {
+		opacity: 1;
+		}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline .w-profile-link.for_logout:hover {
+	border-bottom: 1px solid;
+	}

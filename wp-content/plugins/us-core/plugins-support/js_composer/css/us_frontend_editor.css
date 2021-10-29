@@ -1,0 +1,96 @@
+
+.compose-mode .vc_controls,
+.compose-mode .vc_ui-font-open-sans {
+	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif !important;
+	}
+.compose-mode .vc_empty-placeholder {
+	margin: 0 !important;
+	}
+.compose-mode .vc_add-element-not-empty-button {
+	vertical-align: top;
+	}
+.compose-mode .vc_vc_row > [data-vc-full-width="true"],
+.compose-mode .vc_vc_row_inner {
+	padding-top: 0;
+	}
+.compose-mode .vc_vc_row_inner:first-child {
+	padding-top: 32px;
+	}
+.compose-mode .vc_control-btn-append:before {
+	top: 3px; /* fixed value */
+	}
+.compose-mode .vc_row {
+	clear: both;
+	}
+.compose-mode .vc_element:before {
+	position: absolute;
+	z-index: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: auto !important;
+	width: auto !important;
+	border: 1px solid transparent;
+	outline: 1px dashed transparent !important;
+	outline-offset: -1px;
+	}
+.compose-mode .vc_element:hover:before {
+	content: '';
+	border-color: #fff !important;
+	outline-color: #95ca24 !important;
+	}
+.compose-mode .vc_element.vc_vc_column:hover:before,
+.compose-mode .vc_element.vc_vc_column_inner:hover:before {
+	content: '';
+	border-color: #fff !important;
+	outline-color: #f3af1c !important;
+	}
+.compose-mode .vc_element.vc_vc_row:before,
+.compose-mode .vc_element.vc_vc_row_inner:before {
+	display: none !important;
+	}
+
+.compose-mode div:not(.vc_empty-placeholder) + .vc_vc_row > .l-section {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	}
+.compose-mode div:not(.vc_empty-placeholder) + .vc_vc_row > .l-section .l-section-h {
+	top: auto !important;
+	}
+.compose-mode .vc_column_container {
+	height: 100%;
+	}
+
+.vc_empty-placeholder + .vc_vc_row > .l-section.height_auto:before {
+	display: block;
+	margin-bottom: 30px;
+	}
+
+.g-cols.valign_middle > div > div > .vc_column-inner {
+	justify-content: center;
+	}
+.g-cols.valign_bottom > div > div > .vc_column-inner {
+	justify-content: flex-end;
+	}
+	.g-cols.type_default > div > div > .vc_column-inner {
+		padding-left: 1.5rem;
+		padding-right: 1.5rem;
+		}
+	.g-cols.type_default > div > div.has-fill > .vc_column-inner {
+		padding-top: 1.5rem;
+		padding-bottom: 1.5rem;
+		}
+	.g-cols.type_boxes > div > div > .vc_column-inner {
+		background-position: center center !important;
+		background-size: cover !important;
+		padding: 4rem;
+		}
+
+.vc_element > .w-image {
+	margin-bottom: 0;
+	}
+.wpb_column.align_center .vc_element.vc_us_btn {
+	display: inline-block;
+	vertical-align: top;
+	}

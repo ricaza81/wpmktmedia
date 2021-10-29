@@ -1,0 +1,170 @@
+/*
+ * Grid Templates
+ * appearance customizations, neeaded for fallback compatibility with old layouts
+ */
+
+/* Template: Testimonial 6 */
+.grid_arrow_bottom:after {
+	content: '';
+	position: absolute;
+	bottom: -0.6rem;
+	left: 3.75rem;
+	height: 1.5rem;
+	width: 1.5rem;
+	transform: rotate(45deg);
+	background: inherit;
+	}
+
+/* Template: Portfolio 1 */
+.grid_arrow_top > * {
+	position: relative;
+	}
+.grid_arrow_top:before {
+	content: '';
+	position: absolute;
+	top: 0.4rem;
+	left: 50%;
+	margin-left: -0.75rem;
+	height: 1.5rem;
+	width: 1.5rem;
+	transform: rotate(45deg);
+	background: inherit;
+	transition-duration: inherit;
+	}
+.w-grid-item-h:hover .grid_arrow_top:before {
+	top: -0.7rem;
+	}
+
+/* Template: Portfolio 12 */
+.w-vwrapper.grid_style_12:before,
+.w-vwrapper.grid_style_12:after {
+	content: '';
+	position: absolute;
+	top: 2rem;
+	left: 2rem;
+	right: 2rem;
+	bottom: 2rem;
+	opacity: 0;
+	transition: transform 0.5s, opacity 0.5s;
+	}
+.w-vwrapper.grid_style_12:before {
+	border-top: 1px solid;
+	border-bottom: 1px solid;
+	transform: scale(0, 1);
+	}
+.w-vwrapper.grid_style_12:after {
+	border-left: 1px solid;
+	border-right: 1px solid;
+	transform: scale(1, 0);
+	}
+.w-grid-item-h:hover .w-vwrapper.grid_style_12:before,
+.w-grid-item-h:hover .w-vwrapper.grid_style_12:after {
+	opacity: 1;
+	transform: scale(1);
+	}
+
+/* Template: Portfolio 15 */
+.w-vwrapper.grid_style_15:before,
+.w-vwrapper.grid_style_15:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	opacity: 0;
+	transition: transform 0.5s, opacity 0.5s;
+	}
+.w-vwrapper.grid_style_15:before {
+	border-top: 8px solid;
+	border-bottom: 8px solid;
+	transform: scale(0, 1);
+	}
+.w-vwrapper.grid_style_15:after {
+	border-left: 8px solid;
+	border-right: 8px solid;
+	transform: scale(1, 0);
+	}
+.w-grid-item-h:hover .w-vwrapper.grid_style_15:before,
+.w-grid-item-h:hover .w-vwrapper.grid_style_15:after {
+	opacity: 1;
+	transform: scale(1);
+	}
+
+/* Template: Portfolio 16 */
+.w-grid.ratio_3x2 .w-post-elm.grid_corner_image {
+	top: -25% !important;
+	bottom: -25% !important;
+	transform-origin: 90% 66%;
+	}
+.w-grid.ratio_4x3 .w-post-elm.grid_corner_image {
+	top: -16.67% !important;
+	bottom: -16.67% !important;
+	transform-origin: 90% 72%;
+	}
+.w-grid.ratio_3x4 .w-post-elm.grid_corner_image {
+	left: -16.67% !important;
+	right: -16.67% !important;
+	transform-origin: 72% 90%;
+	}
+.w-grid.ratio_2x3 .w-post-elm.grid_corner_image {
+	left: -25% !important;
+	right: -25% !important;
+	transform-origin: 66% 90%;
+	}
+@media (min-width: 600px) {
+.w-grid.ratio_1x1 .size_2x1 .w-post-elm.grid_corner_image {
+	top: -50% !important;
+	bottom: -50% !important;
+	transform: scale(0.15) !important;
+	transform-origin: 96% 66.2%;
+	}
+.w-grid.ratio_1x1 .size_1x2 .w-post-elm.grid_corner_image {
+	left: -50% !important;
+	right: -50% !important;
+	transform: scale(0.15) !important;
+	transform-origin: 66.4% 95.7%;
+	}
+.w-grid.ratio_3x2 .size_2x1 .w-post-elm.grid_corner_image {
+	left: 0 !important;
+	right: 0 !important;
+	top: -100% !important;
+	bottom: -100% !important;
+	transform: scale(0.15) !important;
+	transform-origin: 96% 56.5%;
+	}
+.w-grid.ratio_3x2 .size_1x2 .w-post-elm.grid_corner_image {
+	top: 0 !important;
+	bottom: 0 !important;
+	left: -16.67% !important;
+	right: -16.67% !important;
+	transform: scale(0.225) !important;
+	transform-origin: 77% 93.2%;
+	}
+.w-grid.ratio_3x2 .size_2x2 .w-post-elm.grid_corner_image {
+	transform: scale(0.15) !important;
+	transform-origin: 95.7% 76.3%;
+	}
+.w-grid.ratio_4x3 .size_2x1 .w-post-elm.grid_corner_image {
+	top: -83.3333% !important;
+	bottom: -83.3333% !important;
+	transform: scale(0.15) !important;
+	transform-origin: 95.7% 59.2%;
+	}
+.w-grid.ratio_4x3 .size_1x2 .w-post-elm.grid_corner_image {
+	top: 0 !important;
+	bottom: 0 !important;
+	left: -25% !important;
+	right: -25% !important;
+	transform: scale(0.2) !important;
+	transform-origin: 73.2% 94.3%;
+	}
+.w-grid.ratio_4x3 .size_2x2 .w-post-elm.grid_corner_image {
+	transform: scale(0.15) !important;
+	transform-origin: 95.8% 81.2%;
+	}
+}
+.w-grid-item .w-grid-item-h:hover .w-post-elm.grid_corner_image {
+	border-radius: 0;
+	transform: scale(1) !important;
+	}

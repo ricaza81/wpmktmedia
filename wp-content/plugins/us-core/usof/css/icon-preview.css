@@ -1,0 +1,33 @@
+
+/* TYPE Icon */
+.us-icon {
+	display: flex;
+	align-items: flex-start;
+	}
+.us-icon select {
+	width: auto !important;
+	border-radius: 3px 0 0 3px;
+	background-color: transparent !important;
+	}
+.us-icon-input input {
+	border-radius: 0 3px 3px 0;
+	}
+.us-icon-preview {
+	flex-shrink: 0;
+	font-size: 20px;
+	text-align: center;
+	line-height: 38px;
+	height: 40px;
+	width: 40px;
+	box-sizing: border-box;
+	border-width: 1px 0;
+	border-style: solid;
+	border-color: #ddd #eee #eee;
+	}
+	.us-icon-preview i {
+		vertical-align: top;
+		line-height: inherit;
+		}
+.us-icon-input {
+	flex-grow: 1;
+	}

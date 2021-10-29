@@ -1,0 +1,435 @@
+/* 
+ * Forms
+ */
+
+.w-form {
+	line-height: 1.4;
+	}
+.w-form-h {
+	display: flex;
+	margin-left: -0.5rem; /* fallback for IE11 */
+	margin-right: -0.5rem; /* fallback for IE11 */
+	margin-left: calc( var(--fields-gap, 1rem) / -2 );
+	margin-right: calc( var(--fields-gap, 1rem) / -2 );
+	}
+.w-form-row {
+	position: relative;
+	width: 100%;
+	padding-left: 0.5rem; /* fallback for IE11 */
+	padding-right: 0.5rem; /* fallback for IE11 */
+	padding-left: calc( var(--fields-gap, 1rem) / 2 );
+	padding-right: calc( var(--fields-gap, 1rem) / 2 );
+	}
+	.w-form-row-label {
+		margin-bottom: 0.3em;
+		}
+	.w-form-row-description {
+		font-size: 0.9em;
+		margin-top: 0.3em;
+		}
+	.w-form-row-field {
+		position: relative;
+		}
+		.w-form-row-field > i {
+			position: absolute;
+			z-index: 1;
+			transform: translateY(-50%);
+			text-align: center;
+			pointer-events: none;
+			transition: color 0.2s;
+			}
+	.w-form-row.for_select select {
+		-webkit-appearance: none;
+		height: auto;
+		}
+	body:not(.rtl) .w-form-row.for_select select {
+		padding-right: 2.8em;
+		}
+		.w-form-row.for_select .w-form-row-field:after {
+			content: '';
+			position: absolute;
+			top: 56%;
+			transform: translateY(-50%);
+			right: 0;
+			pointer-events: none;
+			border: 0.4em solid;
+			border-left-color: transparent;
+			border-right-color: transparent;
+			border-bottom-color: transparent;
+			border-radius: 2px;
+			}
+	.w-form-row.for_agreement label,
+	.w-form-row.for_checkboxes label,
+	.w-form-row.for_radio label {
+		display: flex;
+		padding: 0.2em 0;
+		}
+		.w-form-checkbox,
+		.w-form-radio {
+			display: block;
+			flex-shrink: 0;
+			margin-right: 0.4em;
+			line-height: 1.5em;
+			height: 1.5em;
+			width: 1.5em;
+			border: 0px solid transparent; /* default "solid" style is needed */
+			box-sizing: content-box;
+			}
+		.w-form-checkbox {
+			font-size: 0.75em;
+			text-align: center;
+			}
+			.w-form-checkbox:before {
+				visibility: hidden;
+				content: '\f00c';
+				font-family: fontawesome;
+				font-weight: 900;
+				vertical-align: top;
+				}
+		.w-form-radio {
+			border-radius: 50% !important;
+			}
+			.w-form-radio:before {
+				visibility: hidden;
+				content: '';
+				display: block;
+				height: 36%;
+				width: 36%;
+				margin: 32%;
+				border-radius: inherit;
+				background: currentColor;
+				}
+		input:checked + .w-form-checkbox:before,
+		input:checked + .w-form-radio:before {
+			visibility: visible;
+			}
+
+/* Move Label */
+.w-form-row.move_label .w-form-row-label {
+	position: absolute;
+	top: 0;
+	z-index: 1;
+	line-height: 1.4;
+	padding: 0 0.3em;
+	pointer-events: none;
+	transform-origin: 0 0;
+	transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), top 0.2s cubic-bezier(0.4,0,0.2,1);
+	}
+.w-form-row.move_label.focused .w-form-row-label,
+.w-form-row.move_label.not-empty .w-form-row-label {
+	top: -0.5em;
+	transform: scale(0.75);
+	}
+
+/* Layout */
+.w-form.layout_ver .w-form-h {
+	flex-wrap: wrap;
+	}
+.w-form.layout_ver .w-form-row {
+	margin-bottom: 1rem; /* fallback for IE11 */
+	margin-bottom: var(--fields-gap, 1rem);
+	}
+.w-form.layout_hor .w-form-row.for_submit {
+	width: auto;
+	}
+.w-form.layout_hor .w-form-row.has_label:not(.move_label) ~ .w-form-row.for_submit {
+	align-self: flex-end;
+	}
+
+/* Columns */
+.w-form-row.cols_2 {
+	width: 50%;
+	}
+.w-form-row.cols_3 {
+	width: 33.3333%;
+	}
+.w-form-row.cols_4 {
+	width: 25%;
+	}
+
+/* Submit Button */
+.w-form-row.for_submit {
+	flex-shrink: 0;
+	margin-bottom: 0;
+	}
+.w-form-row.width_full .w-btn {
+	width: 100%;
+	}
+.w-form .w-btn i,
+.w-form .w-btn-label {
+	display: inline-block;
+	transition: opacity 0.15s;
+	}
+.w-form .w-btn.loading i,
+.w-form .w-btn.loading .w-btn-label {
+	opacity: 0;
+	}
+.w-form .w-btn .g-preloader {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	font-size: 1.8em;
+	opacity: 0;
+	transform: translate(-50%,-50%);
+	transition: opacity 0.3s;
+	color: inherit;
+	}
+.w-form .w-btn.loading .g-preloader {
+	opacity: 1;
+	}
+
+/* States & Messages */
+.w-form-row-state {
+	font-size: 0.9em;
+	height: 0;
+	opacity: 0;
+	transition-property: height, padding, opacity;
+	transition-duration: 0.3s;
+	}
+.w-form-row-state[validation-for],
+.w-form-row.check_wrong .w-form-row-state {
+	height: auto;
+	padding-top: 0.3em;
+	opacity: 1;
+	color: red;
+	}
+.w-form-row.check_wrong input,
+.w-form-row.check_wrong textarea,
+.w-form-row.check_wrong select {
+	box-shadow: 0 0 0 1px red;
+	border-color: red;
+	}
+.w-form-message {
+	opacity: 0;
+	transition: opacity 0.2s;
+	}
+.w-form-message.type_success {
+	font-size: 1.2em;
+	opacity: 1;
+	color: #4c0;
+	}
+.w-form-message.type_error {
+	opacity: 1;
+	color: red;
+	}
+
+/* FOR comments */
+.comment-form .w-form-row {
+	padding: 0;
+	line-height: 1.4;
+	margin-bottom: 1em;
+	}
+
+/* FOR protected post */
+.post-password-form {
+	margin: 1.5rem auto;
+	}
+.l-section.width_full .post-password-form {
+	padding-left: 2.5rem;
+	padding-right: 2.5rem;
+	}
+.post-password-form p {
+	margin-bottom: 0.5rem;
+	}
+.post-password-form p label {
+	font-size: 0;
+	line-height: 0;
+	}
+.post-password-form p input[type="password"] {
+	font-size: 1rem;
+	max-width: 300px;
+	margin-bottom: 0.5em;
+	}
+
+/* FOR login */
+.w-form-row.for_links {
+	margin: 0 !important;
+	}
+.w-form-row-link {
+	font-size: 0.9em;
+	margin-right: 0.8em;
+	}
+
+/* jQuery UI Date picker
+   ========================================================================== */
+.ui-datepicker {
+	display: none;
+	height: auto;
+	width: 17.4rem;
+	margin: 0;
+	padding: 1rem;
+	border: none;
+	box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+	}
+.ui-datepicker a {
+	transition: none;
+	color: inherit !important;
+	}
+.ui-datepicker-header {
+	position: relative;
+	text-align: center;
+	line-height: 2.2rem;
+	min-height: 2.2rem;
+	margin: 0 0 0.5rem;
+	padding: 0;
+	border: none;
+	}
+.ui-datepicker-title {
+	font-size: 0.9rem;
+	margin: 0 14.285%;
+	}
+.ui-datepicker-title select {
+	font-size: inherit;
+	line-height: inherit;
+	height: 2.2rem;
+	min-height: 0;
+	width: 40%;
+	padding: 0 0.3rem;
+	margin: 0;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	background: none !important;
+	color: inherit !important;
+	}
+.ui-datepicker-prev {
+	position: absolute;
+	left: 0;
+	width: 14.285%;
+	cursor: pointer;
+	border-radius: 0.2rem;
+	}
+.ui-datepicker-prev span {
+	vertical-align: top;
+	font-size: 0;
+	}
+.ui-datepicker-prev:before {
+	vertical-align: top;
+	content: '\f104';
+	font-family: fontawesome;
+	font-weight: 400;
+	font-size: 1.4rem;
+	}
+.ui-datepicker-next {
+	position: absolute;
+	right: 0;
+	width: 14.285%;
+	cursor: pointer;
+	border-radius: 0.2rem;
+	}
+.ui-datepicker-next span {
+	vertical-align: top;
+	font-size: 0;
+	}
+.ui-datepicker-next::before {
+	vertical-align: top;
+	content: '\f105';
+	font-family: fontawesome;
+	font-weight: 400;
+	font-size: 1.4rem;
+	}
+.ui-datepicker th {
+	font-size: 0.8rem;
+	font-weight: normal;
+	text-align: center;
+	border: none;
+	padding: 0;
+	opacity: 0.33;
+	}
+.ui-datepicker tbody td {
+	font-size: 0.9rem;
+	text-align: center;
+	width: 14.285%;
+	padding: 0;
+	border: none;
+	}
+.ui-datepicker td span,
+.ui-datepicker td a {
+	display: block;
+	line-height: 2.2rem;
+	border-radius: 0.2rem;
+	}
+.ui-datepicker a.ui-state-active {
+	color: #fff !important;
+	}
+.ui-datepicker a.ui-state-highlight {
+	box-shadow: inset 0 0 0 1px;
+	}
+
+/* Contact Form 7
+   ========================================================================== */
+.wpcf7-form input:not([type="submit"]),
+.wpcf7-form textarea,
+.wpcf7-form select {
+	margin-top: 0.4rem;
+	}
+.wpcf7-form-control.wpcf7-radio,
+.wpcf7-form-control.wpcf7-checkbox {
+	display: inline-block;
+	vertical-align: top;
+	padding: 0.5rem 0;
+	}
+span.wpcf7-list-item {
+	display: inline-block;
+	vertical-align: top;
+	margin: 0 1.5rem 0 0;
+	}
+div.wpcf7-response-output {
+	margin: 0;
+	padding: 0.5rem 1rem;
+	}
+
+/* Rounded Corners
+   ========================================================================== */
+.rounded_none .ui-datepicker *,
+.rounded_none .w-profile {
+	border-radius: 0 !important;
+	}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline .w-form-row-link:hover,
+.no-touch .links_underline .w-profile-link.for_logout:hover {
+	border-bottom: 1px solid;
+	}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+	.w-form-h {
+		flex-wrap: wrap;
+		}
+	.w-form-row {
+		width: 100% !important;
+		}
+	.w-form.layout_hor .w-form-row {
+		margin-bottom: 1rem; /* fallback for IE11 */
+		margin-bottom: var(--fields-gap, 1rem);
+		}
+	.ui-datepicker {
+		width: calc(100% - 3rem);
+		}
+	.ui-datepicker td span,
+	.ui-datepicker td a {
+		line-height: 2.6rem;
+		}
+	}
+
+@media screen and (max-width: 480px) {
+	.w-form-row.for_submit {
+		float: none !important;
+		display: block !important;
+		margin: 0 !important;
+		}
+	.w-form-row.for_submit .w-btn {
+		width: 100%;
+		}
+	.w-form.align_left .w-form-message.type_success,
+	.w-form.align_right .w-form-message.type_success {
+		display: block;
+		text-align: center;
+		padding-top: 0.6em;
+		}
+	.post-password-form p input[type="password"] {
+		max-width: none;
+		}
+	}

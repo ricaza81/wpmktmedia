@@ -1,0 +1,479 @@
+
+.w-ibanner {
+	position: relative;
+	overflow: hidden;
+	width: 100%; /* fix for usage inside Wrappers */
+	transform: translateZ(0); /* render fix for Safari */
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	}
+	.w-ibanner > a {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 3;
+		color: inherit !important; /* needed for Ripple effect */
+		}
+	.w-ibanner-h {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		overflow: hidden;
+		background-color: inherit;
+		transition-property: none;
+		transform-origin: 0 0;
+		}
+		.w-ibanner-image,
+		.w-ibanner-content {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			}
+		.w-ibanner-image {
+			background-size: cover;
+			background-position: 50% 50%;
+			}
+		.w-ibanner-content {
+			z-index: 2;
+			padding: 10%;
+			}
+			.w-ibanner-title {
+				line-height: 1.4;
+				padding: 0 !important;
+				margin: 0 !important;
+				color: inherit;
+				}
+			.w-ibanner-desc {
+				margin-top: 1rem;
+				}
+
+/* Aspect Ratios */
+.w-ibanner[class*=" ratio_"]:before {
+	content: '';
+	display: block;
+}
+.w-ibanner.ratio_2x1:before {
+	padding-top: 50%;
+}
+.w-ibanner.ratio_3x2:before {
+	padding-top: 66.6666%;
+}
+.w-ibanner.ratio_4x3:before {
+	padding-top: 75%;
+}
+.w-ibanner.ratio_1x1:before {
+	padding-top: 100%;
+}
+.w-ibanner.ratio_3x4:before {
+	padding-top: 125%;
+}
+.w-ibanner.ratio_2x3:before {
+	padding-top: 150%;
+}
+.w-ibanner.ratio_1x2:before {
+	padding-top: 200%;
+}
+
+/* ANIMATION melete */
+.w-ibanner.animation_melete .w-ibanner-image {
+	transition-duration: 0.5s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_melete .w-ibanner-content {
+	top: 50%;
+	bottom: auto;
+	opacity: 0;
+	transform: translateY(-50%) scale(0.2);
+	transition-duration: 0.4s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_melete:hover .w-ibanner-image {
+	opacity: 0.1;
+	transform: scale(4);
+}
+.w-ibanner.animation_melete:hover .w-ibanner-content {
+	opacity: 1;
+	transform: translateY(-50%) scale(1);
+}
+
+/* ANIMATION soter */
+.w-ibanner.animation_soter .w-ibanner-image {
+	z-index: 1;
+	border-radius: 50%;
+	transform: scale(0.3);
+	transition-duration: 0.4s;
+	transition-property: transform, border-radius;
+}
+.w-ibanner.animation_soter.ratio_2x1 .w-ibanner-image {
+	top: -50%;
+	bottom: -50%;
+	transform-origin: 90% 50%;
+}
+.w-ibanner.animation_soter.ratio_3x2 .w-ibanner-image {
+	top: -25%;
+	bottom: -25%;
+	transform-origin: 90% 66%;
+}
+.w-ibanner.animation_soter.ratio_4x3 .w-ibanner-image {
+	top: -16.67%;
+	bottom: -16.67%;
+	transform-origin: 90% 72%;
+}
+.w-ibanner.animation_soter.ratio_1x1 .w-ibanner-image {
+	transform-origin: 90% 90%;
+}
+.w-ibanner.animation_soter.ratio_3x4 .w-ibanner-image {
+	left: -12.5%;
+	right: -12.5%;
+	transform: scale(0.24);
+	transform-origin: 79.5% 92.5%;
+}
+.w-ibanner.animation_soter.ratio_2x3 .w-ibanner-image {
+	left: -25%;
+	right: -25%;
+	transform: scale(0.2);
+	transform-origin: 73.5% 94%;
+}
+.w-ibanner.animation_soter.ratio_1x2 .w-ibanner-image {
+	left: -50%;
+	right: -50%;
+	transform: scale(0.15);
+	transform-origin: 66.5% 95.7%;
+}
+.w-ibanner.animation_soter .w-ibanner-content {
+	z-index: 0;
+	right: 33%;
+	opacity: 1;
+	transition-duration: 0.4s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_soter:hover .w-ibanner-image {
+	border-radius: 0;
+	transform: scale(1.01);
+}
+.w-ibanner.animation_soter:hover .w-ibanner-content {
+	opacity: 0;
+	transform: translate3d(-40%, -40%, 0) scale(2);
+}
+
+/* ANIMATION phorcys */
+.w-ibanner.animation_phorcys .w-ibanner-image {
+	bottom: -10%;
+	transform: translateY(0);
+	transition-duration: 0.4s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_phorcys .w-ibanner-content {
+	top: auto;
+	padding-top: 20% !important;
+}
+.w-ibanner.animation_phorcys .w-ibanner-content:before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(transparent 0%, rgba(30, 30, 30, 0.8) 100%) repeat-x rgba(30, 30, 30, 0);
+	transition-property: opacity;
+	transition-duration: 0.3s;
+}
+.w-ibanner.animation_phorcys .w-ibanner-content-h {
+	position: relative;
+}
+.w-ibanner.animation_phorcys .w-ibanner-title {
+	color: #fff !important;
+	transition-property: color;
+	transition-duration: 0.3s;
+}
+.w-ibanner.animation_phorcys .w-ibanner-desc {
+	position: relative;
+	opacity: 0;
+	line-height: 0;
+	margin-top: 0;
+	transition-duration: 0.3s;
+	transition-property: opacity, line-height, margin;
+}
+.w-ibanner.animation_phorcys:hover .w-ibanner-image {
+	opacity: 0.15;
+	transform: translateY(-8%);
+}
+.w-ibanner.animation_phorcys:hover .w-ibanner-content:before {
+	opacity: 0;
+}
+.w-ibanner.animation_phorcys:hover .w-ibanner-title {
+	color: inherit !important;
+}
+.w-ibanner.animation_phorcys:hover .w-ibanner-desc {
+	opacity: 0.75;
+	line-height: 1.5;
+	margin-top: 15px;
+}
+
+/* ANIMATION aidos */
+.w-ibanner.animation_aidos .w-ibanner-h {
+	background-color: inherit;
+}
+.w-ibanner.animation_aidos .w-ibanner-image {
+	background-color: inherit;
+	transform: translateX(0) scale(1.01);
+	transition-duration: 0.4s;
+	transition-property: transform;
+}
+.w-ibanner.animation_aidos .w-ibanner-content {
+	right: auto;
+	width: 50%;
+	background-color: inherit;
+	transform: translateX(-100%);
+	transition-duration: 0.4s;
+	transition-property: transform;
+}
+.w-ibanner.animation_aidos .w-ibanner-content:before {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 50%;
+	right: 0;
+	height: 40px;
+	width: 40px;
+	margin: -20px 0 0 -20px;
+	background-color: inherit;
+	transform: translateX(-10px) rotate(45deg);
+	-webkit-transition-duration: 0.4s;
+	transition-property: transform;
+}
+.w-ibanner.animation_aidos .w-ibanner-content-h {
+	position: relative;
+}
+.w-ibanner.animation_aidos .w-ibanner-title {
+	opacity: 0;
+	-webkit-transform: translateX(-100px);
+	transform: translateX(-100px);
+	transition-duration: 0.4s;
+	transition-delay: 0.1s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_aidos .w-ibanner-desc {
+	opacity: 0;
+	transform: translateX(-100px);
+	transition-duration: 0.4s;
+	transition-delay: 0.2s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_aidos:hover .w-ibanner-image {
+	transform: translateX(25%) scale(1.01);
+}
+.w-ibanner.animation_aidos:hover .w-ibanner-content {
+	transform: translateX(0);
+}
+.w-ibanner.animation_aidos:hover .w-ibanner-content:before {
+	transform: translateX(15px) rotate(45deg);
+}
+.w-ibanner.animation_aidos:hover .w-ibanner-title {
+	opacity: 1;
+	transform: translateX(0);
+}
+.w-ibanner.animation_aidos:hover .w-ibanner-desc {
+	opacity: 0.75;
+	transform: translateX(0);
+}
+
+/* ANIMATION caeros */
+.w-ibanner.animation_caeros .w-ibanner-image {
+	background-color: inherit;
+	transform: translateY(0);
+	transform-origin: 50% 0;
+	transition-duration: 0.3s;
+	transition-timing-function: linear;
+}
+.w-ibanner.animation_caeros .w-ibanner-image:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: inherit;
+	opacity: 0.25;
+	transition-property: opacity;
+	transition-duration: 0.4s;
+}
+.w-ibanner.animation_caeros .w-ibanner-title {
+	transform: translateY(30px);
+	transition-duration: 0.4s;
+	transition-property: transform;
+}
+.w-ibanner.animation_caeros .w-ibanner-desc {
+	opacity: 0;
+	transform: scale(0.7);
+	transition-duration: 0.4s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_caeros:hover .w-ibanner-image {
+	transform: scale(1.3);
+	transition-duration: 7s;
+}
+.w-ibanner.animation_caeros:hover .w-ibanner-image:after {
+	opacity: 0.75;
+}
+.w-ibanner.animation_caeros:hover .w-ibanner-title {
+	transform: translateY(0);
+}
+.w-ibanner.animation_caeros:hover .w-ibanner-desc {
+	opacity: 0.75;
+	transform: scale(1);
+}
+
+/* ANIMATION hebe */
+.w-ibanner.animation_hebe .w-ibanner-image {
+	background-color: inherit;
+	transform: scale(1.1);
+	transition-duration: 0.5s;
+}
+.w-ibanner.animation_hebe .w-ibanner-image:before,
+.w-ibanner.animation_hebe .w-ibanner-image:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: inherit;
+	opacity: 0.4;
+	transform: translateY(100%);
+	transition-duration: 0.5s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_hebe .w-ibanner-image:after {
+	transform: translateY(-100%);
+}
+.w-ibanner.animation_hebe .w-ibanner-content {
+	top: 50%;
+	bottom: auto;
+	transform: translateY(-50%);
+}
+.w-ibanner.animation_hebe .w-ibanner-title {
+	opacity: 0;
+	transform: translateY(-20px);
+	transition-duration: 0.6s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_hebe .w-ibanner-desc {
+	opacity: 0;
+	transform: translateY(20px);
+	transition-duration: 0.6s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_hebe:hover .w-ibanner-image {
+	transform: scale(1);
+}
+.w-ibanner.animation_hebe:hover .w-ibanner-image:before,
+.w-ibanner.animation_hebe:hover .w-ibanner-image:after {
+	opacity: 0.7;
+	transform: translateY(0);
+}
+.w-ibanner.animation_hebe:hover .w-ibanner-title {
+	opacity: 1;
+	transform: translateY(0);
+}
+.w-ibanner.animation_hebe:hover .w-ibanner-desc {
+	opacity: 0.75;
+	transform: translateY(0);
+}
+
+/* ANIMATION aphelia */
+.w-ibanner.animation_aphelia .w-ibanner-image {
+	opacity: 0.25;
+	filter: grayscale(1);
+	transition-duration: 0.4s;
+	transition-property: filter, opacity;
+}
+.w-ibanner.animation_aphelia .w-ibanner-content {
+	top: 50%;
+	bottom: auto;
+	transform: translateY(-50%);
+}
+.w-ibanner.animation_aphelia .w-ibanner-title {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	transition-duration: 0.4s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_aphelia .w-ibanner-desc {
+	opacity: 0.75;
+	transform: translateY(0) scale(1);
+	transition-duration: 0.4s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_aphelia:hover .w-ibanner-image {
+	opacity: 1;
+	filter: grayscale(0);
+}
+.w-ibanner.animation_aphelia:hover .w-ibanner-title {
+	opacity: 0;
+	transform: translateY(-40px) scale(0.8);
+}
+.w-ibanner.animation_aphelia:hover .w-ibanner-desc {
+	opacity: 0;
+	transform: translateY(40px) scale(0.8);
+}
+
+/* ANIMATION nike */
+.w-ibanner.animation_nike .w-ibanner-image {
+	filter: grayscale(1);
+	transform: translateY(25%);
+	transition-duration: 0.4s;
+	transition-property: transform, filter;
+}
+.w-ibanner.animation_nike .w-ibanner-h:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 50%;
+	background-color: inherit;
+	transform: translateY(0);
+	transition-duration: 0.4s;
+	transition-property: transform;
+}
+.w-ibanner.animation_nike .w-ibanner-content {
+	opacity: 1;
+	transition-duration: 0.25s;
+	transition-property: transform, opacity;
+}
+.w-ibanner.animation_nike:hover .w-ibanner-image {
+	filter: grayscale(0);
+	transform: translateY(0);
+}
+.w-ibanner.animation_nike:hover .w-ibanner-h:after {
+	transform: translateY(-100%);
+}
+.w-ibanner.animation_nike:hover .w-ibanner-content {
+	opacity: 0;
+	transform: translateY(-40px);
+}
+
+/* EASING */
+.easing_easeInOutExpo .w-ibanner-image,
+.easing_easeInOutExpo .w-ibanner-content,
+.easing_easeInOutExpo .w-ibanner-content:before,
+.easing_easeInOutExpo .w-ibanner-content-h,
+.easing_easeInOutExpo .w-ibanner-title,
+.easing_easeInOutExpo .w-ibanner-desc {
+	transition-timing-function: cubic-bezier(1,0,0,1);
+}
+
+.easing_easeInOutCirc .w-ibanner-image,
+.easing_easeInOutCirc .w-ibanner-content,
+.easing_easeInOutCirc .w-ibanner-content:before,
+.easing_easeInOutCirc .w-ibanner-content-h,
+.easing_easeInOutCirc .w-ibanner-title,
+.easing_easeInOutCirc .w-ibanner-desc {
+	transition-timing-function: cubic-bezier(.78,.13,.15,.86);
+}

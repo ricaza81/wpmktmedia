@@ -1,0 +1,82 @@
+/*
+ * Simple Menu
+ */
+
+.w-menu .menu {
+	margin: 0;
+	}
+	.w-menu ul,
+	.w-menu .menu-item {
+		list-style: none;
+		margin: 0;
+		}
+	.w-menu .menu-item:last-child {
+		margin: 0 !important;
+		}
+	.w-menu .sub-menu {
+		margin-left: 1em;
+		}
+	.w-menu .sub-menu .current-menu-item > a {
+		color: inherit;
+		}
+
+/* LAYOUT: vertical */
+.w-menu.layout_ver {
+	line-height: 1.4;
+	}
+
+/* LAYOUT: horizontal */
+.w-menu.layout_hor .menu {
+	display: inline-flex;
+	flex-wrap: wrap;
+	}
+.w-menu.layout_hor.not_responsive .menu {
+	flex-wrap: nowrap;
+	white-space: nowrap;
+	overflow-x: auto;
+	max-width: 100%;
+	-webkit-overflow-scrolling: touch;
+	}
+	.w-menu.layout_hor.with_children .menu > .menu-item-has-children > a {
+		font-size: 1.15em;
+		font-weight: bold;
+		}
+	.w-menu.layout_hor .menu > li > .sub-menu {
+		margin: 1rem 0 0;
+		}
+
+/* SPREAD */
+.w-menu.layout_hor.spread {
+	width: 100%;
+	margin: 0;
+	}
+	.w-menu.layout_hor.spread .menu {
+		justify-content: space-between;
+		width: 100%;
+		}
+		.w-menu.layout_hor.spread.with_children .menu > .menu-item-has-children {
+			flex: 1 1 100px;
+			}
+
+/* STYLE: Blocks */
+.w-menu.style_blocks .menu > .menu-item > a {
+	display: block;
+	border: none !important;
+	}
+
+/* Fallback for menu in header */
+.header_hor .l-header .w-menu {
+	line-height: 2;
+	}
+.header_ver .l-header .w-menu {
+	line-height: 1;
+	}
+.header_ver .l-header .w-menu .menu {
+	display: block;
+	}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline .w-menu-item:hover span {
+	border-bottom: 1px solid;
+	}

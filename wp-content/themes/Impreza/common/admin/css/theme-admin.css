@@ -1,0 +1,593 @@
+
+/* Define Font Awesome & Material icon fonts
+   ========================================================================== */
+@font-face {
+	font-family: 'Material Icons';
+	font-style: normal;
+	font-weight: 400;
+	src: url(../../../fonts/material-icons.woff2) format('woff2'),
+	url(../../../fonts/material-icons.woff) format('woff');
+	}
+.material-icons {
+	font-family: 'Material Icons';
+	font-weight: normal;
+	font-style: normal;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	display: inline-block;
+	white-space: nowrap;
+	word-wrap: normal;
+	direction: ltr;
+	font-feature-settings: 'liga';
+	-moz-osx-font-smoothing: grayscale;
+	}
+
+@font-face {
+	font-family: 'Font Awesome 5 Brands';
+	font-style: normal;
+	font-weight: normal;
+	src: url(../../../fonts/fa-brands-400.woff2) format("woff2"),
+	url(../../../fonts/fa-brands-400.woff) format("woff");
+	}
+.fab {
+	font-family: 'Font Awesome 5 Brands';
+	}
+
+@font-face {
+	font-family: 'fontawesome';
+	font-style: normal;
+	font-weight: 300;
+	src: url(../../../fonts/fa-light-300.woff2) format("woff2"),
+	url(../../../fonts/fa-light-300.woff) format("woff");
+	}
+.fal {
+	font-family: 'fontawesome';
+	font-weight: 300;
+	}
+
+@font-face {
+	font-family: 'fontawesome';
+	font-style: normal;
+	font-weight: 400;
+	src: url(../../../fonts/fa-regular-400.woff2) format("woff2"),
+	url(../../../fonts/fa-regular-400.woff) format("woff");
+	}
+.far {
+	font-family: 'fontawesome';
+	font-weight: 400;
+	}
+
+@font-face {
+	font-family: 'fontawesome';
+	font-style: normal;
+	font-weight: 900;
+	src: url(../../../fonts/fa-solid-900.woff2) format("woff2"),
+	url(../../../fonts/fa-solid-900.woff) format("woff");
+	}
+.fa,
+.fas {
+	font-family: 'fontawesome';
+	font-weight: 900;
+	}
+
+@font-face {
+	font-family: 'Font Awesome Duotone';
+	font-style: normal;
+	font-weight: 900;
+	src: url(../../../fonts/fa-duotone-900.woff2) format("woff2"),
+	url(../../../fonts/fa-duotone-900.woff) format("woff");
+	}
+.fad {
+	font-family: 'Font Awesome Duotone';
+	font-weight: 900;
+	position: relative;
+	}
+
+/* Screenlock */
+.us-screenlock {
+	display: flex;
+	justify-content: center;
+	position: absolute;
+	z-index: 14;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	text-align: center;
+	background-color: rgba(255,255,255,0.9);
+	}
+	.us-screenlock > div {
+		font-size: 26px;
+		line-height: 1.4;
+		margin: 15vh 30px;
+		text-shadow: 0 5px 15px #fff;
+		}
+	.us-screenlock a {
+		box-shadow: none;
+		}
+
+/* Preloader */
+.g-preloader {
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	width: 60px;
+	height: 60px;
+	margin-bottom: 20px;
+	}
+	.g-preloader.type_1:before,
+	.g-preloader.type_1:after {
+		content: '';
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: 50%;
+		border: 3px solid;
+		}
+	.g-preloader.type_1:before {
+		opacity: 0.33;
+		}
+	.g-preloader.type_1:after {
+		border-color: transparent;
+		border-top-color: inherit;
+		animation: rotation 0.8s infinite cubic-bezier(.6,.3,.3,.6);
+		}
+@keyframes rotation {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+	}
+
+/* About Page
+   ========================================================================== */
+.us-home a:focus {
+	box-shadow: none;
+	}
+.us-header {
+	position: relative;
+	padding: 0 0 40px 130px;
+	background: url(../../../img/us-core.png) no-repeat 0 0;
+	background-size: 100px auto;
+	}
+	.us-header h1 {
+		font-weight: 300;
+		margin: 0 0 22px;
+		}
+	.us-header-links {
+		display: flex;
+		}
+		.us-header-link {
+			font-size: 18px;
+			margin-right: 30px;
+			}
+
+.us-features {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-top: 40px;
+	}
+	.us-features > .one-third {
+		flex-shrink: 0;
+		width: 30%;
+		}
+		.us-home.about-wrap .us-features h4 {
+			font-size: 18px;
+			margin: 0;
+			}
+			.us-home.about-wrap .us-features h4 i {
+				font-size: 26px;
+				line-height: inherit;
+				vertical-align: top;
+				margin-right: 12px;
+				color: #0073aa;
+				}
+		.us-home.about-wrap .us-features .button {
+			font-size: 16px;
+			}
+		.us-feature-disabled {
+			display: inline-block;
+			vertical-align: top;
+			padding: 8px 18px;
+			border-radius: 3px;
+			background-color: rgba(0,0,0,0.05);
+			}
+
+.us-activation {
+	text-align: center;
+	padding: 40px;
+	background-color: #fff;
+	}
+	.us-activation-status {
+		font-size: 24px;
+		font-weight: 600;
+		line-height: 1.4;
+		margin-bottom: 20px;
+		color: #999;
+		}
+	.us-activation-status.yes {
+		margin-bottom: 10px;
+		color: #0c0;
+		}
+	.us-activation-status.dev {
+		margin-bottom: 10px;
+		color: #f90;
+		}
+	.us-activation input[type="submit"] {
+		font-size: 20px;
+		padding: 5px 40px;
+		}
+	.us-activation p {
+		margin: 0;
+		}
+	.us-activation-desc {
+		display: inline-block;
+		vertical-align: top;
+		position: relative;
+		}
+		.us-activation-desc-sign {
+			display: inline-block;
+			vertical-align: top;
+			font: 24px/1 dashicons;
+			margin-top: 6px;
+			color: #ccc;
+			}
+			.us-activation-desc-sign:before {
+				content: '\f223';
+				}
+		.us-activation-desc-text {
+			position: absolute;
+			z-index: 111;
+			left: -140px;
+			top: 42px;
+			text-align: left;
+			font-weight: normal;
+			padding: 20px 25px;
+			width: 250px;
+			background-color: #32373c;
+			color: #fff;
+			visibility: hidden;
+			opacity: 0;
+			transition: opacity 0.3s;
+			}
+		.us-activation-desc:hover .us-activation-desc-text {
+			visibility: visible;
+			opacity: 1;
+			}
+			.us-activation-desc-text:after {
+				content: '';
+				position: absolute;
+				left: 142px;
+				top: -10px;
+				height: 20px;
+				width: 20px;
+				background-color: #32373c;
+				transform: rotate(45deg);
+				}
+			.us-activation-desc-text:before {
+				content: '';
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: -20px;
+				height: 20px;
+				}
+			.us-activation-desc-text p {
+				font-size: 13px;
+				margin: 0 0 10px;
+				}
+			.us-activation-desc-text ul {
+				font-size: 13px;
+				margin: 0 0 4px;
+				}
+				.us-activation-desc-text li {
+					position: relative;
+					line-height: inherit;
+					padding-left: 18px;
+					}
+					.us-activation-desc-text li:before {
+						position: absolute;
+						top: -3px;
+						left: -4px;
+						content: '\f147';
+						font-family: dashicons;
+						vertical-align: top;
+						font-size: 20px;
+						}
+			.us-activation-desc-text a {
+				color: #00a0d2;
+				}
+			.us-activation-desc-text a:hover {
+				color: #47bfe4;
+				}
+
+.usof-container.for_white_label {
+	padding: 0 0 40px;
+	border-top: 1px solid #e5e5e5;
+	background-color: #fff;
+	}
+	.usof-container.for_white_label .usof-section {
+		max-width: none;
+		}
+		.usof-container.for_white_label .usof-section-content {
+			padding: 20px 0;
+			}
+	.usof-container.for_white_label .usof-control {
+		margin: 0 40px;
+		}
+		.usof-container.for_white_label .usof-control-message {
+			right: auto;
+			}
+
+.rtl .us-header {
+	padding: 0 130px 40px 0;
+	background-position: 100% 0;
+	}
+.rtl .us-header-link {
+	margin-left: 20px;
+	margin-right: 0;
+	}
+.rtl .us-home.about-wrap .us-features h4 i {
+	margin-left: 12px;
+	margin-right: 0;
+	}
+.rtl .us-activation-desc-text {
+	text-align: right;
+	}
+.rtl .us-activation-desc-text li {
+	padding-left: 0;
+	padding-right: 18px;
+	}
+.rtl .us-activation-desc-text li:before {
+	left: auto;
+	right: -4px;
+	}
+
+@media (max-width: 782px) {
+.us-header-links {
+	display: block;
+	}
+.us-header-link {
+	margin: 0 0 10px;
+	}
+.us-activation-desc {
+	display: none;
+	}
+.us-home.about-wrap .us-features {
+	margin-bottom: 0;
+	}
+.us-features > .one-third {
+	float: none;
+	width: 100%;
+	margin: 0 0 30px;
+	}
+}
+
+@media (max-width: 600px) {
+.us-header {
+	padding: 0 !important;
+	background: none;
+	border: none;
+	}
+.us-activation {
+	padding: 30px;
+	}
+	.us-activation input[type="submit"] {
+		font-size: 16px;
+		padding: 10px 20px;
+		width: 100%;
+		}
+}
+
+/* US Progress bar
+   ========================================================================== */
+.us-progress {
+	margin-top: 2rem;
+	overflow: hidden;
+	background: #fff;
+	}
+	.us-progress-bar {
+		line-height: 2rem;
+		font-weight: 600;
+		text-align: center;
+		white-space: nowrap;
+		width: 0;
+		transition: width 0.3s;
+		background-color: #01a300;
+		background-image: linear-gradient(135deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.2) 75%, transparent 75%, transparent);
+		background-size: 1rem 1rem;
+		color: #fff;
+		}
+	.us-progress-bar.animated {
+		background-color: #0073aa;
+		animation: us-progress-stripes 0.5s linear infinite;
+		}
+@keyframes us-progress-stripes {
+	from { background-position: 1rem 0; }
+	to { background-position: 0 0; }
+	}
+
+/* Addons Page
+   ========================================================================== */
+body[class*="us-addons"] {
+	overflow-y: scroll;
+	background: #fff;
+	}
+
+.us-admin-title {
+	text-align: center;
+	font-size: 2.8em;
+	line-height: 1;
+	margin: 0;
+	}
+.us-admin-subtitle {
+	text-align: center;
+	font-size: 15px;
+	margin-bottom: 20px;
+	}
+
+.us-addons {
+	padding: 30px;
+	margin-left: -20px;
+	}
+.us-addons .us-admin-title,
+.us-addons .us-admin-subtitle {
+	display: inline-block;
+	text-align: left;
+	margin-right: 10px;
+	margin-bottom: 30px;
+	}
+.us-addons-list {
+	display: flex;
+	flex-wrap: wrap;
+	position: relative;
+	}
+.us-addon {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	border: 1px solid #e5e5e5;
+	margin: 0 -1px -1px 0;
+	padding: 30px;
+	width: 25%;
+	}
+@media (max-width: 1400px) {
+.us-addon {
+	width: 50%;
+	}
+}
+@media (max-width: 782px) {
+.us-addon {
+	width: 100%;
+	padding: 20px;
+	}
+}
+	.us-addon-content {
+		flex: 1 1 auto;
+		position: relative;
+		padding-left: 85px;
+		min-height: 70px;
+		}
+		.us-addon-content a {
+			text-decoration: none;
+			box-shadow: none !important;
+			}
+		.us-addon-icon {
+			position: absolute;
+			left: 0;
+			width: 70px;
+			}
+		.us-addon-title {
+			font-size: 18px;
+			line-height: 1.4;
+			margin: -6px 0 8px;
+			}
+		.us-addon a:hover .us-addon-title {
+			color: #0073aa;
+			}
+		.us-addon-desc {
+			font-size: 15px;
+			margin: 0;
+			}
+	.us-addon-control {
+		flex-shrink: 0;
+		padding-top: 20px;
+		}
+		.us-addon-lock {
+			display: none;
+			line-height: 20px;
+			padding: 8px 0;
+			}
+		.us-addon-status,
+		.us-addon .usof-button {
+			display: inline-block;
+			vertical-align: top;
+			font-size: 14px;
+			font-weight: 600;
+			line-height: 20px !important;
+			padding: 8px 20px;
+			border-radius: 40px;
+			}
+		.us-addon .usof-button {
+			cursor: pointer;
+			border: none;
+			text-decoration: none;
+			transition: background 0.3s, color 0.3s, opacity 0.3s;
+			box-shadow: 0 -1px 0 rgba(0,0,0,0.08) inset;
+			background-color: #f1f1f1;
+			color: inherit;
+			}
+		.us-addon .usof-button:hover {
+			background-color: #ddd;
+			}
+			.us-addon .g-preloader {
+				display: none;
+				vertical-align: top;
+				height: 16px;
+				width: 16px;
+				margin: 2px 8px 2px 0;
+				}
+			.rtl .us-addon .g-preloader {
+				margin: 2px 0 2px 8px;
+				}
+				.us-addon .g-preloader.type_1:before,
+				.us-addon .g-preloader.type_1:after {
+					border-width: 2px;
+					}
+			.us-addon.status_activating .g-preloader,
+			.us-addon.status_installing .g-preloader {
+				display: inline-block;
+				}
+		.us-addon.status_notactive .usof-button {
+			background-color: #0073aa;
+			color: #fff;
+			}
+		.us-addon.status_activating .usof-button,
+		.us-addon.status_notactive .usof-button:hover {
+			background-color: #0071a1;
+			color: #fff;
+			}
+	.us-addon.status_active {
+		background-color: #dfffdb;
+		}
+		.us-addon.status_active .us-addon-status {
+			background-color: #fff;
+			color: #29ad1d;
+			}
+	.us-addon.status_error {
+		background-color: #ffe3e3;
+		}
+		.us-addon.status_error .us-addon-status {
+			background-color: #fff;
+			color: #dd3d36;
+			}
+	.us-addon.status_notactive,
+	.us-addon.status_activating,
+	.us-addon.status_installing {
+		background-color: #ffd;
+		}
+		.us-addon.status_locked .usof-button,
+		.us-addon.status_locked .us-addon-status,
+		.us-addon.status_activating .us-addon-status,
+		.us-addon.status_installing .us-addon-status,
+		.us-addon.status_notactive .us-addon-status,
+		.us-addon.status_notinstalled .us-addon-status {
+			display: none;
+			}
+		.us-addon.status_activating .usof-button,
+		.us-addon.status_installing .usof-button {
+			pointer-events: none;
+			cursor: default;
+			}
+		.us-addons-list.disable-buttons .status_notactive .usof-button,
+		.us-addons-list.disable-buttons .status_notinstalled .usof-button {
+			pointer-events: none;
+			cursor: default;
+			opacity: 0.33;
+			}
+		.us-addon.status_locked .us-addon-lock {
+			display: block;
+			}

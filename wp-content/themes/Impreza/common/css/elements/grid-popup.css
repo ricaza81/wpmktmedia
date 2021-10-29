@@ -1,0 +1,137 @@
+/*
+ * Grid Popup
+ */
+
+html.usoverlay_fixed {
+	overflow: hidden;
+	}
+html[style*="hidden"] .header_hor .l-header.pos_fixed,
+html.usoverlay_fixed .header_hor .l-header.pos_fixed {
+	overflow-y: scroll;
+	}
+.l-popup-overlay {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1001;
+	background: rgba(0,0,0,0.8);
+	transition: opacity 0.3s;
+	opacity: 0;
+	}
+.l-popup-overlay.active {
+	opacity: 1;
+	}
+.l-popup-wrap {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	cursor: zoom-out;
+	z-index: 1002;
+	}
+	.l-popup-box {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		height: 100%;
+		padding: 2rem 5rem;
+		transform: scale(0.5);
+		opacity: 0;
+		transition: opacity 0.3s, transform 0.3s;
+		}
+	.l-popup-box.active {
+		transform: scale(1);
+		opacity: 1;
+		}
+		.l-popup-box-content {
+			cursor: default;
+			height: 100%;
+			width: 100%;
+			transition: height 0.2s;
+			-webkit-overflow-scrolling: touch;
+			overflow-y: auto;
+			}
+		.no-touch .l-popup-box-content {
+			overflow-y: hidden;
+			}
+			.l-popup-box-content .g-preloader {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%,-50%);
+				font-size: 4rem;
+				display: inline-block;
+				}
+			.l-popup-box-content-frame {
+				height: 100%;
+				width: 100%;
+				}
+	.l-popup-arrow {
+		position: fixed;
+		transform: translateZ(0); /* render fix for webkit browsers */
+		top: 50%;
+		text-align: center;
+		font-size: 3rem;
+		line-height: 15rem;
+		width: 5rem;
+		margin-top: -7.5rem;
+		cursor: pointer;
+		color: #fff;
+		transition: opacity 0.3s, background 0.3s;
+		opacity: 0;
+		}
+	.l-popup-box.active ~ .l-popup-arrow {
+		opacity: 0.5;
+		}
+	.no-touch .l-popup-box.active ~ .l-popup-arrow:hover {
+		background: rgba(0,0,0,0.5);
+		opacity: 1;
+		}
+	.l-popup-arrow.to_next {
+		right: 0;
+		}
+		.l-popup-arrow.to_next:before {
+			content: '\f105';
+			font-family: fontawesome;
+			font-weight: 400;
+			vertical-align: top;
+			}
+	.l-popup-arrow.to_prev {
+		left: 0;
+		}
+		.l-popup-arrow.to_prev:before {
+			content: '\f104';
+			font-family: fontawesome;
+			font-weight: 400;
+			vertical-align: top;
+			}
+	.l-popup-closer {
+		position: fixed;
+		transform: translateZ(0); /* render fix for webkit browsers */
+		top: 0;
+		right: 0;
+		text-align: center;
+		font-size: 2rem;
+		line-height: 5rem;
+		width: 5rem;
+		cursor: zoom-out;
+		color: #fff;
+		transition: opacity 0.3s;
+		opacity: 0;
+		}
+	.l-popup-box.active ~ .l-popup-closer {
+		opacity: 0.5;
+		}
+		.l-popup-closer:before {
+			content: '\f00d';
+			font-family: fontawesome;
+			font-weight: normal;
+			vertical-align: top;
+			}

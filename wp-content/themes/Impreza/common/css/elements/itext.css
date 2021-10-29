@@ -1,0 +1,67 @@
+.w-itext {
+	margin: 0;
+	padding: 0;
+	position: relative;
+	transform: translate3d(0, 0, 0);
+	/* remove gradient from Headings color, as it doesn't work in Chrome */
+	background-image: none;
+	-webkit-background-clip: border-box;
+	background-clip: border-box;
+	color: inherit;
+	}
+	.w-itext-part {
+		display: inline-block;
+		position: relative;
+		text-align: left;
+		transition-property: width;
+		white-space: nowrap;
+		}
+	.w-itext.disable_part_animation * {
+		white-space: normal !important;
+		}
+	.w-itext-part.notransition {
+		transition-property: none !important;
+		}
+		.w-itext-part > span.measure {
+			position: absolute;
+			left: 0;
+			top: 0;
+			opacity: 0;
+			}
+		.w-itext-part > span:first-child > span {
+			display: inline-block;
+			max-width: 100%;
+			visibility: hidden;
+			}
+		.w-itext-part > span > span[class^="animated_"] {
+			visibility: visible;
+			}
+		.w-itext:not(.disable_part_animation) .w-itext-part > span > span:last-child {
+			margin-right: -200px;
+			}
+		.w-itext-part-nospan {
+			display: inline-block;
+			visibility: visible !important;
+			}
+	.w-itext.dynamic_bold .dynamic {
+		font-weight: bold;
+		}
+	.w-itext.type_typingChars .w-itext-part {
+		transition-property: none !important;
+		width: auto !important;
+		}
+		.w-itext-cursor {
+			position: absolute;
+			top: 0.1em;
+			bottom: 0.1em;
+			border-left: 2px solid;
+			animation: blink 1.1s infinite;
+			}
+
+@keyframes blink {
+	0% { opacity:1; }
+	20% { opacity:0; }
+	50% { opacity:0; }
+	70% { opacity:1; }
+	100% { opacity:1; }
+	}

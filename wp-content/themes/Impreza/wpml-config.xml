@@ -1,0 +1,185 @@
+<wpml-config>
+	<custom-types>
+		<custom-type translate="1">us_portfolio</custom-type>
+		<custom-type translate="1">us_testimonial</custom-type>
+		<custom-type translate="1">us_header</custom-type>
+		<custom-type translate="1">us_page_block</custom-type>
+		<custom-type translate="1">us_content_template</custom-type>
+		<custom-type translate="0">us_widget_area</custom-type>
+		<custom-type translate="1">us_grid_layout</custom-type>
+	</custom-types>
+	<taxonomies>
+		<taxonomy translate="1">us_portfolio_category</taxonomy>
+		<taxonomy translate="1">us_portfolio_tag</taxonomy>
+		<taxonomy translate="1">us_testimonial_category</taxonomy>
+	</taxonomies>
+	<custom-fields>
+		<custom-field action="copy">us_header_id</custom-field>
+		<custom-field action="copy">us_header_sticky_override</custom-field>
+		<custom-field action="copy">us_header_sticky</custom-field>
+		<custom-field action="copy">us_header_transparent_override</custom-field>
+		<custom-field action="copy">us_header_transparent</custom-field>
+		<custom-field action="copy">us_header_sticky_pos</custom-field>
+		<custom-field action="copy">us_header_shadow</custom-field>
+		<custom-field action="copy">us_titlebar_id</custom-field>
+		<custom-field action="copy">us_content_id</custom-field>
+		<custom-field action="copy">us_sidebar_id</custom-field>
+		<custom-field action="copy">us_sidebar_pos</custom-field>
+		<custom-field action="copy">us_footer_id</custom-field>
+		<custom-field action="translate" encoding="json">us_tile_link</custom-field>
+		<custom-field action="copy">us_tile_size</custom-field>
+		<custom-field action="copy">us_tile_bg_color</custom-field>
+		<custom-field action="copy">us_tile_text_color</custom-field>
+		<custom-field action="translate">us_tile_additional_image</custom-field>
+		<custom-field action="translate">us_testimonial_author</custom-field>
+		<custom-field action="translate">us_testimonial_role</custom-field>
+		<custom-field action="translate">us_testimonial_company</custom-field>
+		<custom-field action="copy">us_testimonial_link</custom-field>
+		<custom-field action="copy">us_attachment_link</custom-field>
+		<custom-field action="copy">us_testimonial_rating</custom-field>
+	</custom-fields>
+	<shortcodes>
+		<shortcode>
+			<tag>us_gmaps</tag>
+			<attributes>
+				<attribute>marker_address</attribute>
+				<attribute type="area" encoding="base64">marker_text</attribute>
+				<attribute type="area" encoding="us_urlencoded_json">markers</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_btn</tag>
+			<attributes>
+				<attribute>label</attribute>
+				<attribute type="link" encoding="vc_link">link</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_cform</tag>
+			<attributes>
+				<attribute type="area" encoding="us_urlencoded_json">items</attribute>
+				<attribute>receiver_email</attribute>
+				<attribute>button_text</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_counter</tag>
+			<attributes>
+				<attribute>initial</attribute>
+				<attribute>final</attribute>
+				<attribute>title</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_cta</tag>
+			<attributes>
+				<attribute>title</attribute>
+				<attribute>content</attribute>
+				<attribute>btn_label</attribute>
+				<attribute type="link" encoding="vc_link">btn_link</attribute>
+				<attribute>btn2_label</attribute>
+				<attribute type="link" encoding="vc_link">btn2_link</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_flipbox</tag>
+			<attributes>
+				<attribute>front_title</attribute>
+				<attribute>front_desc</attribute>
+				<attribute>front_bgimage</attribute>
+				<attribute>back_title</attribute>
+				<attribute>back_desc</attribute>
+				<attribute>back_bgimage</attribute>
+				<attribute type="link" encoding="vc_link">link</attribute>
+				<attribute>btn_label</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_grid</tag>
+			<attributes>
+				<attribute>taxonomy_us_portfolio_category</attribute>
+				<attribute>taxonomy_us_portfolio_tag</attribute>
+				<attribute>taxonomy_category</attribute>
+				<attribute>taxonomy_post_tag</attribute>
+				<attribute>taxonomy_us_testimonial_category</attribute>
+				<attribute>taxonomy_product_cat</attribute>
+				<attribute>items_layout</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_iconbox</tag>
+			<attributes>
+				<attribute>title</attribute>
+				<attribute>content</attribute>
+				<attribute type="link" encoding="vc_link">link</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_message</tag>
+			<attributes>
+				<attribute>content</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_person</tag>
+			<attributes>
+				<attribute>name</attribute>
+				<attribute>role</attribute>
+				<attribute>content</attribute>
+				<attribute>custom_link</attribute>
+				<attribute type="link" encoding="vc_link">link</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_pricing</tag>
+			<attributes>
+				<attribute type="area" encoding="us_urlencoded_json">items</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_progbar</tag>
+			<attributes>
+				<attribute>title</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_separator</tag>
+			<attributes>
+				<attribute>text</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_image</tag>
+			<attributes>
+				<attribute type="link" encoding="vc_link">link</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_popup</tag>
+			<attributes>
+				<attribute>btn_label</attribute>
+				<attribute>title</attribute>
+				<attribute>content</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_socials</tag>
+			<attributes>
+				<attribute type="area" encoding="us_urlencoded_json">items</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_text</tag>
+			<attributes>
+				<attribute>text</attribute>
+				<attribute type="link" encoding="vc_link">link</attribute>
+			</attributes>
+		</shortcode>
+		<shortcode>
+			<tag>us_itext</tag>
+			<attributes>
+				<attribute type="area">texts</attribute>
+			</attributes>
+		</shortcode>
+	</shortcodes>
+</wpml-config>

@@ -1,0 +1,165 @@
+/*
+ * WordPress widgets
+ */
+
+.widget {
+	margin-bottom: 2rem;
+	}
+h3.widgettitle {
+	margin-bottom: 1rem;
+	}
+.l-main .widget {
+	margin-bottom: 3rem;
+	}
+.w-nav .widget {
+	margin: 0;
+	padding: 20px; /* leave 'px' to match with default menu items distance */
+	}
+.widget:last-child {
+	margin-bottom: 0 !important;
+	}
+	.widget:not(.widget_text) ul {
+		list-style-type: none;
+		margin-left: 0;
+		margin-right: 0;
+		}
+
+.widget_rss ul li,
+.widget_meta ul li,
+.widget_pages ul li,
+.widget_archive ul li,
+.widget_categories ul li,
+.widget_recent_entries ul li,
+.widget_recent_comments ul li,
+.l-footer .widget_nav_menu ul li {
+	line-height: 1.4;
+	}
+.widget_recent_entries ul li span {
+	display: block;
+	font-size: 0.9em;
+	opacity: 0.5;
+	}
+
+/* Tag Cloud */
+.widget_tag_cloud a {
+	color: inherit;
+	}
+
+/* RSS */
+.widget_rss .widgettitle a:first-child {
+	display: none;
+	}
+.widget_rss ul li span {
+	display: block;
+	opacity: 0.5;
+	}
+.widget_rss ul li cite {
+	font-size: 0.9em;
+	font-style: normal;
+	opacity: 0.5;
+	}
+.widget_rss ul li div {
+	display: block;
+	font-size: 0.9em;
+	}
+
+/* Calendar */
+.widget_calendar #calendar_wrap {
+	padding: 1rem;
+	border-style: solid;
+	border-width: 2px; /* fixed value */
+	}
+	#wp-calendar caption {
+		font-weight: bold;
+		padding: 0.5rem 1rem 1rem;
+		}
+	#wp-calendar thead th,
+	#wp-calendar tbody td {
+		padding: 0;
+		border: none;
+		text-align: center;
+		line-height: 2rem;
+		}
+	#wp-calendar thead th {
+		font-size: 0.7rem;
+		font-weight: normal;
+		opacity: 0.5;
+		}
+	#wp-calendar tbody td a {
+		display: block;
+		font-weight: bold;
+		}
+	#wp-calendar tbody td#today {
+		font-weight: bold;
+		}
+	.wp-calendar-nav-prev {
+		text-align: left;
+		padding-left: 0.7rem;
+		}
+	.wp-calendar-nav-next {
+		text-align: right;
+		padding-right: 0.7rem;
+		}
+
+/* Blog */
+.widget_us_blog .w-grid-item-elm.post_title {
+	font-size: inherit;
+	}
+
+/* Custom Menu */
+.widget_nav_menu .menu-item i {
+	width: 1.3em;
+	}
+	/* differ appearance in Content area */
+	.l-main .widget_nav_menu .menu {
+		border-width: 0 0 1px;
+		border-style: solid;
+		}
+	.l-main .widget_nav_menu ul,
+	.l-main .widget_nav_menu ul li {
+		margin: 0;
+		}
+		.l-main .widget_nav_menu .menu-item a {
+			display: block;
+			position: relative;
+			padding: 0.6em 1.2em;
+			border-width: 1px 0 0 !important;
+			border-style: solid;
+			color: inherit;
+			}
+		.l-main .widget_nav_menu .menu-item.current-menu-item > a {
+			border-color: transparent;
+			color: #fff;
+			}
+		.l-main .color_primary .widget_nav_menu .menu-item.current-menu-item > a {
+			background: none;
+			}
+		.l-main .widget_nav_menu .current-menu-item + .menu-item > a {
+			border-color: transparent;
+			}
+		.l-main .widget_nav_menu .sub-menu > .menu-item a {
+			padding-left: 2.4em;
+			}
+		.l-main .widget_nav_menu .sub-menu .sub-menu > .menu-item a {
+			padding-left: 3.6em;
+			}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline #wp-calendar td a:hover,
+.no-touch .links_underline .widget_tag_cloud a:hover {
+	border-bottom: 1px solid;
+	}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+.widget_us_portfolio .w-grid.cols_4 .w-grid-item,
+.widget_us_portfolio .w-grid.cols_5 .w-grid-item,
+.widget_us_portfolio .w-grid.cols_6 .w-grid-item {
+	width: 33.3333% !important;
+	}
+.l-section .widget {
+	margin-bottom: 2rem;
+	}
+}

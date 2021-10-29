@@ -1,0 +1,25 @@
+/* 
+ * Counter
+ */
+
+.w-counter-value {
+	line-height: 1;
+	}
+.l-section.color_primary .w-counter.color_heading .w-counter-value,
+.l-section.color_secondary .w-counter.color_heading .w-counter-value,
+.l-section.has_text_color .w-counter.color_heading .w-counter-value {
+	color: inherit;
+	}
+.w-counter-title {
+	padding: 0.6rem 0;
+	margin: 0;
+	}
+
+/* reset some values to not inherit from Design Options */
+p.w-counter-title,
+div.w-counter-title,
+span.w-counter-title {
+	font-size: 1rem;
+	font-weight: normal;
+	line-height: 1.4;
+	}

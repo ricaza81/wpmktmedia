@@ -1,0 +1,141 @@
+/*
+ * Grid Pagination
+ */
+
+/* Load More button
+   ========================================================================== */
+.g-loadmore {
+	text-align: center;
+	position: relative;
+	}
+.g-loadmore.done {
+	display: none;
+	}
+	.g-loadmore .w-btn {
+		z-index: 1;
+		}
+	.g-loadmore .g-preloader {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%,-50%);
+		opacity: 0;
+		transition: opacity 0.3s;
+		}
+	.g-loadmore.loading .w-btn {
+		opacity: 0;
+		}
+	.g-loadmore.loading .g-preloader {
+		opacity: 1;
+		}
+	.g-loadmore.width_full .w-btn {
+		border-radius: 0;
+		width: 100%;
+		}
+
+/* WordPress Listing pagination
+   ========================================================================== */
+.pagination .nav-links {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 -0.2rem;
+	}
+	.pagination .page-numbers {
+		flex-shrink: 0;
+		text-align: center;
+		position: relative;
+		margin: 0.2rem;
+		}
+		.pagination .page-numbers:before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			border-radius: inherit;
+			border-style: solid;
+			border-color: inherit;
+			border-image: inherit;
+			}
+		.pagination .page-numbers span {
+			vertical-align: top;
+			position: relative;
+			z-index: 1
+			}
+	.pagination > :not(.custom) .page-numbers {
+		font-size: 1.2rem;
+		line-height: 3.5rem;
+		height: 3.5rem;
+		width: 3.5rem;
+		overflow: hidden;
+		border-radius: 50%;
+		color: inherit;
+		}
+	.pagination > :not(.custom) a.page-numbers {
+		color: inherit;
+		}
+	.no-touch .pagination > :not(.custom) a.page-numbers:hover {
+		color: #fff;
+		}
+		.no-touch .pagination > :not(.custom) a.page-numbers:before {
+			height: 0;
+			bottom: auto;
+			border-width: 0;
+			border-radius: 0;
+			transition: height 0.3s;
+			}
+		.no-touch .pagination > :not(.custom) a.page-numbers:hover:before {
+			height: 100%;
+			}
+	.pagination > :not(.custom) .page-numbers.current {
+		box-shadow: none !important;
+		color: #fff !important;
+		}
+	.pagination .page-numbers.dots {
+		background: none !important;
+		border: none !important;
+		box-shadow: none !important;
+		color: inherit !important;
+		}
+		.pagination .page-numbers.dots:before,
+		.pagination > :not(.custom) .page-numbers.current:before {
+			display: none;
+			}
+	.pagination > :not(.custom) .page-numbers.prev,
+	.pagination > :not(.custom) .page-numbers.next,
+	.pagination .page-numbers.prev span,
+	.pagination .page-numbers.next span {
+		font-size: 0;
+		}
+		.pagination > :not(.custom) .page-numbers.prev:after,
+		.pagination > :not(.custom) .page-numbers.next:after {
+			font-size: 1.2rem;
+			}
+		.pagination .page-numbers.prev:after {
+			content: '\f104';
+			font-family: fontawesome;
+			font-weight: 400;
+			vertical-align: top;
+			position: relative;
+			padding-right: 0.1em;
+			}
+		.pagination .page-numbers.next:after {
+			content: '\f105';
+			font-family: fontawesome;
+			font-weight: 400;
+			vertical-align: top;
+			position: relative;
+			padding-left: 0.1em;
+			}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 480px) {
+.g-loadmore .w-btn {
+	font-size: 1rem !important;
+	}
+.pagination .nav-links {
+	justify-content: flex-start !important;
+	}
+}
