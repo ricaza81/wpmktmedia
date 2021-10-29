@@ -259,7 +259,12 @@
 						$us.mobileNavOpened --;
 						$us.$canvas.trigger( 'contentChange' );
 					}
-				}.bind( this )
+				}.bind( this ),
+
+				// Deactivate animation to make the dropdown visible on mobiles
+				detachAnimation: function() {
+					this.$nav.removeClass( 'us_animate_this' );
+				}.bind( this ),
 			};
 
 			// Menu items mobile behavior
@@ -333,6 +338,9 @@
 			this.$anchors.on( 'focus.upsolution', this._events.focusHandler );
 			this.$anchors.on( 'blur.upsolution', this._events.blurHandler );
 			this.$nav.on( 'keydown.upsolution', this._events.keyDownHandler );
+
+			// Detach animation once animated, otherwise dropdown is cut
+			this.$nav.on( 'transitionend', this._events.detachAnimation );
 
 			// Close menu on anchor clicks
 			this.$anchors.on( 'click', function( e ) {

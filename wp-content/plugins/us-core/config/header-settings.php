@@ -23,6 +23,18 @@ if ( class_exists( 'woocommerce' ) ) {
 	$elements[] = 'cart';
 }
 
+// Generate informative description to improve UX
+$breakpoints_desc = __( 'By default, header states are changed via the global breakpoints:', 'us' );
+$breakpoints_desc .= '<ul>';
+$breakpoints_desc .= '<li><strong>' . us_get_option( 'laptops_breakpoint' ) . '</strong> - ';
+$breakpoints_desc .= us_config( 'theme-options.layout.fields.laptops_breakpoint.title' ) . '</li>';
+$breakpoints_desc .= '<li><strong>' . us_get_option( 'tablets_breakpoint' ) . '</strong> - ';
+$breakpoints_desc .= us_config( 'theme-options.layout.fields.tablets_breakpoint.title' ) . '</li>';
+$breakpoints_desc .= '<li><strong>' . us_get_option( 'mobiles_breakpoint' ) . '</strong> - ';
+$breakpoints_desc .= us_config( 'theme-options.layout.fields.mobiles_breakpoint.title' ) . '</li>';
+$breakpoints_desc .= '</ul>';
+$breakpoints_desc .= '<a target="_blank" rel="noopener" href="' . admin_url( 'admin.php?page=us-theme-options#layout' ) . '">' . __( 'Change them in Theme Options', 'us' ) . '</a>';
+
 return array(
 
 	// Supported elements
@@ -33,22 +45,30 @@ return array(
 
 		// General Header Settings
 		'global' => array(
-			'breakpoint' => array(
-				'title' => __( 'Apply when the screen width is less than', 'us' ),
-				'type' => 'slider',
-				'std' => '900px',
-				'options' => array(
-					'px' => array(
-						'min' => 300,
-						'max' => 1200,
-					),
-				),
+			'custom_breakpoint' => array(
+				'switch_text' => __( 'Custom Breakpoint', 'us' ),
+				'type' => 'switch',
+				'description' => $breakpoints_desc,
+				'std' => FALSE,
+				'classes' => 'desc_2',
 				'show_if' => array(
 					// Placing stub condition that will always be true but will force to check this show_if rule
 					array( 'orientation', '=', array( 'hor', 'ver' ) ),
 					'and',
 					array( 'state', '!=', 'default' ),
 				),
+			),
+			'breakpoint' => array(
+				'type' => 'slider',
+				'std' => '900px',
+				'options' => array(
+					'px' => array(
+						'min' => 300,
+						'max' => 1400,
+					),
+				),
+				'classes' => 'for_above',
+				'show_if' => array( 'custom_breakpoint', '=', TRUE ),
 			),
 			'orientation' => array(
 				'title' => __( 'Orientation', 'us' ),
@@ -371,16 +391,17 @@ return array(
 			'bg_img_position' => array(
 				'title' => __( 'Background Image Position', 'us' ),
 				'type' => 'radio',
+				'labels_as_icons' => 'fas fa-arrow-up',
 				'options' => array(
-					'top left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-					'top center' => '<span class="dashicons dashicons-arrow-up-alt"></span>',
-					'top right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-					'center left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-					'center center' => '<span class="dashicons dashicons-marker"></span>',
-					'center right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-					'bottom left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-					'bottom center' => '<span class="dashicons dashicons-arrow-down-alt"></span>',
-					'bottom right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
+					'top left' => us_translate( 'Top Left' ),
+					'top center' => us_translate( 'Top' ),
+					'top right' => us_translate( 'Top Right' ),
+					'center left' => us_translate( 'Left' ),
+					'center center' => us_translate( 'Center' ),
+					'center right' => us_translate( 'Right' ),
+					'bottom left' => us_translate( 'Bottom Left' ),
+					'bottom center' => us_translate( 'Bottom' ),
+					'bottom right' => us_translate( 'Bottom Right' ),
 				),
 				'std' => 'top left',
 				'classes' => 'bgpos',

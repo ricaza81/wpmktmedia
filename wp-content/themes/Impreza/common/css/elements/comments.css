@@ -23,7 +23,9 @@
 		.w-comments .children {
 			margin: 1em 0 -1em;
 			padding-left: 2em;
-			border-left: 1px dashed;
+			border-width: 0 0 0 1px;
+			border-style: dashed;
+			border-color: var(--color-content-border);
 			}
 		.w-comments-item-meta {
 			position: relative;
@@ -40,6 +42,7 @@
 				}
 				.bypostauthor > .w-comments-item-meta .w-comments-item-author span {
 					padding: 0 0.3em;
+					background: var(--color-content-primary-grad);
 					color: #fff;
 					}
 			.w-comments .w-comments-item-date {
@@ -97,6 +100,18 @@
 
 .w-comments .form-submit {
 	margin-bottom: 0;
+	}
+
+/* Colors
+   ========================================================================== */
+.color_alternate .w-comments .children {
+	border-color: var(--color-alt-content-border);
+	}
+.color_footer-top .w-comments .children {
+	border-color: var(--color-subfooter-border);
+	}
+.color_footer-bottom .w-comments .children {
+	border-color: var(--color-footer-border);
 	}
 
 /* Links Hover Underline 

@@ -46,7 +46,6 @@ if ( ! empty( $field['preview']['for_heading'] ) ) {
 			$gradient_style .= ' style="';
 			$gradient_style .= 'background-image:' . $color_value . ';';
 			$gradient_style .= '-webkit-background-clip: text;';
-			$gradient_style .= 'background-clip: text;';
 			$gradient_style .= 'color: transparent;';
 			$gradient_style .= '"';
 		} else {
@@ -69,17 +68,17 @@ if ( isset( $field['preview']['letterspacing_field'] ) AND ! empty( $usof_option
 	$output .= 'letter-spacing: ' . $usof_options[ $field['preview']['letterspacing_field'] ] . ';';
 }
 if ( isset( $field['preview']['transform_field'] ) AND ! empty( $usof_options[ $field['preview']['transform_field'] ] ) ) {
-	if ( in_array( 'uppercase', $usof_options[ $field['preview']['transform_field'] ] ) ) {
+	if ( strpos( $usof_options[ $field['preview']['transform_field'] ], 'uppercase' ) !== FALSE ) {
 		$output .= 'text-transform: uppercase;';
 	}
-	if ( in_array( 'italic', $usof_options[ $field['preview']['transform_field'] ] ) ) {
+	if ( strpos( $usof_options[ $field['preview']['transform_field'] ], 'italic' ) !== FALSE ) {
 		$output .= 'font-style: italic;';
 	}
 }
 if ( isset( $field['preview']['weight_field'] ) AND ! empty( $usof_options[ $field['preview']['weight_field'] ] ) ) {
 	$output .= 'font-weight: ' . $usof_options[ $field['preview']['weight_field'] ] . ';';
 } elseif ( count( $font_value[1] ) > 0 ) {
-	$output .= 'font-weight: ' . intval( $font_value[1][0] ) . ';';
+	$output .= 'font-weight: ' . (int) $font_value[1][0] . ';';
 }
 $output .= '"><div' . $gradient_style . '>' . $field['preview']['text'] . '</div></div>';
 
@@ -91,7 +90,7 @@ $only_google = ( ! isset( $field['only_google'] ) OR ! $field['only_google'] );
 
 $all_fonts = us_get_all_fonts( $only_google, $get_h1 );
 // The number of options for the first part of the output or receive through autocomplete
-$font_limit = ( isset( $field['font_limit'] ) AND intval( $field['font_limit'] ) ) ? $field['font_limit'] : 50;
+$font_limit = ( isset( $field['font_limit'] ) AND (int) $field['font_limit'] ) ? $field['font_limit'] : 50;
 $font_options = array();
 
 // Get the set number of options
@@ -147,17 +146,18 @@ $fonts_group_keys = array(
 // Field for getting font name through autocomplete
 $output .= '<div class="type_autocomplete" data-name="font_name"'. us_pass_data_to_js( $fonts_group_keys ) .'>';
 $output .= us_get_template( 'usof/templates/fields/autocomplete', array(
-	'ajax_query_args' => array(
-		'_nonce' => wp_create_nonce( 'usof_ajax_all_fonts_autocomplete' ),
-		'action' => 'usof_all_fonts_autocomplete',
-		'font_limit' => $font_limit,
-		'get_h1' => $get_h1,
-		'only_google' => $only_google,
-	),
-	'multiple' => FALSE,
-	'params_separator' => '|',
-	'options' => $font_options,
 	'value' => $font_value[0],
+	'field' => array(
+		'settings' => array(
+			'nonce_name' => 'usof_ajax_all_fonts_autocomplete',
+			'action' => 'usof_all_fonts_autocomplete',
+			'font_limit' => $font_limit,
+			'get_h1' => $get_h1,
+			'only_google' => $only_google,
+		),
+		'params_separator' => '|',
+		'options' => $font_options,
+	),
 ) );
 $output .= '</div>';
 

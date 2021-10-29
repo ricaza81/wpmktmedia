@@ -96,8 +96,14 @@ class US_Meta_Box {
 					$values[ $field_id ] = json_decode( $values[ $field_id ], TRUE );
 				}
 			}
-			if ( isset( $field['options'] ) AND ( ! in_array( $field['type'], array( 'checkboxes' ) ) ) AND ( ! in_array( $values[ $field_id ], array_keys( $field['options'] ) ) ) ) {
-				$values[ $field_id ] = ( isset( $field['std'] ) ) ? $field['std'] : '';
+
+			// Reset to the default for select and radio types, if the value is not presented in options
+			if (
+				isset( $field['options'] )
+				AND $field['type'] !== 'checkboxes'
+				AND ! in_array( $values[ $field_id ], array_keys( $field['options'] ) )
+			) {
+				$values[ $field_id ] = isset( $field['std'] ) ? $field['std'] : '';
 			}
 		}
 
@@ -108,7 +114,7 @@ class US_Meta_Box {
 					'id' => 'usof_' . $field_id,
 					'field' => $field,
 					'values' => &$values,
-					'is_metabox' => TRUE,
+					'context' => 'metabox',
 				)
 			);
 		}

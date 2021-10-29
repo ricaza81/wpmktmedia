@@ -3,6 +3,12 @@
 // Custom HTML output for "Menu" element in Headers
 class US_Walker_Nav_Menu extends Walker_Nav_Menu {
 
+	private $mobile_behavior;
+
+	public function __construct( $mobile_behavior = 0 ) {
+		$this->mobile_behavior = (int) $mobile_behavior;
+	}
+
 	public function start_lvl( &$output, $depth = 0, $args = array() ) {
 		// depth dependent classes
 		$level = ( $depth + 2 ); // because it counts the first submenu as 0
@@ -50,7 +56,7 @@ class US_Walker_Nav_Menu extends Walker_Nav_Menu {
 		$id = apply_filters( 'nav_menu_item_id', 'menu-item-' . $item->ID, $item, $args );
 		$id = $id ? ' id="' . esc_attr( $id ) . '"' : '';
 
-		$output .= '<li' . $id . $class_names .'>';
+		$output .= '<li' . $id . $class_names . '>';
 
 		// Output Page Block content
 		if ( $item->object == 'us_page_block' ) {
@@ -63,7 +69,14 @@ class US_Walker_Nav_Menu extends Walker_Nav_Menu {
 
 				// Remove Row and Column shortcodes, if set in the item
 				if ( get_post_meta( $item->ID, '_menu_item_remove_rows', TRUE ) ) {
-					$page_block_content = str_replace( array( '[vc_row]', '[/vc_row]', '[vc_column]', '[/vc_column]' ), '', $page_block_content );
+					$page_block_content = str_replace(
+						array(
+							'[vc_row]',
+							'[/vc_row]',
+							'[vc_column]',
+							'[/vc_column]',
+						), '', $page_block_content
+					);
 					$page_block_content = preg_replace( '~\[vc_row (.+?)]~', '', $page_block_content );
 					$page_block_content = preg_replace( '~\[vc_column (.+?)]~', '', $page_block_content );
 				}
@@ -97,20 +110,37 @@ class US_Walker_Nav_Menu extends Walker_Nav_Menu {
 				$anchor_atts['rel'] = $item->xfn;
 			}
 
+			// Default menu item link tag
+			$link_tag = 'a';
+
+			// Remove href from AMP links and set items to expand sub-items instead
+			if (
+				function_exists( 'us_amp' )
+				AND us_amp()
+				AND $this->mobile_behavior
+				AND $item->has_children
+			) {
+				$link_tag = 'span';
+				$anchor_atts['on'] = 'tap:menu-item-' . $item->ID . '.toggleClass(class=\'opened\')';
+				if ( isset( $anchor_atts['href'] ) ) {
+					unset( $anchor_atts['href'] );
+				}
+			}
+
 			$anchor_atts_string = '';
 			foreach ( $anchor_atts as $key => $value ) {
 				$anchor_atts_string .= sprintf( ' %s="%s"', esc_attr( $key ), esc_attr( $value ) );
 			}
 
 			$item_output = $args->before;
-			$item_output .= '<a' . $anchor_atts_string . '>';
+			$item_output .= '<' . $link_tag . '' . $anchor_atts_string . '>';
 			$item_output .= $args->link_before;
 			$item_output .= '<span class="w-nav-title">' . apply_filters( 'the_title', $item->title, $item->ID ) . '</span>';
 			if ( function_exists( 'us_amp' ) AND ! us_amp() ) {
 				$item_output .= '<span class="w-nav-arrow"></span>';
 			}
 			$item_output .= $args->link_after;
-			$item_output .= '</a>';
+			$item_output .= '</' . $link_tag . '>';
 
 			// Move outside of the anchor to make it clickable on APM pages
 			if ( function_exists( 'us_amp' ) AND us_amp() ) {
@@ -130,7 +160,14 @@ class US_Walker_Nav_Menu extends Walker_Nav_Menu {
 
 add_filter( 'wp_nav_menu_objects', 'us_dropdown_wp_nav_menu_objects' );
 function us_dropdown_wp_nav_menu_objects( $sorted_menu_items ) {
+	$parent_items = wp_list_pluck( $sorted_menu_items, 'menu_item_parent' );
+
 	foreach ( $sorted_menu_items as $index => $item ) {
+
+		// Save items with children to pass them to walker
+		if ( in_array( $item->ID, $parent_items ) ) {
+			$item->has_children = TRUE;
+		}
 
 		// IF it is a first level item or if it is a fake last item
 		if ( $item->menu_item_parent == 0 ) {
@@ -139,8 +176,8 @@ function us_dropdown_wp_nav_menu_objects( $sorted_menu_items ) {
 			if ( is_array( $dropdown_settings ) ) {
 
 				// Set columns value
-				if ( ! empty( $dropdown_settings['columns'] ) AND intval( $dropdown_settings['columns'] ) > 1 ) {
-					$item->mega_menu_cols = intval( $dropdown_settings['columns'] );
+				if ( ! empty( $dropdown_settings['columns'] ) AND (int) $dropdown_settings['columns'] > 1 ) {
+					$item->mega_menu_cols = (int) $dropdown_settings['columns'];
 				}
 
 				// Set mobile dropdown behavior
@@ -149,7 +186,7 @@ function us_dropdown_wp_nav_menu_objects( $sorted_menu_items ) {
 				}
 			}
 
-			$sorted_menu_items[$index] = $item;
+			$sorted_menu_items[ $index ] = $item;
 		}
 	}
 

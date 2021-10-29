@@ -13,8 +13,6 @@ if ( ! class_exists( 'Tribe__Events__Query' ) ) {
 if ( ! function_exists( 'us_enqueue_the_events_calendar_styles' ) ) {
 	/**
 	 * Enqueue css file
-	 *
-	 * @return void
 	 */
 	function us_enqueue_the_events_calendar_styles() {
 		if ( defined( 'US_DEV' ) OR ! us_get_option( 'optimize_assets', 0 ) ) {
@@ -32,7 +30,6 @@ if ( ! function_exists( 'us_tribe_events_us_grid_before_custom_query' ) ) {
 	 * Remove The Events Calendar plugin filter
 	 *
 	 * @param array $vars
-	 * @return void
 	 */
 	function us_tribe_events_us_grid_before_custom_query( $vars ) {
 		add_action( 'tribe_events_pre_get_posts', 'us_delete_events_calendar_filter', 10 );
@@ -56,8 +53,6 @@ if ( ! function_exists( 'us_tribe_events_us_grid_before_custom_query' ) ) {
 if ( ! function_exists( 'us_tribe_events_us_grid_after_custom_query' ) ) {
 	/**
 	 * Deleting actions after executing a custom request
-	 *
-	 * @return void
 	 */
 	function us_tribe_events_us_grid_after_custom_query() {
 		remove_action( 'pre_get_posts', 'us_the_events_calendar_display_past', 49 );
@@ -70,8 +65,6 @@ if ( ! function_exists( 'us_tribe_events_us_grid_after_custom_query' ) ) {
 if ( ! function_exists( 'us_delete_events_calendar_filter' ) ) {
 	/**
 	 * TEC filter overwrite grid query and posts displaying incorrect, remove filter for prevent this
-	 *
-	 * @return void
 	 */
 	function us_delete_events_calendar_filter() {
 		remove_filter( 'posts_orderby', array( 'Tribe__Events__Query', 'posts_orderby' ), 10 );
@@ -83,7 +76,6 @@ if ( ! function_exists( 'us_pre_get_posts_for_events_calendar' ) ) {
 	 * Adding search parameter for events calendar
 	 *
 	 * @param WP_Query $wp_query
-	 * @return void
 	 */
 	function us_pre_get_posts_for_events_calendar( $wp_query ) {
 		if (
@@ -100,7 +92,6 @@ if ( ! function_exists( 'us_pre_get_posts_for_events_calendar' ) ) {
 if ( ! function_exists( 'us_the_events_calendar_display_past' ) ) {
 	/**
 	 * @param WP_Query $query
-	 * @return void
 	 */
 	function us_the_events_calendar_display_past( $query ) {
 		if ( $query->tribe_is_event !== TRUE ) {
@@ -117,7 +108,6 @@ if ( ! function_exists( 'us_the_events_calendar_display_past' ) ) {
 if ( ! function_exists( 'us_the_events_calendar_dont_display_past' ) ) {
 	/**
 	 * @param WP_Query $query
-	 * @return void
 	 */
 	function us_the_events_calendar_dont_display_past( $query ) {
 		if ( $query->tribe_is_event !== TRUE ) {

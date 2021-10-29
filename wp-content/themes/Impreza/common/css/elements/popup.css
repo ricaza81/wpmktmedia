@@ -1,4 +1,11 @@
 /* Trigger */
+.usoverlay_fixed .w-popup-wrap,
+.popup-active .w-popup-wrap {
+	overflow-y: scroll;
+	}
+.popup-active {
+	overflow: hidden;
+	}
 .w-popup-trigger.type_image img {
 	vertical-align: top;
 	transition: opacity 0.3s;
@@ -20,6 +27,7 @@
 
 /* Popup */
 .w-popup-overlay {
+	position: fixed;
 	display: none;
 	z-index: 10001;
 	top: 0;
@@ -43,11 +51,12 @@
 	height: 100vh;
 	cursor: pointer;
 	}
-.w-popup-overlay.pos_absolute,
+.w-popup-wrap.popup-ios-height {
+	height: 100%;
+	}
 .w-popup-wrap.pos_absolute {
 	position: absolute;
 	}
-.w-popup-overlay.pos_fixed,
 .w-popup-wrap.pos_fixed {
 	position: fixed;
 	}
@@ -78,7 +87,7 @@
 		}
 
 .w-popup-box {
-	max-height: 100vh;
+	max-height: 100%;
 	cursor: default;
 	}
 	.w-popup-box-h {

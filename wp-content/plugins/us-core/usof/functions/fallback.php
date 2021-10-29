@@ -53,10 +53,34 @@ if ( ! function_exists( 'us_assets_option_value_fallback' ) ) {
 
 if ( ! function_exists( 'usof_load_options_once_fallback' ) ) {
 	function usof_load_options_once_fallback( $usof_options ) {
+
+		// Fallback for Optimize CSS and JS option (after version 7.5)
 		if ( isset( $usof_options['assets'] ) ) {
 			$usof_options['assets'] = us_assets_option_value_fallback( $usof_options['assets'] );
 		}
+
+		// Fallback for versions BEFORE 8.0
+		if ( isset( $usof_options['disable_block_editor_assets'] ) ) {
+
+			// Turn off the "Disable legacy HTML" (but it will keep enabled on new installations)
+			$usof_options['grid_columns_layout'] = 0;
+
+			// Turn on the "Gutenberg (block editor)" module, if it was enabled
+			if ( ! $usof_options['disable_block_editor_assets'] ) {
+				$usof_options['block_editor'] = 1;
+			}
+			unset( $usof_options['disable_block_editor_assets'] );
+		}
+
+		// Fallback for H1 - H6 transform checkboxes
+		for ( $i = 1; $i <= 6; $i ++ ) {
+			if ( isset( $usof_options[ 'h' . $i . '_transform' ] ) AND is_array( $usof_options[ 'h' . $i . '_transform' ] ) ) {
+				$usof_options[ 'h' . $i . '_transform' ] = implode( ',', $usof_options[ 'h' . $i . '_transform' ] );
+			}
+		}
+
 		return $usof_options;
 	}
+
 	add_filter( 'usof_load_options_once', 'usof_load_options_once_fallback' );
 }

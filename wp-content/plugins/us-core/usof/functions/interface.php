@@ -17,8 +17,29 @@ function us_options_admin_menu() {
 
 	add_action( 'admin_print_scripts-nav-menus.php', 'usof_print_scripts' );
 
-	add_action( 'admin_notices', 'usof_hide_admin_notices_start', 1 );
-	add_action( 'admin_notices', 'usof_hide_admin_notices_end', 1000 );
+	// Hide admin notices on Theme options page and HB / GB builders pages
+	// Notice: we do not need this for US Page Builder, since it doesn't use default admin files
+	add_action( 'in_admin_header', function() {
+		global $pagenow, $post;
+		if (
+			// Theme Options
+			(
+				$pagenow == 'admin.php'
+				AND $_GET['page'] == 'us-theme-options'
+			)
+			// Header and Grid builders
+			OR (
+				$pagenow == 'post.php'
+				AND ! empty( $post )
+				AND ! empty( $post->post_type )
+				AND ( in_array( $post->post_type, array( 'us_header', 'us_grid_layout' ) ) )
+			)
+		) {
+			add_action( 'admin_notices', 'usof_hide_admin_notices_start', 1 );
+			add_action( 'admin_notices', 'usof_hide_admin_notices_end', 1000 );
+		}
+	} );
+
 }
 
 function us_theme_options_page() {
@@ -168,8 +189,15 @@ function usof_print_scripts() {
 		wp_enqueue_media();
 	}
 
-	wp_enqueue_script( 'usof-colorpicker', US_CORE_URI . '/usof/js/usof-colpick.js', array( 'jquery' ), US_CORE_VERSION, TRUE );
-	wp_enqueue_script( 'usof-scripts', US_CORE_URI . '/usof/js/usof.js', array( 'jquery' ), US_CORE_VERSION, TRUE );
+	// Enqueue USOF JS files separately, when US_DEV is set
+	if ( defined( 'US_DEV' ) ) {
+		foreach ( us_config( 'assets-admin.js', array() ) as $key => $admin_js_file ) {
+			wp_enqueue_script( 'usof-js-' . $key, US_CORE_URI . $admin_js_file, array(), US_CORE_VERSION );
+		}
+	} else {
+		wp_enqueue_script( 'usof-scripts', US_CORE_URI . '/usof/js/usof.min.js', array( 'jquery' ), US_CORE_VERSION, TRUE );
+	}
+
 	do_action( 'usof_print_scripts' );
 }
 

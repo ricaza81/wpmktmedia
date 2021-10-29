@@ -6,7 +6,6 @@
 	/**
 	 * @class WItext
 	 * @param {string|node} container
-	 * @return void
 	 */
 	$us.WItext = function( container ) {
 		// Variables
@@ -24,7 +23,8 @@
 
 		// Get options
 		var options = $.extend( defaultOptions, this.$container[ 0 ].onclick() || {} );
-		this.$container.removeAttr( 'onclick' );
+		// Delete data everywhere except for the preview of the USBuilder, the data may be needed again to restore the elements.
+		if ( ! $us.usbPreview ) this.$container.removeAttr( 'onclick' );
 
 		// Set options
 		var type = this.$container.usMod( 'type' );
@@ -67,25 +67,25 @@
 		_events: {
 			/**
 			 * Starts the next animation step.
+			 *
 			 * @param {object} part
-			 * @return void
 			 */
 			startAnimate: function( part ) {
 				part.currentState = ( part.currentState === part.states.length - 1 ) ? 0 : ( part.currentState + 1 );
 				this.render.call( this, part );
 			},
 			/**
-			 * Animation restart
+			 * Animation restart.
+			 *
 			 * @param {object} part
-			 * @return void
 			 */
 			restartAnimate: function( part ) {
 				$us.timeout( this._events.startAnimate.bind( this, part ), this.delay );
 			},
 			/**
-			 * Clear unwanted items or data after animation
+			 * Clear unwanted items or data after animation.
+			 *
 			 * @param {object} part
-			 * @return void
 			 */
 			clearAnimation: function( part ) {
 				var text = part.states[ part.currentState ].replace( ' ', this.nbsp_char );
@@ -104,9 +104,9 @@
 			}
 		},
 		/**
-		 * Rendering animation elements
+		 * Rendering animation elements.
+		 *
 		 * @param {object} part
-		 * @return void
 		 */
 		render: function( part ) {
 			var nextValue = part.states[ part.currentState ],

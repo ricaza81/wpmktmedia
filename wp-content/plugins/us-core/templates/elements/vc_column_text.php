@@ -14,37 +14,37 @@
  * @var $classes string Extend class names
  */
 
-$classes = isset( $classes ) ? $classes : '';
+$_atts['class'] = 'wpb_text_column';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
-	$classes .= ' has_text_color';
-}
-if ( ! empty( $el_class ) ) {
-	$classes .= ' ' . $el_class;
+	$_atts['class'] .= ' has_text_color';
 }
 
-$text_column_atts = array();
-
-if ( $el_id != '' ) {
-	$text_column_atts[ 'id' ] = esc_attr( $el_id );
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
 }
 
 // Add specific classes, when "Show More" is enabled
 if ( $show_more_toggle AND ! us_amp() ) {
-	$classes .= ' with_show_more_toggle';
-	$text_column_atts[ 'data-toggle-height' ] = esc_attr( $show_more_toggle_height );
+	$_atts['class'] .= ' with_show_more_toggle';
+	$_atts['data-toggle-height'] = $show_more_toggle_height;
 }
 
 // Output the element
-$output = '<div class="wpb_text_column' . $classes . '" '. us_implode_atts( $text_column_atts ) .'>';
-$output .= '<div class="wpb_wrapper">' . apply_filters( 'widget_text_content', $content ) . '</div>';
+$output = '<div'. us_implode_atts( $_atts ) .'>';
+$output .= '<div class="wpb_wrapper">';
+$output .= apply_filters( 'widget_text_content', $content );
+$output .= '</div>';
+
 if ( $show_more_toggle AND ! us_amp() ) {
 	$output .= '<div class="toggle-links align_' . $show_more_toggle_alignment . '">';
 	$output .= '<a href="javascript:void(0)" class="toggle-show-more">' . strip_tags( $show_more_toggle_text_more ) . '</a>';
 	$output .= '<a href="javascript:void(0)" class="toggle-show-less">' . strip_tags( $show_more_toggle_text_less ) . '</a>';
 	$output .= '</div>';
 }
+
 $output .= '</div>';
 
 echo $output;

@@ -114,8 +114,8 @@ if ( class_exists( 'WP_Background_Process' ) AND ! class_exists( 'US_Regenerate_
 				$crop = ! empty( $thumbnail_size['crop'] );
 
 				// Obtaining real thumbnail sizes
-				$width = intval( $thumbnail_size['width'] );
-				$height = intval( $thumbnail_size['height'] );
+				$width = (int) $thumbnail_size['width'];
+				$height = (int) $thumbnail_size['height'];
 
 				if ( ! $width OR ! $height ) {
 					continue;
@@ -174,8 +174,6 @@ if ( class_exists( 'WP_Background_Process' ) AND ! class_exists( 'US_Regenerate_
 
 		/**
 		 * Complete
-		 *
-		 * @return void
 		 */
 		protected function complete() {
 			parent::complete();
@@ -200,7 +198,6 @@ if ( class_exists( 'WP_Background_Process' ) AND ! class_exists( 'US_Regenerate_
 if ( ! function_exists( 'us_after_ajax_save_regenerate_thumbnails_process' ) ) {
 	/**
 	 * Checks for size updates and, if necessary, start regenerate thumbnails
-	 * @return void
 	 */
 	function us_after_ajax_save_regenerate_thumbnails_process() {
 		$post_usof_options = us_maybe_get_post_json( 'usof_options' );

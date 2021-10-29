@@ -25,6 +25,6 @@ if ( ! empty( $classes ) ) {
 }
 
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<p><?= strip_tags( $value, '<a><br><strong>' ) ?></p>
 </div>

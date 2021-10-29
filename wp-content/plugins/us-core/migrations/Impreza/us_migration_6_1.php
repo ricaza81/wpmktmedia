@@ -219,12 +219,13 @@ class us_migration_6_1 extends US_Migration_Translator {
 	/* Creates Header based on former Theme Options, when Header Builder plugins is not used */
 	private function get_header_settings( $options ) {
 
-		$header_settings = array(
-			'default' => array( 'options' => array(), 'layout' => array() ),
-			'tablets' => array( 'options' => array(), 'layout' => array() ),
-			'mobiles' => array( 'options' => array(), 'layout' => array() ),
-			'data' => array(),
+		// Basic structure
+		$header_settings = array_fill_keys(
+			us_get_responsive_states( /* only keys */TRUE ),
+			array( 'options' => array(), 'layout' => array() )
 		);
+		// Add space for data
+		$header_settings['data'] = array();
 
 		$header_templates = array(
 			'simple_1' => array(
@@ -622,6 +623,8 @@ class us_migration_6_1 extends US_Migration_Translator {
 			),
 		);
 
+		$breakpoint_keys = (array) us_get_responsive_states( /* Only keys */TRUE );
+
 		foreach ( $rules as $old_name => $rule ) {
 			if ( ! isset( $options[ $old_name ] ) AND ( isset( $rule['new_name'] ) OR isset( $rule['new_names'] ) ) ) {
 				continue;
@@ -638,7 +641,7 @@ class us_migration_6_1 extends US_Migration_Translator {
 		// header_sticky => sticky
 		if ( isset( $options['header_sticky'] ) ) {
 			if ( is_array( $options['header_sticky'] ) ) {
-				foreach ( array( 'default', 'tablets', 'mobiles' ) as $layout ) {
+				foreach ( $breakpoint_keys as $layout ) {
 					$header_settings[ $layout ]['options']['sticky'] = in_array( $layout, $options['header_sticky'] );
 				}
 			} else {
@@ -755,7 +758,10 @@ class us_migration_6_1 extends US_Migration_Translator {
 
 			// Hiding the element when needed
 			if ( isset( $rule['show_if'] ) AND ! usof_execute_show_if( $rule['show_if'], $options ) ) {
-				foreach ( array( 'default', 'tablets', 'mobiles' ) as $layout ) {
+				foreach ( $breakpoint_keys as $layout ) {
+					if ( ! isset( $header_settings[ $layout ]['layout'] ) ) {
+						continue;
+					}
 					foreach ( $header_settings[ $layout ]['layout'] as $cell => $cell_elms ) {
 						if ( $cell == 'hidden' ) {
 							continue;
@@ -804,7 +810,7 @@ class us_migration_6_1 extends US_Migration_Translator {
 
 		// Inverting logo position
 		if ( isset( $options['header_invert_logo_pos'] ) AND $options['header_invert_logo_pos'] ) {
-			foreach ( array( 'default', 'tablets', 'mobiles' ) as $layout ) {
+			foreach ( $breakpoint_keys as $layout ) {
 				if ( isset( $header_settings[ $layout ]['layout']['middle_left'] ) AND isset( $header_settings[ $layout ]['layout']['middle_left'] ) ) {
 					$tmp = $header_settings[ $layout ]['layout']['middle_left'];
 					$header_settings[ $layout ]['layout']['middle_left'] = $header_settings[ $layout ]['layout']['middle_right'];

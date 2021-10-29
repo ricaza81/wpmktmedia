@@ -456,9 +456,34 @@ class us_migration_6_0 extends US_Migration_Translator {
 	 */
 	public function translate_theme_options( &$options ) {
 		$this->previous_theme_options = $options;
+		// Setting default values for previous theme options if they are not set yet
+		$this->previous_theme_options['shop_listing_style'] =
+			( isset( $this->previous_theme_options['shop_listing_style'] ) )
+				? $this->previous_theme_options['shop_listing_style']
+				: 'standard';
+		$this->previous_theme_options['shop_layout'] =
+			( isset( $this->previous_theme_options['shop_layout'] ) )
+				? $this->previous_theme_options['shop_layout']
+				: 'blog_compact';
+		$this->previous_theme_options['shop_items_gap'] =
+			( isset( $this->previous_theme_options['shop_items_gap'] ) )
+				? $this->previous_theme_options['shop_items_gap']
+				: '1.5rem';
+		$this->previous_theme_options['shop_elements'] =
+			( isset( $this->previous_theme_options['shop_elements'] ) )
+				? $this->previous_theme_options['shop_elements']
+				: array( 'shop_title', 'product_title', 'breadcrumbs' );
+		$this->previous_theme_options['shop_columns'] =
+			( isset( $this->previous_theme_options['shop_columns'] ) )
+				? $this->previous_theme_options['shop_columns']
+				: '3';
+		$this->previous_theme_options['product_related_qty'] =
+			( isset( $this->previous_theme_options['product_related_qty'] ) )
+				? $this->previous_theme_options['product_related_qty']
+				: '3';
 
 		// old string from migration_5_6
-		$text_fix_56_css = ".wpb_text_column:not(:last-child) { margin-bottom: 1.5rem; } /* migration 5.6 fix */ \n";
+		$text_fix_56_css = ".wpb_text_column:not(:last-of-type) { margin-bottom: 1.5rem; } /* migration 5.6 fix */ \n";
 		if ( strpos( $options['custom_css'], $text_fix_56_css ) !== FALSE ) {
 			$options['custom_css'] = str_replace( $text_fix_56_css, '', $options['custom_css'] );
 		} else {
@@ -470,7 +495,7 @@ class us_migration_6_0 extends US_Migration_Translator {
 		$content_width = intval( $options['site_content_width'] );
 		$old_sidebar_width = intval( $options['sidebar_width'] );
 		$new_sidebar_width = 100 * ( $content_width * $old_sidebar_width / 100 + 3 * $rem ) / ( $content_width + 3 * $rem );
-		$options['sidebar_width'] = number_format( $new_sidebar_width, 2 ) . '%';
+		$options['sidebar_width'] = round( $new_sidebar_width, 2 ) . '%';
 
 		// Force Titlebar & Sidebar option
 		$options['enable_sidebar_titlebar'] = TRUE;
@@ -890,12 +915,13 @@ class us_migration_6_0 extends US_Migration_Translator {
 	/* Creates Header based on former Theme Options, when Header Builder plugins is not used */
 	private function get_header_settings( $options ) {
 
-		$header_settings = array(
-			'default' => array( 'options' => array(), 'layout' => array() ),
-			'tablets' => array( 'options' => array(), 'layout' => array() ),
-			'mobiles' => array( 'options' => array(), 'layout' => array() ),
-			'data' => array(),
+		// Basic structure
+		$header_settings = array_fill_keys(
+			us_get_responsive_states( /* only keys */TRUE ),
+			array( 'options' => array(), 'layout' => array() )
 		);
+		// Add space for data
+		$header_settings['data'] = array();
 
 		$header_templates = array(
 			'simple_1' => array(
@@ -1293,6 +1319,8 @@ class us_migration_6_0 extends US_Migration_Translator {
 			),
 		);
 
+		$breakpoint_keys = (array) us_get_responsive_states( /* Only keys */TRUE );
+
 		foreach ( $rules as $old_name => $rule ) {
 			if ( ! isset( $options[ $old_name ] ) AND ( isset( $rule['new_name'] ) OR isset( $rule['new_names'] ) ) ) {
 				continue;
@@ -1309,7 +1337,7 @@ class us_migration_6_0 extends US_Migration_Translator {
 		// header_sticky => sticky
 		if ( isset( $options['header_sticky'] ) ) {
 			if ( is_array( $options['header_sticky'] ) ) {
-				foreach ( array( 'default', 'tablets', 'mobiles' ) as $layout ) {
+				foreach ( $breakpoint_keys as $layout ) {
 					$header_settings[ $layout ]['options']['sticky'] = in_array( $layout, $options['header_sticky'] );
 				}
 			} else {
@@ -1426,7 +1454,10 @@ class us_migration_6_0 extends US_Migration_Translator {
 
 			// Hiding the element when needed
 			if ( isset( $rule['show_if'] ) AND ! usof_execute_show_if( $rule['show_if'], $options ) ) {
-				foreach ( array( 'default', 'tablets', 'mobiles' ) as $layout ) {
+				foreach ( $breakpoint_keys as $layout ) {
+					if ( ! isset( $header_settings[ $layout ]['layout'] ) ) {
+						continue;
+					}
 					foreach ( $header_settings[ $layout ]['layout'] as $cell => $cell_elms ) {
 						if ( $cell == 'hidden' ) {
 							continue;
@@ -1475,7 +1506,7 @@ class us_migration_6_0 extends US_Migration_Translator {
 
 		// Inverting logo position
 		if ( isset( $options['header_invert_logo_pos'] ) AND $options['header_invert_logo_pos'] ) {
-			foreach ( array( 'default', 'tablets', 'mobiles' ) as $layout ) {
+			foreach ( $breakpoint_keys as $layout ) {
 				if ( isset( $header_settings[ $layout ]['layout']['middle_left'] ) AND isset( $header_settings[ $layout ]['layout']['middle_left'] ) ) {
 					$tmp = $header_settings[ $layout ]['layout']['middle_left'];
 					$header_settings[ $layout ]['layout']['middle_left'] = $header_settings[ $layout ]['layout']['middle_right'];

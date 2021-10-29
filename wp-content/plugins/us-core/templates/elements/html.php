@@ -9,9 +9,9 @@
  * @var $id             string
  */
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
+$_atts['class'] = 'w-html';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
 
-echo '<div class="w-html' . $classes . '">';
+echo '<div' . us_implode_atts( $_atts ) . '>';
 echo do_shortcode( rawurldecode( base64_decode( $content ) ) );
 echo '</div>';

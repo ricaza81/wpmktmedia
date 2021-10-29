@@ -9,11 +9,7 @@
 	right: 0;
 	bottom: 0;
 	padding: 0;
-	background-color: #f1f1f1;
-	}
-.usof-form-row.type_style_scheme .usof-form-row-field {
-	float: none;
-	width: auto;
+	background-color: var(--usof-color-gray-2);
 	}
 .usof-form-row.type_style_scheme .us-bld-window-title {
 	font-weight: 600;
@@ -40,10 +36,10 @@
 		.usof-schemes-controls input[type="text"] {
 			width: auto;
 			margin-right: 10px;
-			background-color: #fff;
+			background-color: var(--usof-color-white);
 			}
 		.usof-schemes-controls .usof-button {
-			background-color: #fff;
+			background-color: var(--usof-color-white);
 			}
 	.usof-schemes-list {
 		display: flex;
@@ -58,7 +54,7 @@
 			position: relative;
 			cursor: pointer;
 			width: 20%;
-			transition: opacity 0.5s, transform 0.5s;
+			transition: opacity .5s, transform .5s;
 			transform-origin: 90% 10%;
 			}
 			.usof-schemes-item-save,
@@ -71,11 +67,11 @@
 				cursor: pointer;
 				opacity: 0;
 				background-color: rgba(0,0,0,0.9);
-				color: #fff;
+				color: var(--usof-color-white);
 				}
 			.usof-schemes-item:hover .usof-schemes-item-save,
 			.usof-schemes-item:hover .usof-schemes-item-delete {
-				opacity: 0.66;
+				opacity: .66;
 				}
 			.usof-schemes-item-save:hover,
 			.usof-schemes-item-delete:hover {
@@ -98,10 +94,10 @@
 					font: 900 14px/40px fontawesome;
 					}
 		.usof-schemes-item:hover {
-			background-color: #ccc;
+			background-color: rgba(0,0,0,0.2);
 			}
 		.usof-schemes-item.deleting {
-			opacity: 0.1;
+			opacity: .1;
 			transform: scale(0);
 			pointer-events: none;
 			}
@@ -115,7 +111,7 @@
 				}
 		.usof-schemes-item.saved .usof-schemes-item-save {
 			opacity: 1;
-			background-color: #70cc70;
+			background-color: var(--usof-color-green-20);
 			pointer-events: none;
 			}
 			.usof-schemes-item.saved .usof-schemes-item-save:before {
@@ -123,18 +119,18 @@
 				}
 .usof-scheme-preview {
 	overflow: hidden;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+	box-shadow: var(--usof-box-shadow-small);
 	}
 	.usof-scheme-preview .preview_header {
 		position: relative;
 		z-index: 1;
 		height: 20px;
-		box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+		box-shadow: 0 1px 0 rgba(0,0,0,.1);
 		}
 	.usof-scheme-preview .preview_content {
 		position: relative;
 		padding: 10px;
-		box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+		box-shadow: 0 1px 0 rgba(0,0,0,.1);
 		}
 	.usof-scheme-preview .preview_heading {
 		font-size: 18px;

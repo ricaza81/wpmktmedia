@@ -24,6 +24,10 @@ AND ANY CHANGES MADE HERE WILL BE OVERWRITTEN.
 
 .single-tribe_events .tribe-events-event-meta {
 	border: none;
+	background: var(--color-content-bg-alt-grad);
+	}
+.tribe-common--breakpoint-medium.tribe-events .tribe-events-c-events-bar--border {
+	border-color: var(--color-content-border);
 	}
 
 .rounded_none .datepicker,

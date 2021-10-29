@@ -7,7 +7,6 @@
  *
  * @param string $the_content Post content, retrieved with get_the_content() (without 'the_content' filters)
  * @param bool $strip_from_the_content Should the found element be removed from post content not to be duplicated?
- *
  * @return string
  */
 function us_get_post_preview( &$the_content, $strip_from_the_content = FALSE ) {
@@ -60,12 +59,16 @@ function us_get_post_preview( &$the_content, $strip_from_the_content = FALSE ) {
 
 	} elseif ( $post_format == 'video' ) {
 		$post_content = preg_replace( '~^\s*(https?://[^\s"]+)\s*$~im', "[embed]$1[/embed]", $the_content );
-
-		if ( preg_match( '~\[embed.+?\]|\[vc_video.+?\]~', $post_content, $matches ) ) {
-
+		/**
+		 * The regex `/(\[vc_video.*?\]|\[embed.*?\].*?\[\/embed\])/` is tested against:
+		 * [vc_video]
+		 * [vc_video src="..."]
+		 * [embed]...[/embed]
+		 * [embed param="..."]...[/embed]
+		 */
+		if ( preg_match( '/(\[vc_video.*?\]|\[embed.*?\].*?\[\/embed\])/', $post_content, $matches ) ) {
 			global $wp_embed;
-			$video = $matches[0];
-			$preview_html = do_shortcode( $wp_embed->run_shortcode( $video ) );
+			$preview_html = do_shortcode( $wp_embed->run_shortcode( $matches[0] ) );
 			if ( strpos( $preview_html, 'w-video' ) === FALSE ) {
 				$preview_html = '<div class="w-video"><div class="w-video-h"' . $video_h_style . '>' . $preview_html . '</div></div>';
 			}
@@ -83,11 +86,10 @@ function us_get_post_preview( &$the_content, $strip_from_the_content = FALSE ) {
 			$preview_html = do_shortcode( $audio );
 
 			$post_content = str_replace( $matches[0], "", $post_content );
-		} elseif ( preg_match( '~\[embed.+?\]~', $post_content, $matches ) ) {
 
+		} elseif ( preg_match( '~\[embed.+?\]~', $post_content, $matches ) ) {
 			global $wp_embed;
-			$video = $matches[0];
-			$preview_html = do_shortcode( $wp_embed->run_shortcode( $video ) );
+			$preview_html = do_shortcode( $wp_embed->run_shortcode( $matches[0] ) );
 			if ( strpos( $preview_html, 'w-video' ) === FALSE ) {
 				$preview_html = '<div class="w-video"><div class="w-video-h"' . $video_h_style . '>' . $preview_html . '</div></div>';
 			}
@@ -98,9 +100,7 @@ function us_get_post_preview( &$the_content, $strip_from_the_content = FALSE ) {
 		}
 	}
 
-	$preview_html = apply_filters( 'us_get_post_preview', $preview_html, get_the_ID() );
-
-	return $preview_html;
+	return (string) apply_filters( 'us_get_post_preview', $preview_html, get_the_ID() );
 }
 
 if ( ! function_exists( 'us_change_permalink_for_link_format' ) ) {
@@ -242,7 +242,7 @@ function us_display_maintenance_page() {
 
 		us_open_wp_query_context();
 		global $wp_query;
-		$wp_query = new WP_Query(
+		$wp_query = $maintenance_query = new WP_Query(
 			array(
 				'p' => $maintenance_page->ID,
 				'post_type' => 'page',
@@ -258,7 +258,12 @@ function us_display_maintenance_page() {
 
 		get_header();
 
-		// Main attri
+		// Override query again for WPML compatibility
+		if ( class_exists( 'SitePress' ) ) {
+			$wp_query = $maintenance_query;
+		}
+
+		// Main attributes
 		$main_atts = array(
 			'id' => 'page-content',
 			'class' => 'l-main',
@@ -267,7 +272,7 @@ function us_display_maintenance_page() {
 			$main_atts['itemprop'] = 'mainContentOfPage';
 		}
 		?>
-		<main <?php echo us_implode_atts( $main_atts ) ?>>
+		<main<?= us_implode_atts( $main_atts ) ?>>
 			<?php
 			do_action( 'us_before_page' );
 			if ( us_get_page_area_id( 'content' ) ) {
@@ -312,9 +317,35 @@ if ( ! function_exists( 'us_save_post' ) ) {
 	 *
 	 * @param integer $post_id
 	 * @param WP_Post $post
-	 * @return void
 	 */
 	function us_save_post( $post_id, $post ) {
 		us_update_postmeta_for_custom_css( $post );
 	}
+}
+
+if ( ! function_exists( 'us_vc_base_save_post_custom_css' ) ) {
+
+	/**
+	 * Filter to track updates to custom css in Visual Composer
+	 *
+	 * @param string $post_custom_css The post custom css
+	 * @param int $post_id The post ID
+	 * @return string
+	 */
+	function us_vc_base_save_post_custom_css( $post_custom_css, $post_id ) {
+		// Get usb key for custom css
+		$usb_key_custom_css = apply_filters( 'usb_get_key_custom_css', /* Return on none value */NULL );
+		if ( empty( $usb_key_custom_css ) ) {
+			return $post_custom_css;
+		}
+
+		if ( NULL !== $post_custom_css AND empty( $post_custom_css ) ) {
+			delete_metadata( 'post', $post_id, $usb_key_custom_css );
+		} elseif ( NULL !== $post_custom_css ) {
+			update_metadata( 'post', $post_id, $usb_key_custom_css, $post_custom_css );
+		}
+
+		return $post_custom_css;
+	}
+	add_filter( 'vc_base_save_post_custom_css', 'us_vc_base_save_post_custom_css', 101, 2 );
 }

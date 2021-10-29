@@ -113,7 +113,9 @@ function usof_ajax_mega_menu() {
 					security: '<?php echo wp_create_nonce( 'us-menu-dropdown-save' ); ?>'
 				},
 				success: function(result){
-					if ($saveButton.usMod('status') !== 'loading') return;
+					if ( $saveButton.usMod( 'status' ) !== 'loading' ) {
+						return;
+					}
 					$saveMessage.html(result.data.message);
 					$saveButton.usMod('status', 'success');
 					clearTimeout(saveStateTimer);

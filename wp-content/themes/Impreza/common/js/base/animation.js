@@ -10,23 +10,19 @@
 	var USAnimate = function( container ) {
 		// Elements
 		this.$container = $( container );
-		this.$items = $(
-			'.animate_fade, .animate_afc, .animate_afl, .animate_afr, .animate_aft, '+
-			'.animate_afb, .animate_wfc, .animate_hfc',
-			this.$container
-		).not( '.animate_off_autostart' );
+		this.$items = $( '[class*="us_animate_"]', this.$container ).not( '.off_autostart' );
 
 		// Init waypoints
 		this.$items.each( function( _, item ) {
 			var $item = $( item );
-			if ( $item.data( '_animate_inited' ) || $item.is( '.animate_off_autostart' ) ) {
+			if ( $item.data( '_animate_inited' ) || $item.is( '.off_autostart' ) ) {
 				return;
 			}
 			$item.data( '_animate_inited', true );
 			$us.waypoints.add( $item, '12%', function( $elm ) {
-				if ( ! $elm.hasClass( 'animate_start' ) ) {
+				if ( ! $elm.hasClass( 'start' ) ) {
 					$us.timeout( function() {
-						$elm.addClass( 'animate_start' );
+						$elm.addClass( 'start' );
 					}, 20 );
 				}
 			} );

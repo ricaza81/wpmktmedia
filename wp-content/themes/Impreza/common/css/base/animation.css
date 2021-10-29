@@ -2,23 +2,44 @@
  * Animation
  */
 
-.animate_start {
+[class*="us_animate_"] {
+	opacity: 0;
 	animation-duration: 0.7s;
 	animation-fill-mode: both;
-	transition-timing-function: cubic-bezier(.78,.13,.15,.86);
 	}
-.animate_off_autostart {
+[class*="us_animate_"]:not(.start) {
+	animation: none !important;
+	}
+.disable_effects [class*="us_animate_"] {
+	opacity: 1;
+	animation: none !important;
+	}
+.off_autostart {
 	visibility: hidden;
 	}
 
 /* Fade */
-.animate_fade {
-	opacity: 0;
+@keyframes fade {
+	from {
+		opacity: 0;
 	}
-.animate_fade.animate_start {
-	animation-name: fadeIn;
-	opacity: 1;
+	to {
+		opacity: 1;
 	}
+}
+.us_animate_fade {
+	animation-name: fade;
+	}
+
+/* FadeOut */
+@keyframes fadeOut {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
 
 /* Appear From Center */
 @keyframes afc {
@@ -31,12 +52,8 @@
 		transform: scale(1);
 		}
 	}
-.animate_afc {
-	opacity: 0;
-	}
-.animate_afc.animate_start {
+.us_animate_afc {
 	animation-name: afc;
-	opacity: 1;
 	}
 
 /* Appear From Left */
@@ -50,12 +67,8 @@
 		transform: translateX(0);
 		}
 	}
-.animate_afl {
-	opacity: 0;
-	}
-.animate_afl.animate_start {
+.us_animate_afl {
 	animation-name: afl;
-	opacity: 1;
 	}
 
 /* Appear From Right */
@@ -69,12 +82,8 @@
 		transform: translateX(0);
 		}
 	}
-.animate_afr {
-	opacity: 0;
-	}
-.animate_afr.animate_start {
+.us_animate_afr {
 	animation-name: afr;
-	opacity: 1;
 	}
 
 /* Appear From Top */
@@ -88,12 +97,8 @@
 		transform: translateY(0);
 		}
 	}
-.animate_aft {
-	opacity: 0;
-	}
-.animate_aft.animate_start {
+.us_animate_aft {
 	animation-name: aft;
-	opacity: 1;
 	}
 
 /* Appear From Bottom */
@@ -107,12 +112,8 @@
 		transform: translateY(0);
 		}
 	}
-.animate_afb {
-	opacity: 0;
-	}
-.animate_afb.animate_start {
+.us_animate_afb.start {
 	animation-name: afb;
-	opacity: 1;
 	}
 
 /* Width Stretch */
@@ -126,13 +127,8 @@
 		transform: scaleX(1);
 		}
 	}
-.animate_wfc {
-	opacity: 0;
-	transform-origin: 0 0;
-	}
-.animate_wfc.animate_start {
+.us_animate_wfc.start {
 	animation-name: wfc;
-	opacity: 1;
 	}
 
 /* Height Stretch */
@@ -146,50 +142,13 @@
 		transform: scaleY(1);
 		}
 	}
-.animate_hfc {
-	opacity: 0;
+.us_animate_hfc {
+	animation-name: hfc;
 	transform-origin: 0 0;
 	}
-.animate_hfc.animate_start {
-	animation-name: hfc;
-	opacity: 1;
-	}
 
-/* Disable effects */
-.disable_effects .animate_fade,
-.disable_effects .animate_afc,
-.disable_effects .animate_aft,
-.disable_effects .animate_afb,
-.disable_effects .animate_afl,
-.disable_effects .animate_afr,
-.disable_effects .animate_wfc,
-.disable_effects .animate_hfc,
-.vc_editor.compose-mode .animate_fade,
-.vc_editor.compose-mode .animate_afc,
-.vc_editor.compose-mode .animate_aft,
-.vc_editor.compose-mode .animate_afb,
-.vc_editor.compose-mode .animate_afl,
-.vc_editor.compose-mode .animate_afr,
-.vc_editor.compose-mode .animate_wfc,
-.vc_editor.compose-mode .animate_hfc {
-	opacity: 1;
-	animation: none !important;
-	}
-
-/* Animations migrated from CodeLights */
-.animated_bounceIn,
-.animated_fadeIn,
-.animated_fadeOut,
-.animated_zoomIn {
-	animation-duration: 1s;
-	animation-fill-mode: both;
-}
-.animated_bounceIn {
-	animation-duration: .75s;
-}
-
-/* bounceIn */
-@keyframes bounceIn {
+/* Bounce */
+@keyframes bounce {
 	from,
 	20%,
 	40%,
@@ -220,37 +179,6 @@
 		transform: scale3d(1, 1, 1);
 	}
 }
-.animated_bounceIn {
-	animation-name: bounceIn;
-}
-
-/* fadeIn */
-@keyframes fadeIn {
-	from {
-		opacity: 0;
+.us_animate_bounce {
+	animation-name: bounce;
 	}
-	to {
-		opacity: 1;
-	}
-}
-.animated_fadeIn {
-	animation-name: fadeIn;
-}
-
-/* fadeOut */
-@keyframes fadeOut {
-	from {
-		opacity: 1;
-	}
-	to {
-		opacity: 0;
-	}
-}
-.animated_fadeOut {
-	animation-name: fadeOut;
-}
-
-/* zoomIn */
-.animated_zoomIn {
-	animation-name: afc;
-}

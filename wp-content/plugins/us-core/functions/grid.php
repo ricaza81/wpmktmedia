@@ -15,29 +15,11 @@ if ( ! function_exists( 'us_get_grid_url_prefix' ) ) {
 		$value = (string) us_get_option( "grid_{$param_name}_url_prefix", $param_name );
 		// The checking the parameter and leave only valid characters for the URL
 		$value = preg_replace( '/[^a-z\d\_\-]+/', '', us_strtolower( $value ) );
+
 		return ! empty( $value )
 			? $value
 			: $param_name;
 	}
-}
-
-/**
- * Removing `orderby` and `order` from "GET" query for grid_order/grid_filter
- */
-global $us_get_orderby, $pagenow;
-if (
-	$us_order_key = us_get_grid_url_prefix( 'order' )
-
-	// The `order` and `orderby` parameters are used by many plugins and by WordPress itself, and such names can cause issues
-	AND in_array( $us_order_key, array( 'order', 'orderby' ) )
-	AND ! empty( $_GET[ $us_order_key ] )
-	AND ! in_array( $pagenow, array( 'edit.php', 'edit-tags.php', 'admin-ajax.php' ) )
-
-	// Exclude for the download page of WooCommerce products since the `order` has a different meaning there
-	AND ! isset( $_GET['download_file'] )
-) {
-	$us_get_orderby = $_GET[ $us_order_key ];
-	unset( $_GET[ $us_order_key ], $us_order_key );
 }
 
 if ( ! function_exists( 'us_post_type_is_available' ) ) {
@@ -130,9 +112,11 @@ if ( ! function_exists( 'us_get_available_post_statuses' ) ) {
 		}
 
 		// List of additional statuses
-		$post_statuses = array_merge( $post_statuses, array(
-			'inherit'
-		) );
+		$post_statuses = array_merge(
+			$post_statuses, array(
+				'inherit',
+			)
+		);
 
 		return array_unique( $post_statuses );
 	}
@@ -206,7 +190,7 @@ if ( ! function_exists( 'us_fix_grid_settings' ) ) {
 					$elms = array();
 				}
 				foreach ( $elms as $index => $elm_id ) {
-					if ( ! is_string( $elm_id ) OR strpos( $elm_id, ':' ) == - 1 ) {
+					if ( ! is_string( $elm_id ) OR strpos( $elm_id, ':' ) == -1 ) {
 						unset( $elms[ $index ] );
 					} else {
 						$state_elms[] = $elm_id;
@@ -265,6 +249,35 @@ if ( ! function_exists( 'us_grid_available_post_types' ) ) {
 		}
 
 		return apply_filters( 'us_grid_available_post_types', $available_posts_types );
+	}
+}
+
+if ( ! function_exists( 'us_grid_available_post_types_for_import' ) ) {
+	/**
+	 * Get post types for selection in Grid element for import
+	 * NOTE: Used when filtering imported shortcodes.
+	 *
+	 * @return array
+	 */
+	function us_grid_available_post_types_for_import() {
+		// These types shoudn't be replaced to posts
+		$grid_available_post_types = array(
+			'attachment',
+			'related',
+			'current_query',
+			'taxonomy_terms',
+			'current_child_terms',
+			'product_upsells',
+			'product_crosssell',
+		);
+		// Get post types for selection in Grid element
+		foreach ( array_keys( us_grid_available_post_types() ) as $post_type ) {
+			if ( wp_count_posts( $post_type )->publish ) {
+				$grid_available_post_types[] = $post_type;
+			}
+		}
+
+		return $grid_available_post_types;
 	}
 }
 
@@ -335,7 +348,7 @@ if ( ! function_exists( 'us_get_filter_taxonomies' ) ) {
 				if ( ! preg_match( '/(\w+)_(\d+)$/', $param_name, $matches ) ) {
 					continue;
 				}
-				if ( $acf_field = acf_get_field( $matches[ /* ACF Field ID */ 2 ] ) ) {
+				if ( $acf_field = acf_get_field( $matches[ /* ACF Field ID */ 2] ) ) {
 					$available_taxonomy[ sprintf( '%s_%s', $acf_field['name'], $acf_field['ID'] ) ] = 'cf';
 				}
 			}
@@ -427,7 +440,7 @@ if ( ! function_exists( 'us_grid_filter_parse_param' ) ) {
 	 */
 	function us_grid_filter_parse_param( $param_name ) {
 		$result = array();
-		if ( strpos( $param_name , '|' ) !== FALSE ) {
+		if ( strpos( $param_name, '|' ) !== FALSE ) {
 			list( $source, $param_name ) = explode( '|', $param_name, 2 );
 			$result['source'] = strtolower( $source );
 			// The for Advanced Custom Fields
@@ -437,11 +450,12 @@ if ( ! function_exists( 'us_grid_filter_parse_param' ) ) {
 				AND preg_match( '/([\w+\-?]+)_(\d+)$/', $param_name, $matches )
 			) {
 				$result['param_name'] = $matches[1];
-				$result['acf_field_id'] = intval( $matches[2] );
+				$result['acf_field_id'] = (int) $matches[2];
 			} else {
 				$result['param_name'] = $param_name;
 			}
 		}
+
 		return $result;
 	}
 }
@@ -453,7 +467,6 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 	 * @param ineger $post_id
 	 * @param array $query_args
 	 * @param string $grid_filter_params
-	 * @return void
 	 */
 	function us_apply_grid_filters( $post_id, &$query_args, $grid_filter_params = NULL ) {
 		/**
@@ -464,7 +477,6 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 		/**
 		 * Get grid filter and load attributes
 		 * @param WP_Post $post
-		 * @return void
 		 */
 		$func_grid_filter_atts = function ( $post ) use ( &$post_grid_filter_atts ) {
 			if (
@@ -524,9 +536,18 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 			if ( is_string( $item_values ) ) {
 				$filter_items[ $item_name ] = array( $item_values );
 			}
+
+			// Skip numeric WooCommerce attributes
+			if ( count( $item_values ) === 1 AND ( strpos( $item_name, 'tax|pa_' ) !== FALSE ) ) {
+				continue;
+			}
+
 			// The for range values
 			if ( count( $item_values ) === 1 AND preg_match( '/^(\d+)-(\d+)$/', $item_values[0], $matches ) ) {
-				$filter_ranges[ $item_name ] = array( /* start value */$matches[1], /* end value */$matches[2] );
+				$filter_ranges[ $item_name ] = array( /* start value */
+					$matches[1], /* end value */
+					$matches[2],
+				);
 				unset( $filter_items[ $item_name ] );
 			}
 		}
@@ -567,10 +588,10 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 
 
 					// The for Advanced Custom Fields
-				} else if( $item_source === 'cf' AND $item_name !== '_price' ) {
+				} elseif ( $item_source === 'cf' AND $item_name !== '_price' ) {
 					$current_acf_filters[ $item_name ] = array(
 						'field_id' => us_arr_path( $param, 'acf_field_id', NULL ),
-						'values' => array_unique( $item_values )
+						'values' => array_unique( $item_values ),
 					);
 				}
 			}
@@ -591,8 +612,8 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 			);
 			// At this stage, it is important to separate the is_int from is_number
 			// The number in the string entry is the parameters from the filter
-			if ( is_int( $item_values ) OR ( isset( $item_values[0] ) AND is_int( $item_values[ 0 ] ) ) ) {
-				unset( $tax_query[ 'field' ] );
+			if ( is_int( $item_values ) OR ( isset( $item_values[0] ) AND is_int( $item_values[0] ) ) ) {
+				unset( $tax_query['field'] );
 			}
 			$query_args['tax_query'][] = $tax_query;
 		}
@@ -629,20 +650,26 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 				);
 
 				if ( /* min */ $item_values[0] === 0 ) {
-					$meta_query = array_merge( array(
-						'value' => $item_values[1],
-						'compare' => '<=',
-					), $meta_query );
-				} else if ( /* max */ $item_values[1] == 0 ) {
-					$meta_query = array_merge( array(
-						'value' => $item_values[0],
-						'compare' => '>=',
-					), $meta_query );
+					$meta_query = array_merge(
+						array(
+							'value' => $item_values[1],
+							'compare' => '<=',
+						), $meta_query
+					);
+				} elseif ( /* max */ $item_values[1] == 0 ) {
+					$meta_query = array_merge(
+						array(
+							'value' => $item_values[0],
+							'compare' => '>=',
+						), $meta_query
+					);
 				} else {
-					$meta_query = array_merge( array(
-						'value' => $item_values,
-						'compare' => 'BETWEEN',
-					), $meta_query );
+					$meta_query = array_merge(
+						array(
+							'value' => $item_values,
+							'compare' => 'BETWEEN',
+						), $meta_query
+					);
 				}
 				$query_args['meta_query'][] = $meta_query;
 			}
@@ -676,7 +703,7 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 						'relation' => 'OR',
 						array(
 							'key' => $acf_field_name,
-							'value' => '"'. $acf_value .'"',
+							'value' => '"' . $acf_value . '"',
 							'compare' => 'LIKE',
 							'type' => 'CHAR',
 						),
@@ -685,7 +712,7 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 							'value' => $acf_value,
 							'compare' => '=',
 							'type' => 'CHAR',
-						)
+						),
 					);
 				}
 
@@ -712,10 +739,10 @@ if ( class_exists( 'woocommerce' ) AND ! function_exists( 'us_product_meta_looku
 		unset( $wp_query->query_vars['_us_product_meta_lookup_prices'] );
 
 		$current_min_price = isset( $prices['min_price'] )
-			? floatval( wp_unslash( $prices['min_price'] ) )
+			? (float) wp_unslash( $prices['min_price'] )
 			: 0; // WPCS: input var ok, CSRF ok.
 		$current_max_price = isset( $prices['max_price'] )
-			? floatval( wp_unslash( $prices['max_price'] ) )
+			? (float) wp_unslash( $prices['max_price'] )
 			: PHP_INT_MAX; // WPCS: input var ok, CSRF ok.
 
 		/**
@@ -737,14 +764,42 @@ if ( class_exists( 'woocommerce' ) AND ! function_exists( 'us_product_meta_looku
 		}
 
 		$args['where'] .= $wpdb->prepare(
-			' AND wc_product_meta_lookup.min_price >= %f AND wc_product_meta_lookup.max_price <= %f ',
+			' AND NOT ( %f > wc_product_meta_lookup.max_price OR %f < wc_product_meta_lookup.min_price ) ',
 			$current_min_price,
 			$current_max_price
 		);
 
+
 		return $args;
 	}
+
 	add_filter( 'posts_clauses', 'us_product_meta_lookup_prices', 100, 2 );
+}
+
+if ( class_exists( 'woocommerce' ) AND ! function_exists( 'us_wc_add_lookup_prices_to_query' ) ) {
+	/**
+	 * Add the settings of the price range from the filter to the query, if set.
+	 * Note: `_us_product_meta_lookup_prices` - processing in the `posts_clauses` filter.
+	 *
+	 * @param WP_Query $wp_query The WP query
+	 */
+	function us_wc_add_lookup_prices_to_query( $wp_query ) {
+		$post_type = us_arr_path( $wp_query->query_vars, 'post_type' );
+		if ( wp_doing_ajax() OR ! us_post_type_is_available( $post_type, array( 'product' ) ) ) {
+			return;
+		}
+		if (
+			empty( $wp_query->query['_us_product_meta_lookup_prices'] )
+			AND isset( $_GET['min_price'], $_GET['max_price'] )
+		) {
+			$wp_query->query['_us_product_meta_lookup_prices'] = array(
+				'min_price' => (int) us_arr_path( $_GET, 'min_price' ),
+				'max_price' => (int) us_arr_path( $_GET, 'max_price' ),
+			);
+		}
+	}
+
+	add_action( 'pre_get_posts', 'us_wc_add_lookup_prices_to_query', 2, 1 );
 }
 
 if ( ! function_exists( 'us_search_grid_filter_the_post' ) ) {
@@ -767,7 +822,8 @@ if ( ! function_exists( 'us_search_grid_filter_the_post' ) ) {
 
 				// ... otherwise search grid filter in Page Blocks.
 			} else {
-				us_get_recursive_parse_page_block( $post, function( $post ) use ( &$result, $substring ) {
+				us_get_recursive_parse_page_block(
+					$post, function ( $post ) use ( &$result, $substring ) {
 					if (
 						is_null( $result )
 						AND $post instanceof WP_Post
@@ -775,9 +831,11 @@ if ( ! function_exists( 'us_search_grid_filter_the_post' ) ) {
 					) {
 						$result = $post->ID;
 					}
-				} );
+				}
+				);
 			}
 		}
+
 		return $result;
 	}
 }
@@ -830,11 +888,11 @@ if ( ! function_exists( 'us_grid_filter_get_count_items' ) ) {
 		if (
 			! empty( $query_args['post_type'] )
 			AND (
-					(
-						is_array( $query_args['post_type'] )
-						AND in_array( 'product', $query_args['post_type'] )
-					)
-					OR $query_args['post_type'] == 'product'
+				(
+					is_array( $query_args['post_type'] )
+					AND in_array( 'product', $query_args['post_type'] )
+				)
+				OR $query_args['post_type'] == 'product'
 			)
 			AND class_exists( 'woocommerce' )
 			AND is_object( wc() )
@@ -852,7 +910,7 @@ if ( ! function_exists( 'us_grid_filter_get_count_items' ) ) {
 			$taxonomy = us_arr_path( $tax, 'taxonomy' );
 			if ( is_null( $taxonomy ) ) {
 				continue;
-			} else if ( ! isset( $tax_maps[ $taxonomy ][ $field ] ) ) {
+			} elseif ( ! isset( $tax_maps[ $taxonomy ][ $field ] ) ) {
 				$tax_maps[ $taxonomy ][ $field ] = $index;
 				continue;
 			} else {
@@ -867,19 +925,21 @@ if ( ! function_exists( 'us_grid_filter_get_count_items' ) ) {
 				continue;
 			}
 
-			if( $key = us_arr_path( $meta, 'key' ) ) {
+			if ( $key = us_arr_path( $meta, 'key' ) ) {
 				if ( ! isset( $meta_maps[ $key ] ) ) {
 					$meta_maps[ $key ] = $index;
 				} else {
 					unset( $query_args['meta_query'][ $index ] );
 				}
-			} else if ( isset( $meta[0] ) ) {
+			} elseif ( isset( $meta[0] ) ) {
 				$keys = array();
-				array_walk_recursive( $meta, function ( $value, $key ) use( &$keys ) {
+				array_walk_recursive(
+					$meta, function ( $value, $key ) use ( &$keys ) {
 					if ( $key === 'key' ) {
 						$keys[] = $value;
 					}
-				} );
+				}
+				);
 				$keys = array_unique( $keys );
 				foreach ( $keys as $key ) {
 					if ( isset( $meta_maps[ $key ] ) ) {
@@ -898,6 +958,10 @@ if ( ! function_exists( 'us_grid_filter_get_count_items' ) ) {
 			}
 		}
 
+		if ( $query_args['post_type'] == 'current_child_pages' ) {
+			$query_args['post_type'] = 'any';
+		}
+
 		return ( new WP_Query( $query_args ) )->post_count;
 	}
 }
@@ -907,11 +971,22 @@ if ( ! function_exists( 'us_grid_pre_get_posts' ) ) {
 	 * Modifying the query to get records for the grid
 	 *
 	 * @param WP_Query $query
-	 * @return void
 	 */
 
 	function us_grid_pre_get_posts( $query ) {
 		global $us_context_layout, $us_get_orderby, $pagenow, $us_grid_pre_get_posts_running;
+
+		/**
+		 * Removing `orderby` and `order` from "GET" query for grid_order/grid_filter
+		 */
+		if ( $us_order_key = us_get_grid_url_prefix( 'order' )
+			AND is_search()
+			AND isset( $_GET[ $us_order_key ] ) ) {
+
+			$us_get_orderby = $_GET[ $us_order_key ];
+			unset( $_GET[ $us_order_key ] );
+		}
+
 		// Prevent nesting calls of this function, which happens in rare cases
 		if ( empty( $us_grid_pre_get_posts_running ) ) {
 			$us_grid_pre_get_posts_running = TRUE;
@@ -982,6 +1057,7 @@ if ( ! function_exists( 'us_save_post_grid_filter_atts' ) ) {
 
 		return $filter_atts;
 	}
+
 	add_action( 'save_post', 'us_save_post_grid_filter_atts', 100, 1 );
 }
 
@@ -1028,6 +1104,7 @@ if ( ! function_exists( 'us_grid_get_selected_taxonomies' ) ) {
 				}
 			}
 		}
+
 		return $query_args;
 	}
 }
@@ -1037,7 +1114,6 @@ if ( ! function_exists( 'us_save_post_first_grid_data' ) ) {
 	 * Get data from the first found grid f
 	 *
 	 * @param int $post_id
-	 * @return void
 	 */
 	function us_save_post_first_grid_data( $post_id ) {
 		/**
@@ -1045,7 +1121,7 @@ if ( ! function_exists( 'us_save_post_first_grid_data' ) ) {
 		 * @param WP_Post $post
 		 * @return string
 		 */
-		$func_search_first_grid = function( $post ) {
+		$func_search_first_grid = function ( $post ) {
 			if (
 				$post instanceof WP_Post
 				AND preg_match( '/\[us_grid((?!\_)([^\]]+)?)/i', $post->post_content, $matches )
@@ -1076,6 +1152,7 @@ if ( ! function_exists( 'us_save_post_first_grid_data' ) ) {
 				$atts['post_type'] = us_arr_path( $post_types, '0', 'post' );
 				if ( us_post_type_is_available( $post_types, array_keys( us_grid_available_taxonomies() ) ) ) {
 					update_post_meta( $post->ID, '_us_first_grid_selected_taxonomies', us_grid_get_selected_taxonomies( $atts ) );
+					update_post_meta( $post->ID, '_us_first_grid_products_include', us_arr_path( $atts, 'products_include', '' ) );
 				}
 			}
 		};
@@ -1087,6 +1164,7 @@ if ( ! function_exists( 'us_save_post_first_grid_data' ) ) {
 			us_get_recursive_parse_page_block( $post, $func_search_first_grid );
 		}
 	}
+
 	add_action( 'save_post', 'us_save_post_first_grid_data', 100, 1 );
 }
 
@@ -1098,12 +1176,14 @@ if ( ! function_exists( 'us_check_grid_filter_url_prefix' ) ) {
 	 * @return array $updated_options
 	 */
 	function us_check_grid_filter_url_prefix( $updated_options ) {
-		if ( ! empty( $updated_options[ 'grid_filter_url_prefix' ] ) ) {
-			$grid_filter_url_prefix = (string) $updated_options[ 'grid_filter_url_prefix' ];
-			$updated_options[ 'grid_filter_url_prefix' ] = preg_replace( '/[^\dA-z\-]+/', '', $grid_filter_url_prefix );
+		if ( ! empty( $updated_options['grid_filter_url_prefix'] ) ) {
+			$grid_filter_url_prefix = (string) $updated_options['grid_filter_url_prefix'];
+			$updated_options['grid_filter_url_prefix'] = preg_replace( '/[^\dA-z\-]+/', '', $grid_filter_url_prefix );
 		}
+
 		return $updated_options;
 	}
+
 	add_filter( 'usof_updated_options', 'us_check_grid_filter_url_prefix', 100, 1 );
 }
 
@@ -1117,7 +1197,8 @@ if ( ! function_exists( 'us_is_grid_products_defined_by_query_args' ) ) {
 	function us_is_grid_products_defined_by_query_args( $query_args ) {
 		$result = FALSE;
 		if ( ! empty( $query_args['tax_query'] ) ) {
-			array_walk_recursive( $query_args['tax_query'], function( $value, $key ) use( &$result ) {
+			array_walk_recursive(
+				$query_args['tax_query'], function ( $value, $key ) use ( &$result ) {
 				if ( $result OR ! in_array( $key, array( 'taxonomy', 'terms' ) ) ) {
 					return;
 				}
@@ -1127,15 +1208,17 @@ if ( ! function_exists( 'us_is_grid_products_defined_by_query_args' ) ) {
 				}
 				// Checking terms
 				if ( $key == 'terms' AND function_exists( 'is_product_category' ) ) {
-					foreach( explode( ',' , $value ) as $term ) {
+					foreach ( explode( ',', $value ) as $term ) {
 						if ( is_product_category( $term ) ) {
 							return $result = TRUE;
 						}
 					}
 				}
 
-			} );
+			}
+			);
 		}
+
 		return $result;
 	}
 }
@@ -1198,20 +1281,21 @@ if ( ! function_exists( 'us_grid_set_orderby_to_query_args' ) ) {
 	 *
 	 * @param array $query_args
 	 * @param array $params
-	 * @return void
 	 */
 	function us_grid_set_orderby_to_query_args( &$query_args, $params = array() ) {
 		if ( empty( $params ) OR ! is_array( $params ) ) {
 			return;
 		}
 
-		$params = array_merge( array(
-			'orderby' =>'',
-			'invert' => FALSE,
-			'custom_field' => NULL,
-			'custom_field_numeric' => FALSE,
-			'post_type' => array(),
-		), $params );
+		$params = array_merge(
+			array(
+				'orderby' => '',
+				'invert' => FALSE,
+				'custom_field' => NULL,
+				'custom_field_numeric' => FALSE,
+				'post_type' => array(),
+			), $params
+		);
 
 		if ( ! is_array( $params['post_type'] ) ) {
 			$params['post_type'] = array( $params['post_type'] );
@@ -1244,8 +1328,8 @@ if ( ! function_exists( 'us_grid_set_orderby_to_query_args' ) ) {
 				break;
 			case 'menu_order':
 				// Sort posts order for ids
-				if ( in_array( 'ids', $params['post_type'] ) AND ! empty( $query_args[ 'post__in' ] ) ) {
-					$query_args[ 'orderby' ] = 'post__in';
+				if ( in_array( 'ids', $params['post_type'] ) AND ! empty( $query_args['post__in'] ) ) {
+					$query_args['orderby'] = 'post__in';
 				} else {
 					$query_args['orderby'] = array( 'menu_order' => $order_reverse );
 					$query_args['order'] = $order_reverse;
@@ -1317,7 +1401,13 @@ if ( ! function_exists( 'us_grid_set_orderby_to_query_args' ) ) {
 		// Order by views per month, week, day
 		if (
 			class_exists( 'Post_Views_Counter' )
-			AND in_array( $params['orderby'], array( 'post_views_counter_day', 'post_views_counter_week', 'post_views_counter_month' ) )
+			AND in_array(
+				$params['orderby'], array(
+					'post_views_counter_day',
+					'post_views_counter_week',
+					'post_views_counter_month',
+				)
+			)
 		) {
 			$views_query = array(
 				'year' => date( 'Y' ),
@@ -1360,14 +1450,16 @@ if ( ! function_exists( 'us_filter_sorting_priorities_for_grid_orderby' ) ) {
 			AND preg_match_all( '/wp_posts\.ID\s=\s([\w\d\_]+)\./', $clauses['join'], $matches )
 		) {
 			$tables = $matches[1];
-			$order = $wp_query->get('order');
+			$order = $wp_query->get( 'order' );
 			// Depending on the order, we drop empty and non-existent values to the end
 			$if_order = us_strtolower( $order ) === 'desc' ? '0,1' : '1,0';
 			// This condition will first check for nonexistent and empty values then only set $clauses['orderby']
 			$clauses['orderby'] = "IF(${tables[1]}.post_id IS NULL OR ${tables[0]}.meta_value = '',${if_order}) ${order},${clauses['orderby']}";
 		}
+
 		return $clauses;
 	}
+
 	add_filter( 'posts_clauses', 'us_filter_sorting_priorities_for_grid_orderby', 100, 2 );
 }
 
@@ -1390,28 +1482,335 @@ if ( ! function_exists( 'us_grid_get_orderby_options' ) ) {
 
 		// Additional values for WooCommerce products
 		if ( class_exists( 'woocommerce' ) ) {
-			$options = array_merge( $options, array(
-				'popularity' => us_translate( 'Sales', 'woocommerce' ),
-				'price' => us_translate( 'Price', 'woocommerce' ),
-				'rating' => us_translate( 'Rating', 'woocommerce' ),
-			) );
+			$options = array_merge(
+				$options, array(
+					'popularity' => us_translate( 'Sales', 'woocommerce' ),
+					'price' => us_translate( 'Price', 'woocommerce' ),
+					'rating' => us_translate( 'Rating', 'woocommerce' ),
+				)
+			);
 		}
 
 		// Orders for Post Views Counter
 		if ( class_exists( 'Post_Views_Counter' ) ) {
-			$options = array_merge( $options, array(
-				'post_views_counter' => __( 'Total views', 'us' ),
-				'post_views_counter_month' => __( 'Views for last month', 'us' ),
-				'post_views_counter_week' => __( 'Views for last week', 'us' ),
-				'post_views_counter_day' => __( 'Views for last day', 'us' ),
-			) );
+			$options = array_merge(
+				$options, array(
+					'post_views_counter' => __( 'Total views', 'us' ),
+					'post_views_counter_month' => __( 'Views for last month', 'us' ),
+					'post_views_counter_week' => __( 'Views for last week', 'us' ),
+					'post_views_counter_day' => __( 'Views for last day', 'us' ),
+				)
+			);
 		}
 
 		// Add an option for custom settings
-		$options = array_merge( $options, array(
-			'custom' => __( 'Custom Field', 'us' )
-		) );
+		$options = array_merge(
+			$options, array(
+				'custom' => __( 'Custom Field', 'us' ),
+			)
+		);
 
 		return $options;
+	}
+}
+
+if ( ! function_exists( 'us_grid_stop_loop' ) ) {
+	/**
+	 * Stop grid loop execution
+	 *
+	 * @param bool $show_message whether to show "No items" message / page block set by user
+	 * @param bool $interrupt whether to interrupt the loop
+	 */
+	function us_grid_stop_loop( $show_message = TRUE, $interrupt = TRUE ) {
+		global $us_grid_loop_running, $us_grid_no_items_message, $us_grid_no_items_action, $us_grid_no_items_page_block;
+
+		if ( $interrupt ) {
+			$us_grid_loop_running = FALSE;
+		}
+
+		if ( $show_message AND $us_grid_no_items_action !== 'hide_grid' ) {
+			
+			// Output specified Page Block
+			if ( $us_grid_no_items_action === 'page_block' AND is_numeric( $us_grid_no_items_page_block ) ) {
+				if ( has_filter( 'us_tr_object_id' ) ) {
+					$us_grid_no_items_page_block = apply_filters( 'us_tr_object_id', $us_grid_no_items_page_block, 'us_page_block', TRUE );
+				}
+
+				$page_block = get_post( $us_grid_no_items_page_block );
+
+				if ( $page_block instanceof WP_Post AND $page_block->post_type == 'us_page_block' ) {
+					us_add_to_page_block_ids( $page_block->ID );
+
+					$page_block_content = $page_block->post_content;
+					us_open_wp_query_context();
+					us_add_page_shortcodes_custom_css( $us_grid_no_items_page_block );
+					us_close_wp_query_context();
+
+					// Remove [vc_row] and [vc_column]
+					$page_block_content = str_replace(
+						array(
+							'[vc_row]',
+							'[/vc_row]',
+							'[vc_column]',
+							'[/vc_column]',
+						), '', $page_block_content
+					);
+					$page_block_content = preg_replace( '~\[vc_row (.+?)]~', '', $page_block_content );
+					$page_block_content = preg_replace( '~\[vc_column (.+?)]~', '', $page_block_content );
+
+					// Apply filters to Page Block content and echoing it out of us_open_wp_query_context
+					echo '<div class="w-grid-none">' . apply_filters( 'us_page_block_the_content', $page_block_content ) . '</div>';
+
+					us_remove_from_page_block_ids();
+				}
+
+				// Output specified non-empty message
+			} elseif ( $us_grid_no_items_action === 'message' AND ! empty( $us_grid_no_items_message ) ) {
+				echo '<h4 class="w-grid-none">' . strip_tags( $us_grid_no_items_message, '<br><strong>' ) . '</h4>';
+			}
+		} elseif ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+			echo '<div class="w-grid-none"></div>';
+		}
+	}
+}
+
+if ( ! function_exists( 'us_get_post_ids_for_autocomplete' ) ) {
+	/**
+	 * Get a list of records for an us_autocomplete WPB
+	 *
+	 * @param integer $limit The limit
+	 * @return array
+	 */
+	function us_get_post_ids_for_autocomplete( $limit = 50 ) {
+		if ( ! is_admin() ) {
+			return array();
+		} elseif ( ! check_ajax_referer( 'us_ajax_get_post_ids_for_autocomplete', '_nonce', FALSE ) ) {
+			return array();
+		}
+
+		// US Autocomplete options
+		$search = isset( $_GET['search'] ) ? $_GET['search'] : '';
+		$offset = isset( $_GET['offset'] ) ? (int) $_GET['offset'] : 0;
+
+		// Remove media from post_type
+		$post_type = array_keys( us_grid_available_post_types() );
+		if ( ( $index = array_search( 'attachment', $post_type ) ) !== FALSE ) {
+			unset( $post_type[ $index ] );
+		}
+
+		$query_args = array(
+			'post_type' => $post_type,
+			'posts_per_page' => $limit,
+			'post_status' => 'any',
+			'suppress_filters' => 0,
+			'offset' => $offset,
+		);
+
+		// Get selected params
+		if ( strpos( $search, 'params:' ) === 0 ) {
+			$params = explode( ',', substr( $search, strlen( 'params:' ) ) );
+			$query_args['post__in'] = array_map( 'intval', $params );
+			$search = '';
+		}
+
+		if ( ! empty( $search ) ) {
+			$query_args['s'] = $search;
+		}
+
+		$results = array();
+		foreach ( get_posts( $query_args ) as $post ) {
+			$results[ $post->ID ] = strlen( $post->post_title ) > 0
+				? esc_attr( $post->post_title )
+				: us_translate( '(no title)' );
+
+			if ( $post_type = get_post_type_object( $post->post_type ) ) {
+				$results[ $post->ID ] .= sprintf( ' <i>%s</i>', $post_type->labels->singular_name );
+			}
+		}
+
+		return $results;
+	}
+
+	/**
+	 * AJAX Request Handler
+	 */
+	function us_ajax_get_post_ids_for_autocomplete() {
+		if ( ! check_ajax_referer( 'us_ajax_get_post_ids_for_autocomplete', '_nonce', FALSE ) ) {
+			wp_send_json_error(
+				array(
+					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
+				)
+			);
+			wp_die();
+		}
+		wp_send_json_success( array( 'items' => us_get_post_ids_for_autocomplete() ) );
+		wp_die();
+	}
+
+	add_action( 'wp_ajax_us_get_post_ids_for_autocomplete', 'us_ajax_get_post_ids_for_autocomplete', 1 );
+}
+
+if ( ! function_exists( 'us_get_term_ids_for_autocomplete' ) ) {
+	/**
+	 * Get a list of records for an a us_autocomplete WPB
+	 *
+	 * @param integer $limit The limit
+	 * @return array
+	 */
+	function us_get_term_ids_for_autocomplete( $limit = 50 ) {
+		if ( ! is_admin() ) {
+			return array();
+		} elseif ( ! check_ajax_referer( 'us_ajax_get_term_ids_for_autocomplete', '_nonce', FALSE ) ) {
+			return array();
+		}
+
+		// US Autocomplete options
+		$search = isset( $_GET['search'] ) ? $_GET['search'] : '';
+		$offset = isset( $_GET['offset'] ) ? (int) $_GET['offset'] : 0;
+
+		$taxonomies = us_get_taxonomies( TRUE, FALSE );
+
+		$query_args = array(
+			'taxonomy' => array_keys( $taxonomies ),
+			'hide_empty' => FALSE,
+			'number' => $limit,
+			'offset' => $offset,
+		);
+
+		// Get selected params
+		if ( strpos( $search, 'params:' ) === 0 ) {
+			$params = explode( ',', substr( $search, strlen( 'params:' ) ) );
+			$query_args['include'] = array_map( 'intval', $params );
+			$search = '';
+		}
+
+		if ( ! empty( $search ) ) {
+			$query_args['name__like'] = $search;
+		}
+
+		$results = array();
+		foreach ( get_terms( $query_args ) as $term ) {
+			$results[ $term->term_id ] = strlen( $term->name ) > 0
+				? esc_attr( $term->name )
+				: us_translate( '(no title)' );
+
+			if ( ! empty( $taxonomies [ $term->taxonomy ] ) ) {
+				$results[ $term->term_id ] .= sprintf( ' <i>%s</i>', $taxonomies [ $term->taxonomy ] );
+			}
+		}
+
+		return $results;
+	}
+
+	/**
+	 * AJAX Request Handler
+	 */
+	function us_ajax_get_term_ids_for_autocomplete() {
+		if ( ! check_ajax_referer( 'us_ajax_get_term_ids_for_autocomplete', '_nonce', FALSE ) ) {
+			wp_send_json_error(
+				array(
+					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
+				)
+			);
+			wp_die();
+		}
+		wp_send_json_success( array( 'items' => us_get_term_ids_for_autocomplete() ) );
+		wp_die();
+	}
+
+	add_action( 'wp_ajax_us_get_term_ids_for_autocomplete', 'us_ajax_get_term_ids_for_autocomplete', 1 );
+}
+
+if ( wp_doing_ajax() AND ! function_exists( 'us_get_taxonomies_autocomplete' ) ) {
+	add_action( 'wp_ajax_us_get_taxonomies_autocomplete', 'us_get_taxonomies_autocomplete', 1 );
+	/**
+	 * Request AJAX handler for us_get_taxonomies_autocomplete
+	 * @return string
+	 */
+	function us_get_taxonomies_autocomplete() {
+		if ( ! check_ajax_referer( 'us_ajax_get_taxonomies_autocomplete', '_nonce', FALSE ) ) {
+			wp_send_json_error(
+				array(
+					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
+				)
+			);
+			wp_die();
+		}
+
+		// Query params
+		if ( ! $slug = trim( $_GET['slug'] ) ) {
+			wp_send_json_error(
+				array(
+					'message' => us_translate( 'Taxonomy cannot be empty' ),
+				)
+			);
+			wp_die();
+		}
+		$offset = (int) $_GET['offset'];
+		$search_text = trim( $_GET['search'] );
+
+		$response = array(
+			'items' => array(),
+		);
+
+		// The method for obtaining data should be able to receive data in batches,
+		// search the search field and load the list on the search field if it contains a separator `params:name,name2,name3`
+		$response['items'] = us_get_terms_by_slug( $slug, $offset, 15, $search_text );
+
+		wp_send_json_success( $response );
+	}
+}
+
+if ( ! function_exists( 'us_import_grid_layout' ) ) {
+	/**
+	 * This is a method to add a layout based on the passed data
+	 *
+	 * @param string $data The data
+	 * @param string $post_type The post type
+	 * @return int|string
+	 */
+	function us_import_grid_layout( $data, $post_type = 'us_grid_layout' ) {
+		$result = 'blog_1'; // The default layout
+		$data = explode( '|', $data );
+		if ( count( $data ) != 2 ) {
+			return $result;
+		}
+		$post_content = base64_decode( $data[1] );
+		if ( json_decode( $post_content ) === NULL ) {
+			$post_content = NULL;
+		}
+		if ( ! $post_content OR ! isset( $data[0] ) ) {
+			return $result;
+		}
+
+		global $wpdb;
+
+		// Preparing a query to find a duplicate us_grid_layout
+		$sql = $wpdb->prepare(
+			"SELECT id FROM $wpdb->posts WHERE post_type = %s AND TRIM(`post_content`) = %s LIMIT 1",
+			$post_type,
+			$post_content
+		);
+		if ( $post_id = $wpdb->get_var( $sql ) ) {
+			// If the record exists, we get the identifier
+			$result = $post_id;
+		} else {
+			$post_id = wp_insert_post(
+				array(
+					'post_type' => $post_type,
+					'post_content' => $post_content,
+					'post_author' => get_current_user_id(),
+					'post_title' => trim( $data[0] ),
+					'post_status' => 'publish',
+					'comment_status' => 'closed',
+					'ping_status' => 'closed',
+				)
+			);
+			if ( $post_id > 0 ) {
+				$result = $post_id;
+			}
+		}
+
+		return $result;
 	}
 }

@@ -6,40 +6,50 @@
  * @var $field array All passed parameters for the field
  * @var $field ['options'] array Initial Parameter List
  * @var $field ['ajax_query_args'] strung  Parameters to be passed in Ajax request
- * @var $field ['multiple'] boolean Multi Select Support
- * @var $field ['sortable'] boolean Drag and drop
+ * @var $field ['is_multiple'] boolean Multi Select Support
+ * @var $field ['is_sortable'] boolean Drag and drop
+ * @var $field ['params_separator'] string value params separator
+ * @var $field ['classes'] string field container classes
+ * @var $field ['settings'] array of settings for backend calls
  *
  * The Visual composer
  * @var $name string The name field
  * @var $value string The value of the selected parameters
- * @var $options array Initial Parameter List
- * @var $ajax_query_args array Parameters to be passed in Ajax request
- * @var $multiple boolean Multi Select Support
- * @var $sortable boolean Drag and drop
  */
 
+// For edit mode in USBuilder, these parameters are enabled
+
+
 $name = isset( $name ) ? $name : '';
-if ( ! isset( $classes ) ) {
-	$classes = isset( $field['classes'] ) ? $field['classes'] : '';
-}
-if ( ! isset( $multiple ) ) {
-	$multiple = isset( $field['multiple'] ) ? $field['multiple'] : FALSE;
-}
-if ( ! isset( $sortable ) ) {
-	$sortable = isset( $field['sortable'] ) ? $field['sortable'] : FALSE;
-}
-if ( ! isset( $params_separator ) ) {
-	$params_separator = isset( $field['params_separator'] ) ? $field['params_separator'] : ',';
-}
-if ( ! isset( $options ) ) {
-	$options = isset( $field['options'] ) ? $field['options'] : array();
-}
-if ( ! isset( $value ) ) {
-	$value = isset( $field['value'] ) ? $field['value'] : '';
-}
+$value = isset( $value ) ? $value : '';
+
+// Default field params values
+$classes = isset( $field['classes'] ) ? $field['classes'] : '';
+$multiple = isset( $field['is_multiple'] ) ? $field['is_multiple'] : FALSE;
+$sortable = isset( $field['is_sortable'] ) ? $field['is_sortable'] : FALSE;
+$params_separator = isset( $field['params_separator'] ) ? $field['params_separator'] : ',';
+$options = isset( $field['options'] ) ? $field['options'] : array();
+
 // Additional parameters that may be needed in Ajax request
-if ( ! isset( $ajax_query_args ) ) {
-	$ajax_query_args = isset( $field['ajax_query_args'] ) ? $field['ajax_query_args'] : array();
+$ajax_query_args = array();
+// List of possible args
+$possible_ajax_query_args = array(
+	'action', // action name for backend
+	'slug', // post type slug or taxonomy slug
+	// Following args used in font autocomplete only
+	'font_limit',
+	'get_h1',
+	'only_google'
+);
+// Adding only those ajax query args that are explicitly set in settings
+foreach ( $possible_ajax_query_args as $arg ) {
+	if ( isset( $field['settings'][ $arg ] ) ) {
+		$ajax_query_args[ $arg ] = $field['settings'][ $arg ];
+	}
+}
+// Separately adding nonce to ajax args, since it requires the function call
+if ( isset( $field['settings']['nonce_name'] ) ) {
+	$ajax_query_args['_nonce'] = wp_create_nonce( $field['settings']['nonce_name'] );
 }
 
 /**
@@ -62,7 +72,7 @@ $func_create_options_list = function ( $options ) use ( &$func_create_options_li
 				'data-text' => esc_attr( str_replace( ' ', '', strtolower( $name ) ) ),
 				'tabindex' => '3',
 			);
-			$output .= '<div ' . us_implode_atts( $atts ) . '>' .  $name . '</div>';
+			$output .= '<div' . us_implode_atts( $atts ) . '>' .  $name . '</div>';
 		}
 	}
 
@@ -98,13 +108,17 @@ if ( strpos( $classes, 'wpb_vc_param_value' ) !== FALSE ) {
 
 // Output HTML
 $output = '<div class="usof-autocomplete"' . us_pass_data_to_js( $export_settings ) . '>';
-$output .= '<input ' . us_implode_atts( $atts ) . '>';
+$output .= '<input' . us_implode_atts( $atts ) . '>';
 $output .= '<div class="usof-autocomplete-toggle">';
 $output .= '<div class="usof-autocomplete-options">';
 $output .= '<input type="text" autocomplete="off" placeholder="' . us_translate_x( 'Search &hellip;', 'placeholder' ) . '" tabindex="2">';
 $output .= '</div>';
 $output .= '<div class="usof-autocomplete-list">' . $func_create_options_list( $options ) . '</div>';
 $output .= '<div class="usof-autocomplete-message hidden"></div>';
+$output .= '</div>';
+$output .= '<div style="display: none;">';
+ob_start();
+$output .= ob_get_clean();
 $output .= '</div>';
 $output .= '</div>';
 

@@ -32,7 +32,7 @@ function usgb_enqueue_scripts() {
 	usof_print_scripts();
 
 	// Appending required assets
-	wp_enqueue_script( 'us-grid-builder', US_CORE_URI . '/admin/js/grid-builder.js', array( 'usof-scripts' ), TRUE );
+	wp_enqueue_script( 'us-grid-builder', US_CORE_URI . '/admin/js/grid-builder.js', array(), TRUE ); // TODO: check if we need deps
 
 	// Disabling WP auto-save
 	wp_dequeue_script( 'autosave' );

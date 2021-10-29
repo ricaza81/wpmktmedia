@@ -27,6 +27,7 @@
 			flex-shrink: 0;
 			line-height: inherit;
 			width: 1.6em;
+			-webkit-user-select: none;
 			user-select: none;
 			}
 		.usof-icons-info-group-list li.type_fallback > i {
@@ -45,6 +46,7 @@
 			top: 28px;
 			width: auto;
 			max-width: 250px;
+			-webkit-user-select: none;
 			user-select: none;
 			}
 			.usof-icons-info-group-list .usof-tooltip-text > a {
@@ -55,7 +57,7 @@
 				margin-bottom: 5px;
 				}
 		.usof-icons-info-group-list li:hover > span {
-			color: #0073aa;
+			color: var(--usof-color-blue-50);
 			}
 		.usof-icons-info-group-list li:hover .usof-tooltip-text {
 			opacity: 1;

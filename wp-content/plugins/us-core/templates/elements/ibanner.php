@@ -24,9 +24,6 @@ $_atts['class'] .= ' animation_' . $animation;
 $_atts['class'] .= ' ratio_' . $ratio;
 $_atts['class'] .= ' easing_' . $easing;
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -42,38 +39,39 @@ $title_inline_css = us_prepare_inline_css(
 	)
 );
 
-$title = wptexturize( $title );
-$title = strip_tags( $title, '<strong><br>' );
-
 $image_url = wp_get_attachment_image_url( $image, $size );
 if ( empty( $image_url ) ) {
 	$image_url = us_get_img_placeholder( $size, TRUE );
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="w-ibanner-h">';
 
-// Banner Image
+// Image
 $output .= '<div class="w-ibanner-image" style="background-image: url(' . esc_url( $image_url ) . ')"></div>';
 
 $output .= '<div class="w-ibanner-content"><div class="w-ibanner-content-h">';
 
-// Banner Title
-$output .= '<' . $title_tag . ' class="w-ibanner-title"' . $title_inline_css . '>';
-$output .= $title;
-$output .= '</' . $title_tag . '>';
+// Apply filters to title
+$title = us_replace_dynamic_value( $title );
+$title = wptexturize( $title );
+$title = strip_tags( $title, '<strong><br>' );
 
-// Banner Description
+// Title
+$output .= '<' . $title_tag . ' class="w-ibanner-title"' . $title_inline_css . '>' . $title . '</' . $title_tag . '>';
+
+// Description
+$desc = us_replace_dynamic_value( $desc );
 $output .= '<div class="w-ibanner-desc">' . wpautop( $desc ) . '</div>';
 
 $output .= '</div></div></div>';
 
-// Banner link
+// link
 $link_atts = us_generate_link_atts( $link );
 if ( ! empty( $link_atts['href'] ) ) {
 	$link_atts['aria-label'] = strip_tags( $title );
-	$output .= '<a ' . us_implode_atts( $link_atts ) . '></a>';
+	$output .= '<a' . us_implode_atts( $link_atts ) . '></a>';
 }
 
 $output .= '</div>';

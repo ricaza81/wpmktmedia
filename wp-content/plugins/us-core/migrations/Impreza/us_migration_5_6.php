@@ -728,7 +728,7 @@ class us_migration_5_6 extends US_Migration_Translator {
 		}
 
 		// Settings
-		$states = array( 'default', 'tablets', 'mobiles' );
+		$states = (array) us_get_responsive_states( /* Only keys */TRUE );
 		foreach ( $states as $state ) {
 			if ( isset( $settings[ $state ] ) ) {
 				$settings[ $state ]['options']['width'] = ( ! empty( $settings[ $state ]['options']['width'] ) AND intval( $settings[ $state ]['options']['width'] ) > 0 )

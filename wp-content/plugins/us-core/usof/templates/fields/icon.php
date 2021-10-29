@@ -23,7 +23,7 @@ $value = trim( $value );
 
 // Reset the value to default, when icon sets are available and value doesn't fit to icon sets
 if ( ! empty( $icon_sets ) AND ! preg_match( '/(fas|far|fal|fad|fab|material)\|[a-z0-9-]/i', $value ) ) {
-	$value = '';
+	$value = us_arr_path( $field, 'std', '' );
 }
 
 $input_atts = array(
@@ -40,7 +40,7 @@ if ( ! empty( $input_class ) ) {
 
 // Output the HTML
 $output = '<div class="us-icon">';
-$output .= '<input ' . us_implode_atts( $input_atts ) . '>';
+$output .= '<input' . us_implode_atts( $input_atts ) . '>';
 
 // Output icon sets selection and icon preview, when at least one icon set is available
 if ( ! empty( $icon_sets ) ) {
@@ -65,7 +65,7 @@ if ( ! empty( $icon_sets ) ) {
 		if ( $select_value == $icon_set_slug ) {
 			$option_atts['selected'] = 'selected';
 		}
-		$output .= '<option ' . us_implode_atts( $option_atts ) . '>' . $icon_set['set_name'] . '</option>';
+		$output .= '<option' . us_implode_atts( $option_atts ) . '>' . $icon_set['set_name'] . '</option>';
 	}
 	$output .= '</select>';
 	$output .= '</div>';

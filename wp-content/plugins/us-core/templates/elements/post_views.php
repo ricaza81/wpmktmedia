@@ -15,7 +15,10 @@
  *
  */
 
-if ( ! function_exists( 'pvc_get_post_views' ) ) {
+// Determines the called shortcode for the US Builder page
+$is_builder_preview_page = apply_filters( 'usb_is_preview_page', NULL );
+
+if ( ! function_exists( 'pvc_get_post_views' ) AND ! $is_builder_preview_page ) {
 	return;
 }
 
@@ -27,10 +30,12 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 	return;
 }
 
-// CSS classes & ID
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
+$_atts['class'] = 'w-post-elm post_views';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+
+if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
+	$_atts['id'] = $el_id;
+}
 
 // Text before value
 $text_before = ( trim( $text_before ) != '' ) ? '<span class="w-post-elm-before">' . trim( $text_before ) . ' </span>' : '';
@@ -39,8 +44,10 @@ $text_before = ( trim( $text_before ) != '' ) ? '<span class="w-post-elm-before"
 $text_after = ( trim( $text_after ) != '' ) ? '<span class="w-post-elm-after"> ' . trim( $text_after ) . '</span>' : '';
 
 // Get the value
-$value = pvc_get_post_views();
-$value = intval( $value );
+$value = ! $is_builder_preview_page
+	? pvc_get_post_views()
+	: 0;
+$value = (int) $value;
 if ( $result_thousand_short AND $value > 999 ) {
 	$value = number_format( floor( $value / 1000 ), 0, '', $result_thousand_separator );
 	$value .= 'K';
@@ -49,7 +56,7 @@ if ( $result_thousand_short AND $value > 999 ) {
 }
 
 // Output the element
-$output = '<div class="w-post-elm post_views' . $classes . '"' . $el_id . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 if ( ! empty( $icon ) ) {
 	$output .= us_prepare_icon_tag( $icon );
 }

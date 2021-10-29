@@ -68,7 +68,6 @@ if ( ! class_exists( 'WP_Background_Process' ) ) {
 		 * Dispatch
 		 *
 		 * @access public
-		 * @return void
 		 */
 		public function dispatch() {
 			// Schedule the cron healthcheck.

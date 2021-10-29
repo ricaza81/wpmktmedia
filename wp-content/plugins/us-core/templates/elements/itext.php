@@ -20,9 +20,6 @@ if ( $disable_part_animation ) {
 if ( $dynamic_bold ) {
 	$_atts['class'] .= ' dynamic_bold';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -32,9 +29,9 @@ $texts = html_entity_decode( $texts );
 $texts_arr = explode( "\n", strip_tags( $texts ) );
 
 $js_data = array(
-	'duration' => floatval( $duration ) * 1000,
-	'delay' => floatval( $delay ) * 1000,
-	'disablePartAnimation' => !! $disable_part_animation,
+	'duration' => (float) $duration * 1000,
+	'delay' => (float) $delay * 1000,
+	'disablePartAnimation' => ! ! $disable_part_animation,
 );
 if ( ! empty( $dynamic_color ) ) {
 	$js_data['dynamicColor'] = us_get_color( $dynamic_color );
@@ -93,7 +90,7 @@ if ( ! $disable_part_animation ) {
 	$animation_type = 'fadeIn';
 }
 
-$nbsp_char = html_entity_decode( '&nbsp;' );
+$nbsp_char = html_entity_decode( '&nbsp;', ENT_COMPAT | ENT_HTML401, 'UTF-8' );
 $js_data['html_nbsp_char'] = TRUE;
 if ( empty( $html_spaces ) ) {
 	$nbsp_char = ' ';
@@ -156,13 +153,17 @@ foreach ( $groups[ end( $group_keys ) ] as &$text ) {
 unset( $text );
 
 // Output the element
-$output = '<' . $tag . ' ' . us_implode_atts( $_atts );
+$output = '<' . $tag . us_implode_atts( $_atts );
 if ( ! us_amp() ) {
 	$output .= us_pass_data_to_js( $js_data );
 }
 $output .= '>';
 
 foreach ( $groups as $index => $group ) {
+	// Remove leading spaces in the first part
+	if ( $index === 0 ) {
+		$group = array_map( 'ltrim', $group );
+	}
 	ksort( $group );
 	if ( empty( $group_map_changes[ $index ] ) ) {
 
@@ -170,13 +171,19 @@ foreach ( $groups as $index => $group ) {
 		$output .= $group[0];
 	} else {
 		$_part_atts = array(
-			'class' => 'w-itext-part'
+			'class' => 'w-itext-part',
 		);
 
 		// Delete all indents and spaces at the beginning of a line
-		$group = array_map( function( $text ) {
-			return preg_replace( '/^\s+/', '', $text );
-		}, $group );
+		$group = array_map(
+			function ( $text ) use ( $nbsp_char ) {
+				// Remove ASCII spaces https://en.wikipedia.org/wiki/Non-breaking_space
+				$text = preg_replace( '/^(\xc2\xa0)+/', '', $text );
+				$text = preg_replace( '/^\s+/', '', $text );
+
+				return $text;
+			}, $group
+		);
 
 		// Animation classes (just in case site editor wants some custom styling for them)
 		if ( ! empty( $group_map_changes[ $index ] ) AND ! us_amp() ) {
@@ -196,7 +203,7 @@ foreach ( $groups as $index => $group ) {
 
 		$text = preg_replace( '/\s+/', $nbsp_char, htmlentities( $group[0] ) );
 
-		$output .= '<span ' . us_implode_atts( $_part_atts );
+		$output .= '<span' . us_implode_atts( $_part_atts );
 		if ( ! us_amp() ) {
 			$output .= us_pass_data_to_js( $group );
 		}

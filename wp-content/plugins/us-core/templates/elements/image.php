@@ -10,9 +10,6 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 if ( ! empty( $style ) ) {
 	$_atts['class'] .= ' style_' . $style;
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -32,30 +29,31 @@ if ( strpos( $style, 'phone' ) !== FALSE ) {
 $ratio_helper_html = '';
 if ( $has_ratio ) {
 	$ratio_array = us_get_aspect_ratio_values( $ratio, $ratio_width, $ratio_height );
-	$ratio_helper_html = '<div style="padding-bottom:' . number_format( $ratio_array[1] / $ratio_array[0] * 100, 4 ) . '%"></div>';
+	$ratio_helper_html = '<div style="padding-bottom:' . round( $ratio_array[1] / $ratio_array[0] * 100, 4 ) . '%"></div>';
 	$_atts['class'] .= ' has_ratio';
 }
 
 // Classes & inline styles
 if ( $us_elm_context == 'shortcode' ) {
 
+	// Get image ID from shortcode
 	$img = $image;
 
 	$_atts['class'] .= ' align_' . $align;
 	$_atts['class'] .= ( $meta ) ? ' meta_' . $meta_style : '';
+}
 
-	if ( ! empty( $animate ) AND ! us_amp() ) {
-		$_atts['class'] .= ' animate_' . $animate;
-		if ( ! empty( $animate_delay ) ) {
-			$_atts['style'] = 'animation-delay:' . floatval( $animate_delay ) . 's';
-		}
+// Fallback for the old "animate" attribute (for versions before 8.0)
+if ( ! us_amp() AND ! us_design_options_has_property( $css, 'animation-name' ) AND ! empty( $atts['animate'] ) ) {
+	$_atts['class'] .= ' us_animate_' . $atts['animate'];
+	if ( ! empty( $atts['animate_delay'] ) ) {
+		$_atts['style'] = 'animation-delay:' . (float) $atts['animate_delay'] . 's';
 	}
 }
 
 // Get the image
 $img_src = '';
-$img_arr = explode( '|', $img );
-$img_html = wp_get_attachment_image( $img_arr[0], $size );
+$img_html = wp_get_attachment_image( $img, $size );
 
 if ( empty( $img_html ) ) {
 	// check if image ID is URL
@@ -70,15 +68,19 @@ if ( empty( $img_html ) ) {
 }
 
 // Get the image for transparent header if set
-if ( ! empty( $img_transparent ) AND preg_match( '~^(\d+)(\|(.+))?$~', $img_transparent, $matches ) ) {
+if ( ! empty( $img_transparent ) ) {
 	$_atts['class'] .= ' with_transparent';
-	$img_arr = explode( '|', $img_transparent );
-	$img_html .= wp_get_attachment_image( $img_arr[0], $size );
+	$img_html .= wp_get_attachment_image( $img_transparent, $size );
 }
 
 // Title and description
 $img_meta_html = '';
-if ( $us_elm_context == 'shortcode' AND $img_html AND $meta ) {
+if (
+	$us_elm_context == 'shortcode'
+	AND $img
+	AND $img_html
+	AND $meta
+) {
 
 	if ( $attachment = get_post( $img ) ) {
 
@@ -157,8 +159,8 @@ if ( ! empty( $link_atts['href'] ) ) {
 $link_atts['class'] = 'w-image-h';
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
-$output .= '<' . $tag . ' ' . us_implode_atts( $link_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
+$output .= '<' . $tag . us_implode_atts( $link_atts ) . '>';
 $output .= $ratio_helper_html;
 $output .= $img_shadow_html;
 $output .= $img_html;

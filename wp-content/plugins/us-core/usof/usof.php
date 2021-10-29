@@ -39,7 +39,7 @@ function usof_get_option( $name, $default_value = NULL ) {
 /**
  * Get default value for a certain USOF field
  * @param array $field
- * @return mixed
+ * @return string
  */
 function usof_get_default( &$field ) {
 
@@ -60,7 +60,7 @@ function usof_get_default( &$field ) {
 	);
 
 	if ( ! isset( $field['type'] ) OR in_array( $field['type'], $no_values_types ) ) {
-		return NULL;
+		return '';
 	}
 
 	// Using first value as standard for selectable types
@@ -116,7 +116,7 @@ function usof_defaults( $key = NULL ) {
 	}
 
 	if ( $key !== NULL ) {
-		return isset( $values[ $key ] ) ? $values[ $key ] : NULL;
+		return isset( $values[ $key ] ) ? $values[ $key ] : '';
 	}
 
 	return $values;
@@ -191,34 +191,6 @@ if ( ! function_exists( 'usof_backup' ) ) {
 		update_option( 'usof_backup_' . US_THEMENAME, $backup, FALSE );
 
 	}
-}
-
-/**
- * Get uploaded image from USOF field value
- *
- * @param string $value Upload field value in "123|full" format
- *
- * @return array [url, width, height]
- */
-function usof_get_image_src( $value, $size = NULL ) {
-	if ( preg_match( '~^(\d+)(\|(.+))?$~', $value, $matches ) ) {
-		// Image size
-		if ( $size == NULL ) {
-			$matches[3] = empty( $matches[3] ) ? 'full' : $matches[3];
-		} else {
-			$matches[3] = $size;
-		}
-		$result = wp_get_attachment_image_src( $matches[1], $matches[3] );
-		if ( is_array( $result ) AND count( $result ) > 2 AND preg_match( '~\.svg$~', $result[0] ) ) {
-			// SVG images have no specific dimensions
-			$result[1] = $result[2] = '';
-		}
-	} else {
-		$value = str_replace( '[site_url]', site_url(), $value );
-		$result = array( $value, '', '' );
-	}
-
-	return $result;
 }
 
 /**
@@ -331,6 +303,7 @@ function usof_color_scheme_preview( $scheme ) {
  */
 if ( ! function_exists( 'usof_color_picker' ) ) {
 	add_action( 'admin_footer', 'usof_color_picker' );
+	add_action( 'usb_admin_footer_scripts', 'usof_color_picker', 101 );
 	function usof_color_picker() {
 
 		$palette = defined( 'US_THEMENAME' ) ? get_option( 'usof_color_palette_' . US_THEMENAME ) : array();
@@ -372,16 +345,16 @@ if ( ! function_exists( 'usof_color_picker' ) ) {
 		$output .= '</div>';
 
 		// Radio buttons: Solid / Gradient
-		$output .= '<ul class="usof-radio-list">';
-		$output .= '<li class="usof-radio">';
-		$output .= '<input name="usof-colpick-type" id="usof-colpick-solid" type="radio" value="solid">';
-		$output .= '<label for="usof-colpick-solid">' . _x( 'Solid', 'color type', 'us' ) . '</label>';
-		$output .= '</li>';
-		$output .= '<li class="usof-radio">';
-		$output .= '<input name="usof-colpick-type" id="usof-colpick-gradient" type="radio" value="gradient">';
-		$output .= '<label for="usof-colpick-gradient">' . _x( 'Gradient', 'color type', 'us' ) . '</label>';
-		$output .= '</li>';
-		$output .= '</ul>';
+		$output .= '<div class="usof-radio">';
+		$output .= '<label>';
+		$output .= '<input name="usof-colpick-type" type="radio" value="solid">';
+		$output .= '<span class="usof-radio-value">' . _x( 'Solid', 'color type', 'us' ) . '</span>';
+		$output .= '</label>';
+		$output .= '<label>';
+		$output .= '<input name="usof-colpick-type" type="radio" value="gradient">';
+		$output .= '<span class="usof-radio-value">' . _x( 'Gradient', 'color type', 'us' ) . '</span>';
+		$output .= '</label>';
+		$output .= '</div>';
 
 		// Angle slider
 		$output .= '<div class="usof-colpick-angle">';
@@ -406,5 +379,121 @@ if ( ! function_exists( 'usof_color_picker' ) ) {
 		$output .= '</div>';
 
 		echo $output;
+	}
+}
+
+if ( ! function_exists( 'usof_get_dynamic_colors' ) ) {
+	/**
+	 * Get a list of dynamic colors for $usof.field['color']
+	 *
+	 * @return array
+	 */
+	function usof_get_dynamic_colors() {
+		$result = array();
+		$group_name = NULL;
+
+		foreach ( us_config( 'theme-options.colors.fields', array() ) as $field_name => $field ) {
+			// Group Search
+			if (
+				isset( $field['type'] )
+				AND $field['type'] === 'heading'
+				AND ! empty( $field['title'] )
+			) {
+				$group_name = $field['title'];
+			}
+
+			// Skip all types except color
+			if ( isset( $field['type'] ) AND $field['type'] !== 'color' ) {
+				continue;
+			}
+
+			// Remove "color" prefix for better UI
+			if ( strpos( $field_name, 'color' ) === 0 ) {
+				$field_name = substr( $field_name, strlen( 'color' ) );
+			}
+
+			// Color option
+			$item = array(
+				'name' => $field_name,
+				'title' => us_arr_path( $field, 'text', '' ),
+				'value' => us_get_color( $field_name, /* Gradient */ TRUE, /* CSS var */ FALSE ),
+			);
+
+			if ( ! is_null( $group_name ) ) {
+				$result[ $group_name ][] = $item;
+			} else {
+				$result[] = $item;
+			}
+		}
+
+		return $result;
+	}
+}
+
+if ( ! function_exists( 'usof_extract_tinymce_options' ) ) {
+	/**
+	 * Extracting mceInit settings for editor by ID
+	 * Note: The current method is called for the editor field in the context of the header.
+	 *
+	 * @param string $id The editor ID
+	 * @param array $set The settings
+	 * @return string $mceInit
+	 */
+	function usof_extract_tinymce_options( $id, $set ) {
+		if ( ! is_array( $set ) ) {
+			$set = array();
+		}
+		$mceInit = array();
+		/**
+		 * Filter function to extract data
+		 *
+		 * @param array $mceInit The mce init settings
+		 * @param string $editor_id The editor ID
+		 * @return array
+		 */
+		$func_tiny_mce_before_init = function ( $_mceInit, $editor_id ) use( $id, &$mceInit ) {
+			if ( $id === $editor_id ) {
+				$mceInit = (array) $_mceInit;
+			}
+			return $mceInit;
+		};
+
+		// Add a filter to extract `$mceInit`
+		add_filter( 'tiny_mce_before_init', $func_tiny_mce_before_init, 1, 2 );
+
+		// Init of editor settings to form all options
+		if ( ! class_exists( '_WP_Editors', false ) ) {
+			require ABSPATH . WPINC . '/class-wp-editor.php';
+		}
+		$set = \_WP_Editors::parse_settings( $id, $set );
+		\_WP_Editors::editor_settings( $id, $set );
+
+		// Remove the filter after extracting the `$mceInit`
+		remove_filter( 'tiny_mce_before_init', $func_tiny_mce_before_init );
+
+		// Parsing received options
+		$options = '';
+		foreach ( $mceInit as $key => $value ) {
+			if ( is_bool( $value ) ) {
+				$val = $value ? 'true' : 'false';
+				$options .= $key . ':' . $val . ',';
+				continue;
+			} elseif (
+				! empty( $value )
+				&& is_string( $value )
+				&& (
+					( '{' === $value[0] && '}' === $value[ strlen( $value ) - 1 ] )
+					|| ( '[' === $value[0] && ']' === $value[ strlen( $value ) - 1 ] )
+					|| preg_match( '/^\(?function ?\(/', $value )
+				)
+			) {
+
+				$options .= $key . ':' . $value . ',';
+				continue;
+			}
+			$options .= $key . ':"' . $value . '",';
+		}
+
+		return '{' . trim( $options, ' ,' ) . '}';
 	}
 }

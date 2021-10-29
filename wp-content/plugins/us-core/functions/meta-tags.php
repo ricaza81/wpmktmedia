@@ -52,8 +52,6 @@ if ( ! function_exists( 'us_output_meta_tags' ) ) {
 	add_action( 'wp_head', 'us_output_meta_tags', 5 );
 	/**
 	 * Get and output metadata for a page
-	 *
-	 * @return void
 	 */
 	function us_output_meta_tags() {
 
@@ -177,7 +175,7 @@ if ( ! function_exists( 'us_output_meta_tags' ) ) {
 						'content' => $tag_content,
 					);
 				}
-				echo "<meta " . us_implode_atts( $tag_atts ) . ">\n";
+				echo "<meta" . us_implode_atts( $tag_atts ) . ">\n";
 			}
 		}
 	}
@@ -189,7 +187,6 @@ if ( ! function_exists( 'us_save_post_add_og_image' ) ) {
 	 * Save og_image for the post if there is a setting
 	 *
 	 * @param int $post_id The post identifier
-	 * @return void
 	 */
 	function us_save_post_add_og_image( $post_id ) {
 
@@ -219,7 +216,6 @@ if (
 	 * Add custom fields to terms of taxonomies on the "Edit" admin screen
 	 *
 	 * @param object $term Term object
-	 * @return void
 	 */
 	function us_term_custom_fields( $term ) {
 		$misc = us_config( 'elements_misc' );
@@ -316,9 +312,9 @@ if (
 					'name' => $meta_key,
 				); ?>
 				<?php if ( $meta_options['type'] === 'text' ) { ?>
-					<input <?= us_implode_atts( array_merge( $_atts, array( 'value' => $$meta_key ) ) ) ?> >
+					<input<?= us_implode_atts( array_merge( $_atts, array( 'value' => $$meta_key ) ) ) ?> >
 				<?php } else { ?>
-					<textarea <?= us_implode_atts( array_merge( $_atts, array(
+					<textarea<?= us_implode_atts( array_merge( $_atts, array(
 						'rows' => 5,
 						'cols' => 50,
 						'class' => 'large-text',

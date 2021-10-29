@@ -41,8 +41,8 @@ h3.widgettitle {
 	}
 
 /* Tag Cloud */
-.widget_tag_cloud a {
-	color: inherit;
+.l-main .widget_tag_cloud a {
+	color: var(--color-content-faded);
 	}
 
 /* RSS */
@@ -66,8 +66,7 @@ h3.widgettitle {
 /* Calendar */
 .widget_calendar #calendar_wrap {
 	padding: 1rem;
-	border-style: solid;
-	border-width: 2px; /* fixed value */
+	box-shadow: var(--box-shadow);
 	}
 	#wp-calendar caption {
 		font-weight: bold;
@@ -114,6 +113,7 @@ h3.widgettitle {
 	.l-main .widget_nav_menu .menu {
 		border-width: 0 0 1px;
 		border-style: solid;
+		border-color: var(--color-content-border);
 		}
 	.l-main .widget_nav_menu ul,
 	.l-main .widget_nav_menu ul li {
@@ -125,10 +125,15 @@ h3.widgettitle {
 			padding: 0.6em 1.2em;
 			border-width: 1px 0 0 !important;
 			border-style: solid;
+			border-color: var(--color-content-border);
 			color: inherit;
+			}
+		.no-touch .l-main .widget_nav_menu a:hover {
+			background: var(--color-content-bg-alt-grad);
 			}
 		.l-main .widget_nav_menu .menu-item.current-menu-item > a {
 			border-color: transparent;
+			background: var(--color-content-primary-grad);
 			color: #fff;
 			}
 		.l-main .color_primary .widget_nav_menu .menu-item.current-menu-item > a {

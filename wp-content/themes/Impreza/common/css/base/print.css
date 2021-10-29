@@ -42,7 +42,7 @@ body.l-body div[class*="_custom_"] {
 	height: auto !important;
 	min-height: 0 !important;
 	}
-.wpb_wrapper {
+.vc_column-inner {
 	position: static !important;
 	}
 body.l-body .l-section .l-section-h,
@@ -68,7 +68,7 @@ body.l-body .w-btn:after {
 
 /* fix for FireFox, which cuts blocks with display: flex */
 .g-cols,
-.wpb_column,
+.vc_column_container,
 .vc_column-inner {
 	display: block !important;
 	}
@@ -171,7 +171,6 @@ body.l-body .w-btn:after {
 	display: none !important;
 	}
 .w-tabs-sections,
-.w-tabs-sections-h,
 .w-tabs-section {
 	position: static !important;
 	height: auto !important;

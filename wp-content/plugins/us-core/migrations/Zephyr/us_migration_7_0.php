@@ -781,24 +781,24 @@ class us_migration_7_0 extends US_Migration_Translator {
 			foreach ( $data['design_options'] as $prop_name => $prop_value ) {
 				if ( preg_match( '/^([a-z\_?]+)_(default|tablets|mobiles)$/' , $prop_name, $matches ) ) {
 					$prop_name = str_replace( '_', '-', $matches[ 1 ] );
-					$device_type = $matches[ 2 ];
+					$state = $matches[ 2 ];
 
 					// Position
 					if ( strpos( $prop_name, 'position-') !== FALSE AND $prop_value !== '' ) {
-						$design_options[ $device_type ]['position'] = 'absolute';
+						$design_options[ $state ]['position'] = 'absolute';
 						$prop_name = str_replace( 'position-', '', $prop_name );
 					}
 
 					// Border
 					if ( strpos( $prop_name, 'border-') !== FALSE ) {
 						$prop_name .= '-width';
-						if ( ! isset( $design_options[ $device_type ][ 'border-style' ] ) AND $prop_value !== '' ) {
-							$design_options[ $device_type ][ 'border-style' ] = 'solid';
+						if ( ! isset( $design_options[ $state ][ 'border-style' ] ) AND $prop_value !== '' ) {
+							$design_options[ $state ][ 'border-style' ] = 'solid';
 						}
 					}
 
 					if (
-						$device_type !== 'default'
+						$state !== 'default'
 						AND strpos( $elm_id, 'btn' ) === FALSE
 						AND isset( $design_options[ 'default' ][ $prop_name ] )
 						AND $design_options[ 'default' ][ $prop_name ] !== ''
@@ -808,7 +808,7 @@ class us_migration_7_0 extends US_Migration_Translator {
 					}
 
 					// Get image id and size
-					$design_options[ $device_type ][ $prop_name ] = trim( $prop_value );
+					$design_options[ $state ][ $prop_name ] = trim( $prop_value );
 
 					$changed = TRUE;
 				}
@@ -832,11 +832,11 @@ class us_migration_7_0 extends US_Migration_Translator {
 		}
 
 		// Move font_size & line_height to new design options
-		foreach ( array( 'tablets', 'mobiles' ) as $device_type ) {
+		foreach ( array( 'tablets', 'mobiles' ) as $state ) {
 			foreach ( array( 'font_size', 'line_height' ) as $prop_name ) {
-				$option_name = $prop_name . '_' . $device_type;
+				$option_name = $prop_name . '_' . $state;
 				if ( ! empty( $data[ $option_name ] ) ) {
-					$design_options[ $device_type ][ str_replace( '_', '-', $prop_name ) ] = trim( $data[ $option_name ] );
+					$design_options[ $state ][ str_replace( '_', '-', $prop_name ) ] = trim( $data[ $option_name ] );
 
 					unset( $data[ $option_name ] );
 					$changed = TRUE;
@@ -877,8 +877,8 @@ class us_migration_7_0 extends US_Migration_Translator {
 			if ( strpos( $elm_id, $elm_name ) !== FALSE ) {
 				foreach ( array( 'size', 'size_tablets', 'size_mobiles' ) as $prop_name ) {
 					if ( ! empty( $data[ $prop_name ] ) AND preg_match( '/size(_(\w+))?/', $prop_name, $matches ) ) {
-						$device_type = isset( $matches[2] ) ? $matches[2] : 'default';
-						$design_options[ $device_type ]['font-size'] = trim( $data[ $prop_name ] );
+						$state = isset( $matches[2] ) ? $matches[2] : 'default';
+						$design_options[ $state ]['font-size'] = trim( $data[ $prop_name ] );
 
 						unset( $data[ $prop_name ] );
 						$changed = TRUE;
@@ -1039,11 +1039,11 @@ class us_migration_7_0 extends US_Migration_Translator {
 		foreach ( $atts as $attr_name => $css_prop ) {
 			if ( isset( $params[ $attr_name ] ) ) {
 				if ( $value = trim( $params[ $attr_name ] ) ) {
-					$device_type = preg_match( '/^([a-z\_?]+)_(default|tablets|mobiles)$/' , $attr_name, $matches )
+					$state = preg_match( '/^([a-z\_?]+)_(default|tablets|mobiles)$/' , $attr_name, $matches )
 						? $matches[2]
 						: 'default';
 
-					$css[ $device_type ][ $css_prop ] = $value;
+					$css[ $state ][ $css_prop ] = $value;
 				}
 				unset( $params[ $attr_name ] );
 				$changed = TRUE;

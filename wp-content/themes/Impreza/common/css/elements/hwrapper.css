@@ -6,6 +6,11 @@
 	display: flex;
 	align-items: center;
 	}
+.w-hwrapper.wrap {
+	flex-wrap: wrap;
+	}
+
+/* Align */
 .w-hwrapper.align_center {
 	justify-content: center;
 	}
@@ -15,36 +20,39 @@
 		margin-left: calc( var(--hwrapper-gap, 1.2rem) / 2 );
 		margin-right: calc( var(--hwrapper-gap, 1.2rem) / 2 );
 		}
-.w-hwrapper.align_left {
-	justify-content: flex-start;
-	}
-	.w-hwrapper.align_left > * {
-		margin-right: 1.2rem; /* fallback for IE11 */
-		margin-right: var(--hwrapper-gap, 1.2rem);
-		}
-	.w-hwrapper.align_left > *:last-child {
-		margin-right: 0;
-		}
-.w-hwrapper.align_right {
-	justify-content: flex-end;
-	}
-	.w-hwrapper.align_right > * {
+	.w-hwrapper:not(.align_center) > * {
 		margin-left: 1.2rem; /* fallback for IE11 */
+		margin-right: 1.2rem; /* fallback for IE11 */
 		margin-left: var(--hwrapper-gap, 1.2rem);
-		}
-	.w-hwrapper.align_right > *:first-child {
-		margin-left: 0;
+		margin-right: var(--hwrapper-gap, 1.2rem);
 		}
 .w-hwrapper.align_justify {
 	justify-content: space-between;
 	}
-	.w-hwrapper.align_justify > * {
-		margin-right: 1.2rem; /* fallback for IE11 */
-		margin-right: var(--hwrapper-gap, 1.2rem);
+
+/* rtl class is needed to avoid double overriding of CSS */
+.rtl .w-hwrapper.align_left,
+body:not(.rtl) .w-hwrapper.align_right {
+	justify-content: flex-end;
+	}
+	.w-hwrapper.align_left > *,
+	.w-hwrapper.align_justify > *,
+	body:not(.rtl) .w-hwrapper.align_none > *,
+	body:not(.rtl) .w-hwrapper.align_right > *:first-child,
+	.rtl .w-hwrapper.align_right > *:last-child,
+	.rtl .w-hwrapper.align_none > *:last-child {
+		margin-left: 0;
 		}
-	.w-hwrapper.align_justify > *:last-child {
+	.w-hwrapper.align_right > *,
+	.w-hwrapper.align_justify > *:last-child,
+	body:not(.rtl) .w-hwrapper.align_none > *:last-child,
+	body:not(.rtl) .w-hwrapper.align_left > *:last-child,
+	.rtl .w-hwrapper.align_left > *:first-child,
+	.rtl .w-hwrapper.align_none > * {
 		margin-right: 0;
 		}
+
+/* Valign */
 .w-hwrapper.valign_top {
 	align-items: flex-start;
 	}
@@ -58,6 +66,3 @@
 		display: inline-block;
 		vertical-align: baseline !important;
 		}
-.w-hwrapper.wrap {
-	flex-wrap: wrap;
-	}

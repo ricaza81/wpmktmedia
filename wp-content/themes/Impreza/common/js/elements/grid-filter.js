@@ -1,16 +1,15 @@
 /**
- * UpSolution Element: Grid Filter
+ * UpSolution Element: Grid Filter.
  */
 ;( function( $, undefined ) {
 	"use strict";
 
 	/**
-	 * US Grid Filter
+	 * US Grid Filter.
 	 *
 	 * @class WGridFilter
-	 * @param {string} container The container
-	 * @param {object} options The options
-	 * @return void
+	 * @param {string} container The container.
+	 * @param {object} options The options.
 	 */
 	$us.WGridFilter = function ( container, options ) {
 		this.init( container, options );
@@ -19,13 +18,13 @@
 	// Export API
 	$.extend( $us.WGridFilter.prototype, $us.mixins.Events, {
 		/**
-		 * @param {string} container The container
-		 * @param {object} options The options
-		 * @return void
+		 * @param {string} container The container.
+		 * @param {object} options The options.
 		 */
 		init: function ( container, options ) {
 			// Variables
 			this.defaultOptions = {
+				assignedGrid: null,
 				filterPrefix: 'filter', // default prefix
 				gridNotFoundMessage: false,
 				gridPaginationSelector: '.w-grid-pagination',
@@ -33,6 +32,8 @@
 				layout: 'hor',
 				mobileWidth: 600
 			};
+			var $main = $us.$canvas.find( '.l-main' );
+
 			this.options = $.extend( this.defaultOptions, options );
 			// Related parameters for getting data, number of records for taxonomy, price range for WooCommerce, etc.
 			this.filtersArgs = {};
@@ -40,12 +41,24 @@
 			// Elements
 			this.$container = $( container );
 			this.$filtersItem = $( '.w-filter-item', this.$container );
-			this.$grid = $( this.options.gridSelector, $us.$canvas.find( '.l-main' ) );
 
 			// Load json data
 			if ( this.$container.is( '[onclick]' ) ) {
 				$.extend( this.options, this.$container[0].onclick() || {} );
-				this.$container.removeAttr( 'onclick' );
+				// Delete data everywhere except for the preview of the USBuilder, the data may be needed again to restore the elements.
+				if ( ! $us.usbPreview ) this.$container.removeAttr( 'onclick' );
+			}
+
+			// Connect assigned grid if it is set in options
+			if ( !! this.options.assignedGrid ) {
+				var $assignedGrid = $( '#' + this.options.assignedGrid, $main );
+				if ( $assignedGrid.length && $assignedGrid.is( '.w-grid' ) ) {
+					this.$grid = $assignedGrid;
+				}
+			}
+			// If no grid assigned in options, search for first filterable grid
+			if ( this.$grid === undefined ) {
+				this.$grid = $( this.options.gridSelector, $main );
 			}
 
 			// Load Filters Args
@@ -55,22 +68,23 @@
 				$filtersArgs.remove();
 			}
 
-			// Show the message when suitable Grid is not found
+			// Show the message when suitable Grid is not found.
 			if ( ! this.$grid.length && this.options.gridNotFoundMessage ) {
 				this.$container
 					.prepend( '<div class="w-filter-message">' + this.options.gridNotFoundMessage + '</div>' );
 			}
 
-			// Set class to define the grid is used by Grid Filter
+			// Set class to define the grid is used by Grid Filter.
 			this.$grid.addClass( 'used_by_grid_filter' );
 
 			// Events
 			this.$container
 				.on( 'click', '.w-filter-opener', this._events.filterOpener.bind( this ) )
-				.on( 'click', '.w-filter-list-closer', this._events.filterListCloser.bind( this ) );
+				.on( 'click', '.w-filter-list-closer, .w-filter-list-panel > a', this._events.filterListCloser.bind( this ) );
+
 			// Item events
 			this.$filtersItem
-				// Exclude [type="number"] these types for range
+				// Exclude [type="number"] these types for range.
 				.on( 'change', 'input, select', this._events.changeFilter.bind( this ) )
 				.on( 'click', '.w-filter-item-reset', this._events.resetItem.bind( this ) );
 
@@ -79,6 +93,7 @@
 				.on( 'click', '.page-numbers', this._events.loadPageNumber.bind(this ) );
 			$us.$window
 				.on( 'resize load', $us.debounce( this._events.resize.bind( this ), 100 ) );
+
 			// Built-in private event system
 			this
 				.on( 'changeItemValue', this._events.toggleItemValue.bind( this ) );
@@ -91,7 +106,7 @@
 					.mouseup( this._events.hideItem.bind( this ) );
 			}
 
-			// Adding filter options to Woocommerce ordering
+			// Adding filter options to Woocommerce ordering.
 			$( 'form.woocommerce-ordering', $us.$canvas )
 				.off( 'change', 'select.orderby' )
 				.on( 'change', 'select.orderby', this._events.woocommerceOrdering.bind( this ) );
@@ -99,13 +114,13 @@
 			// Change item values
 			this.checkItemValues.call( this );
 
-			// If there are selected parameters then add the class `active` to the main container
+			// If there are selected parameters then add the class `active` to the main container.
 			this.$container.toggleClass( 'active', this.$filtersItem.is('.has_value') );
 
-			// Subscription to receive data on recounts of amounts
+			// Subscription to receive data on recounts of amounts.
 			this
 				.on( 'us_grid_filter.update-items-amount', this._events.updateItemsAmount.bind( this ) );
-			
+
 			// Set state to fix mobile Safari issue
 			this._events.resize.call( this );
 		},
@@ -125,9 +140,9 @@
 		 */
 		_events: {
 			/**
-			 * Change values
+			 * Change values.
 			 *
-			 * @param {EventObject} e
+			 * @param {Event} e
 			 */
 			changeFilter: function( e ) {
 				var $target = $( e.currentTarget ),
@@ -156,14 +171,14 @@
 					$inputs.each( function( i, input ) {
 						var $input = $( input ),
 							value = input.value || 0;
-						// If no value, check placeholders
+						// If no value, check placeholders.
 						if ( ! value && $input.hasClass( 'type_' + [ 'min', 'max' ][ i ] ) && rangeValues.length == i ) {
 							value = $input.attr( 'placeholder' ) || 0;
 						}
 						value = parseInt( value );
 						rangeValues.push( ! isNaN( value ) ? value : 0 );
 					} );
-					// Set values and trigger change event
+					// Set values and trigger change event.
 					rangeValues = rangeValues.join('-');
 					$( 'input[type="hidden"]', $item )
 						.val( rangeValues !== '0-0' ? rangeValues : '' );
@@ -174,17 +189,16 @@
 
 				this.triggerGrid( 'us_grid.updateState', [ value, /* page */ 1, this ] );
 
-				// Change item values
+				// Change item values.
 				this.trigger( 'changeItemValue', $item );
 
-				// If there are selected parameters then add the class `active` to the main container
+				// If there are selected parameters then add the class `active` to the main container.
 				this.$container.toggleClass( 'active', this.$filtersItem.is('.has_value') );
 			},
 			/**
-			 * Load a grid page via AJAX
+			 * Load a grid page via AJAX.
 			 *
-			 * @param {EventObject} e
-			 * @return void
+			 * @param {Event} e
 			 */
 			loadPageNumber: function ( e ) {
 				e.stopPropagation();
@@ -198,10 +212,9 @@
 				this.triggerGrid( 'us_grid.updateState', [ this.getValue(), page, this ] );
 			},
 			/**
-			 * Reset item selected
+			 * Reset item selected.
 			 *
-			 * @param {EventObject} e
-			 * @return void
+			 * @param {Event} e
 			 */
 			resetItem: function( e ) {
 				var $item = $( e.currentTarget ).closest( '.w-filter-item' ),
@@ -211,7 +224,7 @@
 					return;
 				}
 
-				// Reset checkboxes and radio buttons
+				// Reset checkboxes and radio buttons.
 				if ( 'checkbox|radio'.indexOf( uiType ) !== -1 ) {
 					$( 'input:checked', $item ).prop( 'checked', false );
 
@@ -224,7 +237,7 @@
 					} );
 				}
 
-				// Reset range values
+				// Reset range values.
 				if ( uiType === 'range' ) {
 					$( 'input', $item ).val( '' );
 				}
@@ -234,13 +247,13 @@
 					$( 'option', $item ).prop( 'selected', false );
 				}
 
-				// Clear css classes
+				// Clear css classes.
 				$( '.w-filter-item-value', $item ).removeClass( 'selected' );
 
-				// Change item values
+				// Change item values.
 				this.trigger( 'changeItemValue', $item );
 
-				// If there are selected parameters then add the class `active` to the main container
+				// If there are selected parameters then add the class `active` to the main container.
 				this.$container.toggleClass( 'active', this.$filtersItem.is('.has_value') );
 
 				// Update URL
@@ -250,11 +263,10 @@
 				this.triggerGrid( 'us_grid.updateState', [ value, /* page */ 1, this ] );
 			},
 			/**
-			 * Change item values
+			 * Change item values.
 			 *
 			 * @param {object} _ self
 			 * @param {mixed} item
-			 * @return void
 			 */
 			toggleItemValue: function( _, item ) {
 				var $item = $( item ),
@@ -266,11 +278,11 @@
 				if ( ! uiType ) {
 					return;
 				}
-				// Get title from radio buttons and checkboxes
+				// Get title from radio buttons and checkboxes.
 				if ( 'checkbox|radio'.indexOf( uiType ) !== -1 ) {
 					hasValue = $selected.length;
 
-					// For a horizontal filter, if there are selected parameters, display either the selected parameter or quantity
+					// For a horizontal filter, if there are selected parameters, display either the selected parameter or quantity.
 					if ( this.options.layout == 'hor' ) {
 						var title = '';
 						if ( $selected.length === 1 ) {
@@ -296,14 +308,13 @@
 					}
 				}
 
-				// Add of `has_value` class when selecting options
+				// Add of `has_value` class when selecting options.
 				$item.toggleClass( 'has_value', !! hasValue );
 				// Update item title
 				$( '> .w-filter-item-title:first > span', item ).html( title );
 			},
 			/**
-			 * Changes when resizing the screen
-			 * @return void
+			 * Changes when resizing the screen.
 			 */
 			resize: function() {
 				this.$container
@@ -317,8 +328,7 @@
 
 			},
 			/**
-			 * Open Mobile Filter
-			 * @return void
+			 * Open Mobile Filter.
 			 */
 			filterOpener: function() {
 				$us.$body
@@ -327,8 +337,7 @@
 					.addClass( 'open' );
 			},
 			/**
-			 * Close Mobile Filter
-			 * @return void
+			 * Close Mobile Filter.
 			 */
 			filterListCloser: function() {
 				$us.$body
@@ -337,10 +346,9 @@
 					.removeClass( 'open' );
 			},
 			/**
-			 * Show vertical items
+			 * Show vertical items.
 			 *
-			 * @param {EventObject} e
-			 * @return void
+			 * @param {Event} e
 			 */
 			showItem: function( e ) {
 				var $target = $( e.currentTarget ),
@@ -348,10 +356,9 @@
 				$item.addClass( 'show' );
 			},
 			/**
-			 * Hide vertical items when click outside the item
+			 * Hide vertical items when click outside the item.
 			 *
-			 * @param {EventObject} e
-			 * @return void
+			 * @param {Event} e
 			 */
 			hideItem: function( e )  {
 				if ( ! this.$filtersItem.hasClass( 'show' ) ) {
@@ -367,10 +374,9 @@
 					} );
 			},
 			/**
-			 * Add grid filter options to sort request
+			 * Add grid filter options to sort request.
 			 *
-			 * @param {EventObject} e
-			 * @return void
+			 * @param {Event} e
 			 */
 			woocommerceOrdering: function( e ) {
 				e.stopPropagation();
@@ -386,14 +392,13 @@
 				$form.trigger( 'submit' );
 			},
 			/**
-			 * Update amount items
+			 * Update amount items.
 			 *
 			 * @param {$us.WGridFilter} _
 			 * @param {Object} data
-			 * @return void
 			 */
 			updateItemsAmount: function( _, data ) {
-				// Unlock filters
+				// Unlock filters.
 				this.$filtersItem
 					.removeClass( 'disabled' );
 
@@ -411,7 +416,7 @@
 						if ( uiType === 'dropdown' ) {
 							var $option = $( 'select:first option[value="'+ value +'"]', $item ),
 								template = $option.data( 'template' ) || '';
-							// Apply option template
+							// Apply option template.
 							if ( template ) {
 								template = template
 									.replace( '%s', ( amount ? amount : '' ) )
@@ -422,7 +427,7 @@
 								.prop( 'disabled', disabled )
 								.toggleClass( 'disabled', disabled );
 
-							// For inputs
+							// For inputs.
 						} else {
 							var $input = $( 'input[value="'+ value +'"]', $item );
 
@@ -474,18 +479,16 @@
 		},
 
 		/**
-		 * Raises a private event in the grid
+		 * Raises a private event in the grid.
 		 *
 		 * @param {string} eventType
 		 * @param mixed extraParameters
-		 * @return void
 		 */
 		triggerGrid: function ( eventType, extraParameters ) {
 			$us.debounce( function() { $us.$body.trigger( eventType, extraParameters ); }, 10 )();
 		},
 		/**
-		 * Check item values
-		 * @return void
+		 * Check item values.
 		 */
 		checkItemValues: function() {
 			this.$filtersItem.each( function( _, item ) {
@@ -522,14 +525,13 @@
 			return encodeURI( value );
 		},
 		/**
-		 * Set search queries in the url
+		 * Set search queries in the url.
 		 *
-		 * @param {string} params The query parameters
-		 * @return void
+		 * @param {string} params The query parameters.
 		 */
 		URLSearchParams: function( params ) {
 			var url = location.origin + location.pathname + ( location.pathname.slice( -1 ) != '/' ? '/' : '' ),
-				// Get current search and remove filter params
+				// Get current search and remove filter params.
 				search = location.search.replace( new RegExp( this.options.filterPrefix + "(.+?)(&|$)", "g" ), '' );
 			if ( ! search || search.substr( 0, 1 ) !== '?' ) {
 				search += '?';

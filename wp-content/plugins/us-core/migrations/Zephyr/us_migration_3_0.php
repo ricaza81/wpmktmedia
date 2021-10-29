@@ -122,7 +122,7 @@ class us_migration_3_0 extends US_Migration_Translator {
 		}
 
 		if ( isset( $options['header_layout'] ) AND $options['header_layout'] == 'vertical_1' AND isset( $options['logo_width'] ) AND isset( $options['logo_image'] ) ) {
-			$img = usof_get_image_src( $options['logo_image'] );
+			$img = wp_get_attachment_image_src( $options['logo_image'], 'full' );
 			if ( $img AND ( ! empty( $img[1] ) AND ! empty( $img[2] ) ) ) {
 				$logo_height = round( $options['logo_width'] / $img[1] * $img[2] );
 				$options['logo_height'] = intval( $logo_height );

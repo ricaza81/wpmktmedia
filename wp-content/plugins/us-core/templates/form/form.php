@@ -119,7 +119,7 @@ if ( ! empty( $has_date_field ) AND us_get_option( 'ajax_load_js', 0 ) ) {
 }
 
 // Output the form
-echo '<form ' . us_implode_atts( $_atts ) . '>';
+echo '<form' . us_implode_atts( $_atts ) . '>';
 echo '<div class="w-form-h">';
 echo $start_html;
 foreach ( $fields as $field ) {

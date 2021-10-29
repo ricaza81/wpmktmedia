@@ -61,7 +61,7 @@ function us_check_theme_updates_deactivated( $updates ) {
 	return $updates;
 }
 
-function us_api_get_themes_deactivated( $timeout = 1800 ) {
+function us_api_get_themes_deactivated( $timeout = 86400 /* 24 hours */ ) {
 	global $help_portal_url;
 	$urlparts = parse_url( site_url() );
 
@@ -107,7 +107,7 @@ function us_check_theme_updates( $updates ) {
 	return $updates;
 }
 
-function us_api_get_themes( $license_secret, $timeout = 1800 ) {
+function us_api_get_themes( $license_secret, $timeout = 10800 /* 3 hours */ ) {
 	global $help_portal_url;
 	$urlparts = parse_url( site_url() );
 	$domain = $urlparts['host'];

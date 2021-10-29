@@ -6,16 +6,30 @@
  * $type
  *
  */
+
 global $product;
-if ( ! class_exists( 'woocommerce' ) OR ! $product ) {
+if (
+	( ! class_exists( 'woocommerce' ) OR ! $product )
+	AND ! apply_filters( 'usb_is_preview_page', NULL )
+) {
 	return;
 }
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
+$_atts['class'] = 'w-post-elm product_gallery';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+
+if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
+	$_atts['id'] = $el_id;
+}
 
 // Output the element
-echo '<div class="w-post-elm product_gallery' . $classes . '"' . $el_id . '>';
-wc_get_template( 'single-product/product-image.php' );
+echo '<div' . us_implode_atts( $_atts ) . '>';
+
+// In Live Builder for Page Block / Content template show a placeholder
+if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+	echo us_get_img_placeholder();
+} else {
+	wc_get_template( 'single-product/product-image.php' );
+}
+
 echo '</div>';

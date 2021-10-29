@@ -18,7 +18,6 @@ if ( ! function_exists( 'us_prepare_icon_tag' ) ) {
 	 * Prepare a proper icon tag from user's custom input
 	 *
 	 * @param {String} $icon
-	 *
 	 * @return mixed|string
 	 */
 
@@ -154,7 +153,6 @@ if ( ! function_exists( 'us_get_template' ) ) {
 	 *
 	 * @param string $template_name Template name to include (ex: 'templates/form/form')
 	 * @param array $vars Array of variables to pass to a included templated
-	 *
 	 * @return string
 	 */
 	function us_get_template( $template_name, $vars = NULL ) {
@@ -171,7 +169,6 @@ if ( ! function_exists( 'us_get_option' ) ) {
 	 *
 	 * @param string $name
 	 * @param mixed $default_value
-	 *
 	 * @return mixed
 	 */
 	function us_get_option( $name, $default_value = NULL ) {
@@ -191,7 +188,7 @@ if ( ! function_exists( 'us_update_option' ) ) {
 	 * @param string $name
 	 * @param mixed $value
 	 *
-	 * @return boll
+	 * @return bool
 	 */
 	function us_update_option( $name, $value ) {
 		if ( function_exists( 'usof_save_options' ) ) {
@@ -211,7 +208,8 @@ if ( ! function_exists( 'us_update_option' ) ) {
 }
 
 /**
- * @var $us_query array Allows to use different global $wp_query in different context safely
+ * @var $us_wp_queries array Allows to use different global $wp_query in different context safely
+ * TODO: This variable in use?
  */
 $us_wp_queries = array();
 
@@ -222,6 +220,9 @@ if ( ! function_exists( 'us_open_wp_query_context' ) ) {
 	 * (!) Don't forget to close it!
 	 */
 	function us_open_wp_query_context() {
+		if ( ! isset( $GLOBALS['us_wp_queries'] ) OR ! is_array( $GLOBALS['us_wp_queries'] ) ) {
+			$GLOBALS['us_wp_queries'] = array();
+		}
 		if ( is_array( $GLOBALS ) AND isset( $GLOBALS['wp_query'] ) ) {
 			array_unshift( $GLOBALS['us_wp_queries'], $GLOBALS['wp_query'] );
 		}
@@ -233,7 +234,7 @@ if ( ! function_exists( 'us_close_wp_query_context' ) ) {
 	 * Closes last context with a custom
 	 */
 	function us_close_wp_query_context() {
-		if ( isset( $GLOBALS['us_wp_queries'] ) AND count( $GLOBALS['us_wp_queries'] ) > 0 ) {
+		if ( isset( $GLOBALS['us_wp_queries'] ) AND is_array( $GLOBALS['us_wp_queries'] ) AND count( $GLOBALS['us_wp_queries'] ) > 0 ) {
 			$GLOBALS['wp_query'] = array_shift( $GLOBALS['us_wp_queries'] );
 			wp_reset_postdata();
 		} else {
@@ -298,23 +299,63 @@ if ( ! function_exists( 'us_arr_path' ) ) {
 
 if ( ! function_exists( 'us_implode_atts' ) ) {
 	/**
-	 * Converts an array to a attributes string
+	 * Converts array to attribute string for html tag or shortcode
 	 *
-	 * @param array $params Parameter Array
+	 * @param array $atts Attributes Array
+	 * @param bool $for_shortcode Attributes for the shortcode
 	 * @param string $separator Separator between parameters
 	 * @return string
 	 */
-	function us_implode_atts( $params = array(), $separator = ' ' ) {
-		$output = array();
-		foreach ( $params as $key => $value ) {
-			if ( $value == '' ) {
-				$output[] = esc_attr( $key );
+	function us_implode_atts( $atts = array(), $for_shortcode = FALSE, $separator = ' ' ) {
+		if ( empty( $atts ) OR ! is_array( $atts ) ) {
+			return '';
+		}
+
+		/**
+		 * Attributes which shouldn't be displayed if empty (this does not apply to shortcode attributes)
+		 * @var array
+		 */
+		$not_empty_atts = array(
+			'class',
+			'style',
+			'href',
+			'src',
+		);
+
+		$result = array();
+		foreach ( $atts as $key => $value ) {
+
+			// For shortcode
+			if ( $for_shortcode ) {
+
+				// Decode html entities, if any, and delete all the html except the permitted ones
+				$value = strip_tags( wp_specialchars_decode( $value ), '<br>' );
+				$result[] = sprintf( '%s="%s"', $key, $value );
+
+				// For html tag
 			} else {
-				$output[] = sprintf( '%s="%s"', esc_attr( $key ), esc_attr( $value ) );
+
+				// Skip attributes with empty values if they are not allowed
+				if ( $value === '' AND in_array( $key, $not_empty_atts ) ) {
+					continue;
+				}
+
+				// The returns the href value back to normal
+				if ( $key === 'href' AND ! empty( $value ) ) {
+					$value = rawurldecode( (string) $value );
+				}
+
+				$key = esc_attr( $key );
+
+				$result[] = ( $value !== '' )
+					? sprintf( '%s="%s"', $key, esc_attr( $value ) )
+					: $key;
 			}
 		}
 
-		return implode( $separator, $output );
+		$separator = (string) $separator;
+
+		return $separator . implode( $separator, $result );
 	}
 }
 
@@ -323,9 +364,7 @@ if ( ! function_exists( 'us_config' ) ) {
 	 * Load and return some specific config or it's part
 	 *
 	 * @param string $path <config_name>[.<key1>[.<key2>[...]]]
-	 *
-	 * @oaram mixed $default Value to return if no data is found
-	 *
+	 * @param mixed $default Value to return if no data is found
 	 * @return mixed
 	 */
 	function us_config( $path, $default = NULL, $reload = FALSE ) {
@@ -371,7 +410,6 @@ if ( ! function_exists( 'us_get_image_size_params' ) ) {
 	 * Get image size information as an array
 	 *
 	 * @param string $size_name
-	 *
 	 * @return array
 	 */
 	function us_get_image_size_params( $size_name ) {
@@ -398,22 +436,36 @@ if ( ! function_exists( 'us_pass_data_to_js' ) ) {
 	 * var data = elm.onclick()
 	 *
 	 * @param mixed $data Data to pass
-	 *
+	 * @param bool $onclick Returning the result from the onclick attribute
 	 * @return string Element attribute ' onclick="..."'
 	 */
-	function us_pass_data_to_js( $data ) {
-		return ' onclick=\'return ' . htmlspecialchars( json_encode( $data ), ENT_QUOTES, 'UTF-8' ) . '\'';
+	function us_pass_data_to_js( $data, $onclick = TRUE ) {
+		$result = 'return ' . us_json_encode( $data );
+
+		return $onclick
+			? ' onclick=\'' . $result . '\''
+			: $result;
+	}
+}
+
+if ( ! function_exists( 'us_json_encode' ) ) {
+	/**
+	 * Returns a JSON representation of the data
+	 *
+	 * @param mixed $data The data
+	 * @return string
+	 */
+	function us_json_encode( $data ) {
+		return htmlspecialchars( json_encode( $data ), ENT_QUOTES, 'UTF-8' );
 	}
 }
 
 if ( ! function_exists( 'us_maybe_get_post_json' ) ) {
 	/**
 	 * Try to get variable from JSON-encoded post variable
-	 *
 	 * Note: we pass some params via json-encoded variables, as via pure post some data (ex empty array) will be absent
 	 *
 	 * @param string $name $_POST's variable name
-	 *
 	 * @return array
 	 */
 	function us_maybe_get_post_json( $name = 'template_vars' ) {
@@ -436,7 +488,6 @@ if ( ! function_exists( 'us_maybe_load_theme_textdomain' ) ) {
 	 *
 	 * @param string $domain
 	 * @param string $path Relative path to seek in child theme and theme
-	 *
 	 * @return bool
 	 */
 	function us_maybe_load_theme_textdomain( $domain = 'us', $path = '/languages' ) {
@@ -461,7 +512,6 @@ if ( ! function_exists( 'us_array_merge_insert' ) ) {
 	 * @param array $inserted Inserted array
 	 * @param string $position 'before' / 'after' / 'top' / 'bottom'
 	 * @param string $key Associative key of $arr1 for before/after insertion
-	 *
 	 * @return array
 	 */
 	function us_array_merge_insert( array $arr, array $inserted, $position = 'bottom', $key = NULL ) {
@@ -487,7 +537,6 @@ if ( ! function_exists( 'us_array_merge' ) ) {
 	 * @param array $array1
 	 * @param array $array2
 	 * @param array ...
-	 *
 	 * @return array
 	 */
 	function us_array_merge( $array1, $array2 ) {
@@ -526,34 +575,41 @@ if ( ! function_exists( 'us_shortcode_atts' ) ) {
 	 * @param array $atts Passed attributes
 	 * @param string $shortcode Shortcode name
 	 * @param string $param_name Shortcode's config param to take pairs from
-	 *
 	 * @return array
 	 */
 	function us_shortcode_atts( $atts, $shortcode ) {
-		if ( substr( $shortcode, 0, 3 ) == 'us_' ) {
-			$element = substr( $shortcode, 3 );
-			$pairs = array();
-			if ( in_array( $element, us_config( 'shortcodes.theme_elements', array() ) ) ) {
-				$element_config = us_config( 'elements/' . $element, array() );
-				if ( ! empty( $element_config['params'] ) ) {
-					foreach ( $element_config['params'] as $param_name => $param_config ) {
-						if ( isset( $param_config['shortcode_std'] ) ) {
-							$param_config['std'] = $param_config['shortcode_std'];
-						}
-						if ( $param_config['type'] == 'checkboxes' AND isset( $param_config['std'] ) AND is_array( $param_config['std'] ) ) {
-							$param_config['std'] = implode( ',', $param_config['std'] );
-						}
-						$pairs[ $param_name ] = ( isset( $param_config['std'] ) ) ? $param_config['std'] : NULL;
+		$pairs = array();
+		$element = ( strpos( $shortcode, 'vc_' ) === 0 )
+			? $shortcode
+			: substr( $shortcode, 3 ); // The us_{element}
+
+		if ( in_array( $element, us_config( 'shortcodes.theme_elements', array() ) ) ) {
+			$element_config = us_config( "elements/$element", array() );
+			if ( ! empty( $element_config['params'] ) ) {
+				foreach ( $element_config['params'] as $param_name => $param_config ) {
+
+					// Override the default value for shortcodes only, if set
+					if ( isset( $param_config['shortcode_std'] ) ) {
+						$param_config['std'] = $param_config['shortcode_std'];
 					}
-				}
-				if ( ! empty( $element_config['deprecated_params'] ) ) {
-					foreach ( $element_config['deprecated_params'] as $param_name ) {
-						$pairs[ $param_name ] = '';
-					}
+
+					$pairs[ $param_name ] = isset( $param_config['std'] ) ? $param_config['std'] : NULL;
 				}
 			}
-		} else {
+
+			// Fallback params always have an empty string as std
+			if ( ! empty( $element_config['fallback_params'] ) ) {
+				foreach ( $element_config['fallback_params'] as $param_name ) {
+					$pairs[ $param_name ] = '';
+				}
+			}
+		} elseif ( array_key_exists( $shortcode, us_config( 'shortcodes.modified', array() ) ) ) {
 			$pairs = us_config( 'shortcodes.modified.' . $shortcode . '.' . 'atts', array() );
+		}
+
+		// Allow ID for the US Builder
+		if ( ! empty( $atts['usbid'] ) ) {
+			$pairs['usbid'] = '';
 		}
 
 		$atts = shortcode_atts( $pairs, $atts, $shortcode );
@@ -562,99 +618,12 @@ if ( ! function_exists( 'us_shortcode_atts' ) ) {
 	}
 }
 
-if ( ! function_exists( 'us_get_sharing_counts' ) ) {
-	/**
-	 * Get number of shares of the provided URL.
-	 *
-	 * @param string $url The url to count shares
-	 * @param array $providers Possible array values: 'facebook', 'pinterest', 'vk'
-	 *
-	 * Dev note: keep in mind that list of providers may differ for the same URL in different function calls.
-	 *
-	 * @return array Associative array of providers => share counts
-	 */
-	function us_get_sharing_counts( $url, $providers ) {
-		$transient = 'us_sharing_count_' . md5( $url );
-		// Will be used for array keys operations
-		$flipped = array_flip( $providers );
-		$cached_counts = get_transient( $transient );
-		if ( is_array( $cached_counts ) ) {
-			$counts = array_intersect_key( $cached_counts, $flipped );
-			if ( count( $counts ) == count( $providers ) ) {
-				// The data exists and is complete
-				return $counts;
-			}
-		} else {
-			$counts = array();
-		}
-
-		// Facebook share count
-		if ( in_array( 'facebook', $providers ) AND ! isset( $counts['facebook'] ) ) {
-			$remote_get_url = 'https://graph.facebook.com/?ids=' . $url . '&fields=og_object{engagement}';
-			$result = wp_remote_get( $remote_get_url, array( 'timeout' => 3 ) );
-			if ( is_array( $result ) ) {
-				$data = json_decode( $result['body'], TRUE );
-			} else {
-				$data = NULL;
-			}
-			if (
-				is_array( $data )
-				AND isset( $data[ $url ]['og_object']['engagement']['count'] ) ) {
-				$counts['facebook'] = use_letters_for_numbers( $data[ $url ]['og_object']['engagement']['count'] );
-			} else {
-				$counts['facebook'] = '0';
-			}
-		}
-		// Pinterest share count
-		if ( in_array( 'pinterest', $providers ) AND ! isset( $counts['pinterest'] ) ) {
-			$result = wp_remote_get( 'https://api.pinterest.com/v1/urls/count.json?callback=receiveCount&url=' . $url, array( 'timeout' => 3 ) );
-			if ( is_array( $result ) ) {
-				$data = json_decode( rtrim( str_replace( 'receiveCount(', '', $result['body'] ), ')' ), TRUE );
-			} else {
-				$data = NULL;
-			}
-			$counts['pinterest'] = isset( $data['count'] ) ? use_letters_for_numbers( $data['count'] ) : '0';
-		}
-
-		// VK share count
-		if ( in_array( 'vk', $providers ) AND ! isset( $counts['vk'] ) ) {
-			$result = wp_remote_get( 'http://vkontakte.ru/share.php?act=count&index=1&url=' . $url, array( 'timeout' => 3 ) );
-			if ( is_array( $result ) ) {
-				$data = intval( trim( str_replace( ');', '', str_replace( 'VK.Share.count(1, ', '', $result['body'] ) ) ) );
-			} else {
-				$data = NULL;
-			}
-			$counts['vk'] = ( ! empty( $data ) ) ? use_letters_for_numbers( $data ) : '0';
-		}
-
-		// Caching the result for the next 2 hours
-		set_transient( $transient, $counts, 2 * HOUR_IN_SECONDS );
-
-		return $counts;
-	}
-}
-
-if ( ! function_exists( 'use_letters_for_numbers' ) ) {
-
-	/**
-	 * Replace millions and thousands for "M" and "K" in numbers
-	 */
-	function use_letters_for_numbers( $value ) {
-
-		if ( (int) $value > 1000000 ) {
-			$value = number_format( $value / 1000000, 1 ) . 'M';
-		} elseif ( (int) $value > 1000 ) {
-			$value = number_format( $value / 1000, 1 ) . 'К';
-		}
-
-		return $value;
-	}
-}
-
 if ( ! function_exists( 'us_translate' ) ) {
 	/**
-	 * Call language function with string existing in WordPress or supported plugins and prevent those strings from going into theme .po/.mo files
+	 * Translates the specified text using a translation file and returns it for processing.
 	 *
+	 * @param string $text The text to be translated.
+	 * @param string $domain The ID of the translation file, specified when registering and connecting the translation file. If not specified, the default translation file used by WordPress will be used.
 	 * @return string Translated text.
 	 */
 	function us_translate( $text, $domain = NULL ) {
@@ -667,6 +636,12 @@ if ( ! function_exists( 'us_translate' ) ) {
 }
 
 if ( ! function_exists( 'us_translate_x' ) ) {
+	/**
+	 * @param string $text The text
+	 * @param string $context The context
+	 * @param string $domain The domain
+	 * @return string
+	 */
 	function us_translate_x( $text, $context, $domain = NULL ) {
 		if ( $domain == NULL ) {
 			return _x( $text, $context );
@@ -677,6 +652,13 @@ if ( ! function_exists( 'us_translate_x' ) ) {
 }
 
 if ( ! function_exists( 'us_translate_n' ) ) {
+	/**
+	 * @param string $single The single
+	 * @param string $plural The plural
+	 * @param string $number The number
+	 * @param string $domain The domain
+	 * @return string
+	 */
 	function us_translate_n( $single, $plural, $number, $domain = NULL ) {
 		if ( $domain == NULL ) {
 			return _n( $single, $plural, $number );
@@ -690,52 +672,44 @@ if ( ! function_exists( 'us_prepare_inline_css' ) ) {
 	/**
 	 * Prepare a proper inline-css string from given css property
 	 *
-	 * @param array $props
-	 * @param bool $style_attr
-	 * @param string $tag
-	 *
+	 * @param array $props Array of css properties ( key => value )
 	 * @return string
 	 */
-	function us_prepare_inline_css( $props, $style_attr = TRUE ) {
-		$result = '';
-
+	function us_prepare_inline_css( $props ) {
+		$return = '';
+		if ( ! is_array( $props ) OR empty( $props ) ) {
+			return $return;
+		}
 		foreach ( $props as $prop => $value ) {
-			$value = is_string( $value ) ? trim( $value ) : $value;
+			$value = trim( (string) $value );
 
-			// Do not apply if a value is empty string or begins double minus --
-			if ( $value == '' OR ( is_string( $value ) AND strpos( $value, '--' ) === 0 ) ) {
+			// Do not apply if a value is empty string or begins double minus `--`
+			if ( $value === '' OR strpos( $value, '--' ) === 0 ) {
 				continue;
 			}
 
-			switch ( $prop ) {
-
-				// Font-family exceptions
+			// The normalization of specific values
+			switch ( us_strtolower( $prop ) ) {
 				case 'font-family':
-					$result .= us_get_font_css( $value );
+					$value = (string) us_get_font_family( $value );
 					break;
-
-				// Properties with image values
 				case 'background-image':
-					if ( is_numeric( $value ) ) {
-						if ( $image = wp_get_attachment_image_url( $value, 'full' ) ) {
-							$result .= $prop . ':url(' . $image . ');';
-						}
+					if ( $image = wp_get_attachment_image_url( (int) $value, 'full' ) ) {
+						$value = 'url(' . $image . ')';
 					} else {
-						$result .= $prop . ':url(' . $value . ');';
+						$value = 'url(' . $value . ')';
 					}
 					break;
+			}
 
-				// All other properties
-				default:
-					$result .= $prop . ':' . $value . ';';
-					break;
+			if ( ! empty( $prop ) AND ! empty( $value ) ) {
+				$return .= "{$prop}:{$value};";
 			}
 		}
-		if ( $style_attr AND ! empty( $result ) ) {
-			$result = ' style="' . esc_attr( $result ) . '"';
-		}
 
-		return $result;
+		return ( ! empty( $return ) )
+			? ' style="' . esc_attr( $return ) . '"'
+			: $return;
 	}
 }
 
@@ -745,7 +719,6 @@ if ( ! function_exists( 'us_minify_css' ) ) {
 	 *
 	 * @link http://manas.tungare.name/software/css-compression-in-php/
 	 * @param string $css
-	 *
 	 * @return string
 	 */
 	function us_minify_css( $css ) {
@@ -775,15 +748,14 @@ if ( ! function_exists( 'us_minify_css' ) ) {
 	}
 }
 
+// TODO maybe move to admin area functions
 if ( ! function_exists( 'us_api_remote_request' ) ) {
-	// TODO maybe move to admin area functions
 	/**
 	 * Perform request to US Portal API
 	 *
 	 * @param $url
 	 * @param $as_array decode JSON as array, default FALSE
-	 *
-	 * @return array|bool|mixed|object
+	 * @return mixed
 	 */
 	function us_api_remote_request( $url, $as_array = FALSE ) {
 
@@ -826,7 +798,7 @@ if ( ! function_exists( 'usof_meta' ) ) {
 			$value = get_post_meta( $post_id, $key, TRUE );
 		}
 
-		return $value;
+		return apply_filters( 'usof_meta', $value, $key, $post_id );
 	}
 }
 
@@ -848,7 +820,7 @@ if ( ! function_exists( 'us_get_preloader_numeric_types' ) ) {
 
 		if ( is_array( $options ) ) {
 			foreach ( $options as $option => $title ) {
-				if ( intval( $option ) != 0 ) {
+				if ( (int) $option != 0 ) {
 					$result[] = $option;
 				}
 			}
@@ -864,6 +836,8 @@ if ( ! function_exists( 'us_shade_color' ) ) {
 	/**
 	 * Shade color https://stackoverflow.com/a/13542669
 	 *
+	 * @param string $color
+	 * @param string $percent
 	 * @return string
 	 */
 	function us_shade_color( $color, $percent = '0.2' ) {
@@ -914,6 +888,8 @@ if ( ! function_exists( 'us_hex2rgba' ) ) {
 	/**
 	 * Convert HEX to RGBA
 	 *
+	 * @param string $color
+	 * @param bool $opacity
 	 * @return string
 	 */
 	function us_hex2rgba( $color, $opacity = FALSE ) {
@@ -967,7 +943,7 @@ if ( ! function_exists( 'us_gradient2hex' ) ) {
 		if ( preg_match( '~linear-gradient\(([^,]+),([^,]+),([^)]+)\)~', $color, $matches ) ) {
 			$color = (string) $matches[2];
 
-			if ( ( strpos( $color, 'rgb' ) !== FALSE ) AND preg_match( '~rgba?\([^)]+\)~', $matches[0], $rgba ) ) {
+			if ( strpos( $color, 'rgb' ) !== FALSE AND preg_match( '~rgba?\([^)]+\)~', $matches[0], $rgba ) ) {
 				$color = (string) $rgba[0];
 				$color = us_rgba2hex( $color );
 			}
@@ -981,6 +957,7 @@ if ( ! function_exists( 'us_rgba2hex' ) ) {
 	/**
 	 * Convert RGBA to HEX
 	 *
+	 * @param string $color
 	 * @return string
 	 */
 	function us_rgba2hex( $color ) {
@@ -1005,7 +982,7 @@ if ( ! function_exists( 'us_rgba2hex' ) ) {
 		$output = "#";
 
 		foreach ( $rgb as $color ) {
-			$hex_val = dechex( intval( $color ) );
+			$hex_val = dechex( (int) $color );
 			if ( strlen( $hex_val ) === 1 ) {
 				$output .= '0' . $hex_val;
 			} else {
@@ -1023,30 +1000,36 @@ if ( ! function_exists( 'us_get_color' ) ) {
 	 *
 	 * @param string $value
 	 * @param bool $allow_gradient
-	 *
 	 * @return String
 	 */
-	function us_get_color( $value, $allow_gradient = FALSE, $_iterations = 0 ) {
+	function us_get_color( $value, $allow_gradient = FALSE, $css_var = TRUE ) {
 		if ( empty( $value ) ) {
 			return '';
+		}
+
+		// If the value begins "color", remove that prefix
+		if ( strpos( $value, 'color' ) === 0 ) {
+			$value = str_replace( 'color', '', $value );
 		}
 
 		// If the value begins "_", get the color from Theme Options > Colors
 		if ( strpos( $value, '_' ) === 0 ) {
 			$color = us_get_option( 'color' . $value, '' );
 
-			// If the value contain "color", get the color from the option with that name
-		} elseif ( strpos( $value, 'color' ) !== FALSE ) {
-			$color = us_get_option( $value, '' );
+			// Transform the value into CSS var, if set
+			if ( $css_var ) {
+
+				// If the value has a gradient and gradient is allowed, add "-grad" suffix
+				if ( strpos( $color, 'gradient' ) !== FALSE AND $allow_gradient ) {
+					$color = 'var(--color' . str_replace( '_', '-', $value ) . '-grad)';
+				} else {
+					$color = 'var(--color' . str_replace( '_', '-', $value ) . ')';
+				}
+			}
 
 			// in other cases use value as color
 		} else {
 			$color = $value;
-		}
-
-		// Check for recursion, values may have variables
-		if ( strpos( $color, '_' ) === 0 AND $_iterations <= /* Max count iterations */ 3 ) {
-			$color = us_get_color( 'color' . $color, $allow_gradient, ++ $_iterations );
 		}
 
 		return ( $allow_gradient ) ? $color : us_gradient2hex( $color );
@@ -1061,7 +1044,6 @@ if ( ! function_exists( 'us_get_taxonomies' ) ) {
 	 * @param $show_slug bool
 	 * @param $output string 'woocommerce_exclude' / 'woocommerce_only'
 	 * @param $key_prefix string 'tax|'
-	 *
 	 * @return array: slug => title (plural label)
 	 */
 	function us_get_taxonomies( $public_only = FALSE, $show_slug = TRUE, $output = '', $key_prefix = '' ) {
@@ -1142,6 +1124,9 @@ if ( ! function_exists( 'us_get_taxonomies' ) ) {
 if ( ! function_exists( 'us_enqueue_fonts' ) ) {
 	/**
 	 * Enqueue Google Fonts CSS file, used in frontend and admin pages
+	 *
+	 * @param bool $url
+	 * @return [mixed]
 	 */
 	function us_enqueue_fonts( $url = FALSE ) {
 		$prefixes = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'body' );
@@ -1223,76 +1208,60 @@ if ( ! function_exists( 'us_get_fonts' ) ) {
 	 *
 	 * @return array
 	 */
-	function us_get_fonts( $without_groups = FALSE ) {
+	function us_get_fonts() {
 
 		// Default empty value
 		$options = array( '' => us_translate( 'Default' ) );
 
 		// Body & Headings fonts
-		if ( ! $without_groups ) {
-			$options[] = array(
-				'optgroup' => TRUE,
-				'title' => __( 'Preset Fonts', 'us' ),
-			);
-		}
+		$body_and_headings_option_key = __( 'Preset Fonts', 'us' );
+		$options[ $body_and_headings_option_key ] = array();
 		$body_font = explode( '|', us_get_option( 'body_font_family', 'none' ), 2 );
 		if ( $body_font[0] != 'none' ) {
-			$options['body'] = $body_font[0] . ' (' . __( 'used as default font', 'us' ) . ')';
+			$options[ $body_and_headings_option_key ]['body'] = $body_font[0] . ' (' . __( 'used as default font', 'us' ) . ')';
 		}
 
 		// Headings
 		for ( $i = 1; $i <= 6; $i ++ ) {
 			$heading_font = explode( '|', us_get_option( 'h' . $i . '_font_family', 'none' ), 2 );
 			if ( ! in_array( $heading_font[0], array( 'none', 'get_h1' ) ) ) {
-				$options[ 'h' . $i ] = $heading_font[0] . ' (' . sprintf( __( 'used in Heading %s', 'us' ), $i ) . ')';
+				$options[ $body_and_headings_option_key ][ 'h' . $i ] = $heading_font[0] . ' (' . sprintf( __( 'used in Heading %s', 'us' ), $i ) . ')';
 			}
 		}
 
 		// Additional Google Fonts
+		$custom_option_key = __( 'Additional Google Fonts', 'us' );
 		$custom_fonts = us_get_option( 'custom_font', array() );
 		if ( is_array( $custom_fonts ) AND count( $custom_fonts ) > 0 ) {
-			if ( ! $without_groups ) {
-				$options[] = array(
-					'optgroup' => TRUE,
-					'title' => __( 'Additional Google Fonts', 'us' ),
-				);
-			}
 			foreach ( $custom_fonts as $custom_font ) {
 				$font_options = explode( '|', $custom_font['font_family'], 2 );
-				$options[ $font_options[0] ] = $font_options[0];
+				$options[ $custom_option_key ][ $font_options[0] ] = $font_options[0];
 			}
 		}
 
 		// Uploaded Fonts
+		$uploaded_option_key = __( 'Uploaded Fonts', 'us' );
 		$uploaded_fonts = us_get_option( 'uploaded_fonts', array() );
 		if ( is_array( $uploaded_fonts ) AND count( $uploaded_fonts ) > 0 ) {
-			if ( ! $without_groups ) {
-				$options[] = array(
-					'optgroup' => TRUE,
-					'title' => __( 'Uploaded Fonts', 'us' ),
-				);
-			}
 			$uploaded_font_families = array();
 			foreach ( $uploaded_fonts as $uploaded_font ) {
 				$uploaded_font_name = strip_tags( $uploaded_font['name'] );
-				if ( $uploaded_font_name == '' OR in_array( $uploaded_font_name, $uploaded_font_families ) OR empty( $uploaded_font['files'] ) ) {
+				if (
+					$uploaded_font_name == ''
+					OR in_array( $uploaded_font_name, $uploaded_font_families )
+					OR empty( $uploaded_font['files'] )
+				) {
 					continue;
 				}
 				$uploaded_font_families[] = $uploaded_font_name;
-				$options[ $uploaded_font_name ] = $uploaded_font_name;
+				$options[ $uploaded_option_key ][ $uploaded_font_name ] = $uploaded_font_name;
 			}
 		}
 
 		// Web Safe Fonts
-		if ( ! $without_groups ) {
-			$options[] = array(
-				'optgroup' => TRUE,
-				'title' => __( 'Web safe font combinations (do not need to be loaded)', 'us' ),
-			);
-		}
-		$web_safe_fonts = us_config( 'web-safe-fonts' );
-		foreach ( $web_safe_fonts as $web_safe_font ) {
-			$options[ $web_safe_font ] = $web_safe_font;
+		$websafe_option_key = __( 'Web safe font combinations (do not need to be loaded)', 'us' );
+		foreach ( us_config( 'web-safe-fonts', array() ) as $web_safe_font ) {
+			$options[ $websafe_option_key ][ $web_safe_font ] = $web_safe_font;
 		}
 
 		return $options;
@@ -1300,6 +1269,13 @@ if ( ! function_exists( 'us_get_fonts' ) ) {
 }
 
 if ( ! function_exists( 'us_get_all_fonts' ) ) {
+	/**
+	 * Get all fonts
+	 *
+	 * @param bool $only_google The only google
+	 * @param bool $get_h1 The get h 1
+	 * @return mixed
+	 */
 	function us_get_all_fonts( $only_google = FALSE, $get_h1 = FALSE ) {
 		$fonts_arr = array();
 
@@ -1362,99 +1338,28 @@ if ( ! function_exists( 'us_get_all_fonts' ) ) {
 	}
 }
 
-if ( ! function_exists( 'us_get_font_css' ) ) {
+if ( ! function_exists( 'us_get_font_family' ) ) {
 	/**
-	 * Generate CSS font-family & font-weight of selected font
+	 * Transforms a value to the font-family CSS var, if exists
+	 * NOTE: The function returns a value without `font-family:`
 	 *
 	 * @param string $font_name
-	 * @param bool $with_weight
-	 *
 	 * @return string
 	 */
-	function us_get_font_css( $font_name, $value_only = FALSE, $with_weight = FALSE ) {
+	function us_get_font_family( $font_name ) {
 		if ( empty( $font_name ) ) {
 			return '';
 		}
-
-		static $font_css;
-		if ( empty( $font_css ) ) {
-			$font_options = $font_css = array();
-
-			// Add Regular Text font
-			$font_options['body'] = explode( '|', us_get_option( 'body_font_family', 'none' ), 2 );
-
-			// Add Headings fonts
-			for ( $i = 1; $i <= 6; $i ++ ) {
-				if ( us_get_option( 'h' . $i . '_font_family', 'none' ) == 'get_h1|' ) {
-					$font_options[ 'h' . $i ] = explode( '|', us_get_option( 'h1_font_family', 'none' ), 2 );
-				} else {
-					$font_options[ 'h' . $i ] = explode( '|', us_get_option( 'h' . $i . '_font_family', 'none' ), 2 );
-				}
-			}
-
-			// Add Additional Google fonts
-			$custom_fonts = us_get_option( 'custom_font', array() );
-			if ( is_array( $custom_fonts ) AND count( $custom_fonts ) > 0 ) {
-				foreach ( $custom_fonts as $custom_font ) {
-					$font_option = explode( '|', $custom_font['font_family'], 2 );
-					$font_options[ $font_option[0] ] = $font_option;
-				}
-			}
-
-			// Add Uploaded fonts
-			$uploaded_fonts = us_get_option( 'uploaded_fonts', array() );
-			if ( is_array( $uploaded_fonts ) AND count( $uploaded_fonts ) > 0 ) {
-				foreach ( $uploaded_fonts as $uploaded_font ) {
-					$font_options[ $uploaded_font['name'] ] = array(
-						0 => strip_tags( $uploaded_font['name'] ),
-						1 => $uploaded_font['weight'],
-					);
-				}
-			}
-
-			// Add Websafe fonts
-			$web_safe_fonts = us_config( 'web-safe-fonts' );
-			foreach ( $web_safe_fonts as $web_safe_font ) {
-				$font_options[ $web_safe_font ] = array( $web_safe_font );
-			}
-
-			foreach ( $font_options as $prefix => $font ) {
-				if ( $font[0] == 'none' ) {
-					$font_css[ $prefix ][0] = '';
-				} elseif ( strpos( $font[0], ',' ) === FALSE ) {
-					$fallback_font_family = us_config( 'google-fonts.' . $font[0] . '.fallback', 'sans-serif' );
-					$font_css[ $prefix ][0] = 'font-family:\'' . $font[0] . '\', ' . $fallback_font_family . ';';
-					// Fault tolerance for missing font-variants
-					if ( ! isset( $font[1] ) OR empty( $font[1] ) ) {
-						$font[1] = '400,700';
-					}
-					// The first active font-weight will be used for "normal" weight
-					$font_css[ $prefix ][1] = intval( $font[1] );
-				} else {
-					// Web-safe font combination
-					$font_css[ $prefix ][0] = 'font-family:' . $font[0] . ';';
-					$font_css[ $prefix ][1] = '400';
-				}
-			}
-		}
-
-		if ( isset( $font_css[ $font_name ] ) AND ! empty( $font_css[ $font_name ][0] ) ) {
-			$result = $font_css[ $font_name ][0];
-
-			if ( ! $value_only AND $with_weight AND ! empty( $font_css[ $font_name ][1] ) ) {
-				$result .= 'font-weight: ' . $font_css[ $font_name ][1] . ';';
-			}
-
-			return ( $value_only ) ? str_replace( array( 'font-family:', ';' ), '', $result ) : $result;
-
+		if ( in_array( $font_name, array( 'body', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ) ) ) {
+			return 'var(--font-' . $font_name . ')';
 		} else {
-			return '';
+			return $font_name;
 		}
 	}
 }
 
+// TODO maybe move to admin area functions
 if ( ! function_exists( 'us_get_ip' ) ) {
-	// TODO maybe move to admin area functions
 	/**
 	 * Get the remote IP address
 	 *
@@ -1505,7 +1410,6 @@ if ( ! function_exists( 'us_get_public_post_types' ) ) {
 	 * Get post types, which have frontend single template, taking into account theme options
 	 *
 	 * @param array $exclude post types to exlude from result
-	 *
 	 * @return array: name => title (plural label)
 	 */
 	function us_get_public_post_types( $exclude = array() ) {
@@ -1547,16 +1451,45 @@ if ( ! function_exists( 'us_get_public_post_types' ) ) {
 
 if ( ! function_exists( 'us_get_page_area_id' ) ) {
 	/**
-	 * Get value of specified area ID for current page
+	 * Get value of specified area ID for current / given page
 	 *
 	 * @param string $area : header / titlebar / content template / sidebar / footer
-	 *
-	 * @return string
+	 * @param array $page_args Array with arguments describing site page to get area ID for
+	 * @return int
 	 */
-	function us_get_page_area_id( $area ) {
+	function us_get_page_area_id( $area, $page_args = array() ) {
 		if ( empty( $area ) ) {
 			return FALSE;
 		}
+
+		// Filling page args for possible later use in us_get_page_area_id() calls during AJAX requests
+		global $us_page_args;
+		if ( ! isset( $us_page_args ) OR ! is_array( $us_page_args ) ) {
+			$us_page_args = array();
+		}
+
+		/*
+		 * Checking if $page_args is set and retrieving info from it
+		 */
+		// Page type: post / archive / other special types. Should allways be set when getting given page info
+		// TODO: list all used page types
+		$page_type = ( ! empty( $page_args['page_type'] ) ) ? $page_args['page_type'] : NULL;
+		if ( $page_type ) {
+			// Post type for all pages of page / post / custom post type pages
+			$post_type = ( $page_type == 'post' AND ! empty( $page_args['post_type'] ) ) ? $page_args['post_type'] : NULL;
+			// Post ID for specific single post page
+			$post_ID = ( $page_type == 'post' AND ! empty( $page_args['post_ID'] ) ) ? $page_args['post_ID'] : NULL;
+
+			// Taxonomy type for all pages of taxonomy archives
+			$taxonomy_type = ( $page_type == 'archive' AND ! empty( $page_args['taxonomy_type'] ) ) ? $page_args['taxonomy_type'] : NULL;
+			// Taxonomy ID for specific taxonomy archive page
+			$taxonomy_ID = ( $page_type == 'archive' AND ! empty( $page_args['taxonomy_ID'] ) ) ? $page_args['taxonomy_ID'] : NULL;
+		} else {
+			$post_type = $post_ID = $taxonomy_type = $taxonomy_ID = NULL;
+		}
+
+		// Check if we need to fill page args during this function call
+		$fill_page_args = ( empty( $us_page_args['page_type'] ) AND $page_type == NULL );
 
 		// Get public post types except Pages and Products
 		$public_post_types = array_keys( us_get_public_post_types( array( 'page', 'product' ) ) );
@@ -1568,33 +1501,75 @@ if ( ! function_exists( 'us_get_page_area_id' ) ) {
 		$product_taxonomies = array_keys( us_get_taxonomies( TRUE, FALSE, 'woocommerce_only' ) );
 
 		// Default from Theme Options
-		$area_id = us_get_option( $area . '_id', '' );
+		$area_id = $default_area_id = us_get_option( $area . '_id', '' );
 
 		// WooCommerce Products
-		if ( function_exists( 'is_product' ) AND is_product() ) {
+		if (
+			$post_type == 'product' // Given page params
+			OR ( function_exists( 'is_product' ) AND is_product() ) // Current page
+		) {
 			$area_id = us_get_option( $area . '_product_id' );
 
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'post';
+				$us_page_args['post_type'] = 'product';
+			}
+
 			// WooCommerce Shop Page
-		} elseif ( function_exists( 'is_shop' ) AND is_shop() ) {
+		} elseif (
+			$page_type == 'shop' // Given page params
+			OR ( function_exists( 'is_shop' ) AND is_shop() ) // Current page
+		) {
 			$area_id = us_get_option( $area . '_shop_id' );
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'shop';
+			}
 
 			// WooCommerce Products Search
-		} elseif ( class_exists( 'woocommerce' ) AND is_post_type_archive( 'product' ) AND is_search() ) {
+		} elseif (
+			$page_type == 'shop' // Given page params
+			OR (  // Current page
+				class_exists( 'woocommerce' )
+				AND is_post_type_archive( 'product' )
+				AND is_search()
+			)
+		) {
 			$area_id = us_get_option( $area . '_shop_id' );
 
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'shop';
+			}
+
 			// Author Pages
-		} elseif ( is_author() ) {
+		} elseif (
+			$page_type == 'author' // Given page params
+			OR is_author() // Current page
+		) {
 			$area_id = us_get_option( $area . '_author_id', '__defaults__' );
 
 			if ( $area_id == '__defaults__' ) {
 				$area_id = us_get_option( $area . '_archive_id', '' );
 			}
 
-			// Archives
-		} elseif ( is_archive() OR is_tax( $public_taxonomies ) OR ( ! empty( $product_taxonomies ) AND is_tax( $product_taxonomies ) ) ) {
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'author';
+			}
 
+			// Archives
+		} elseif ( $page_type == 'archive' // Given page params
+			OR ( // Current page
+				is_archive()
+				OR is_tax( $public_taxonomies )
+				OR ( ! empty( $product_taxonomies )
+					AND is_tax( $product_taxonomies ) )
+			)
+		) {
 			// For product taxonomies use "Shop Page" by default
-			if ( ! empty( $product_taxonomies ) AND is_tax( $product_taxonomies ) ) {
+			if (
+				in_array( $taxonomy_type, $product_taxonomies ) // Given page params
+				OR ( ! empty( $product_taxonomies ) AND is_tax( $product_taxonomies ) ) // Current page
+			) {
 				$area_id = us_get_option( $area . '_shop_id' );
 
 				// For others use "Archives" by default
@@ -1602,7 +1577,12 @@ if ( ! function_exists( 'us_get_page_area_id' ) ) {
 				$area_id = us_get_option( $area . '_archive_id' );
 			}
 
-			if ( is_category() ) {
+			// Given page params
+			if ( $taxonomy_type ) {
+				$current_tax = $taxonomy_type;
+
+				// The rest of this if /elseif / else clause - for current page
+			} elseif ( is_category() ) {
 				$current_tax = 'category';
 			} elseif ( is_tag() ) {
 				$current_tax = 'post_tag';
@@ -1624,11 +1604,27 @@ if ( ! function_exists( 'us_get_page_area_id' ) ) {
 				$current_tax = get_query_var( 'taxonomy' );
 			}
 
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'archive';
+				$us_page_args['taxonomy_type'] = $current_tax;
+			}
+
+
 			// Archive Content template, specified in terms "Edit" admin screen
-			if ( $area === 'content' AND $archive_content_id = get_term_meta( get_queried_object_id(), 'archive_content_id', TRUE ) ) {
-				if ( is_numeric( $archive_content_id ) ) {
-					$area_id = $archive_content_id;
-					$current_tax = NULL;
+			if (
+				$area === 'content'
+				AND (
+					$current_taxonomy_ID = $taxonomy_ID // Given page params
+					OR ( $current_taxonomy_ID = get_queried_object_id() ) // Current page
+				)
+				AND $archive_content_id = get_term_meta( $current_taxonomy_ID, 'archive_content_id', TRUE )
+				AND is_numeric( $archive_content_id )
+			) {
+				$area_id = $archive_content_id;
+				$current_tax = NULL;
+
+				if ( $fill_page_args ) {
+					$us_page_args['taxonomy_ID'] = $current_taxonomy_ID;
 				}
 			}
 
@@ -1641,76 +1637,132 @@ if ( ! function_exists( 'us_get_page_area_id' ) ) {
 			}
 
 			// Other Post Types
-		} elseif ( ! empty( $public_post_types ) AND is_singular( $public_post_types ) ) {
+		} elseif (
+			$post_type // Given page params
+			OR ( ! empty( $public_post_types ) AND is_singular( $public_post_types ) ) // Current page
+		) {
 
-			if ( is_attachment() ) {
-				$post_type = 'post'; // force "post" suffix for attachments
+			// Given page params
+			if ( $post_type ) {
+				$current_post_type = $post_type;
+
+				// The rest of this if /elseif / else clause - for current page
+			} elseif ( is_attachment() ) {
+				$current_post_type = 'post'; // force "post" suffix for attachments
 			} elseif ( is_singular( 'us_portfolio' ) ) {
-				$post_type = 'portfolio'; // force "portfolio" suffix to avoid migration from old theme options
+				$current_post_type = 'portfolio'; // force "portfolio" suffix to avoid migration from old theme options
 			} elseif ( is_singular( 'tribe_events' ) ) {
-				$post_type = 'tribe_events'; // force "tribe_*" suffix cause The Events Calendar always returns "page" type
+				$current_post_type = 'tribe_events'; // force "tribe_*" suffix cause The Events Calendar always returns "page" type
 			} elseif ( is_singular( 'tribe_venue' ) ) {
-				$post_type = 'tribe_venue';
+				$current_post_type = 'tribe_venue';
 			} elseif ( is_singular( 'tribe_organizer' ) ) {
-				$post_type = 'tribe_organizer';
+				$current_post_type = 'tribe_organizer';
 			} else {
-				$post_type = get_post_type();
+				$current_post_type = get_post_type();
 			}
 
-			$area_id = us_get_option( $area . '_' . $post_type . '_id', '__defaults__' );
+			$area_id = us_get_option( $area . '_' . $current_post_type . '_id', '__defaults__' );
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'post';
+				$us_page_args['post_type'] = $current_post_type;
+			}
 		}
 
 		// Forums archive page
-		if ( is_post_type_archive( 'forum' ) OR ( function_exists( 'bbp_is_search' ) AND bbp_is_search() ) OR ( function_exists( 'bbp_is_search_results' ) AND bbp_is_search_results() ) ) {
+		if (
+			$page_type == 'forum' // Given page params
+			OR ( // Current page
+				is_post_type_archive( 'forum' )
+				OR ( function_exists( 'bbp_is_search' ) AND bbp_is_search() )
+				OR ( function_exists( 'bbp_is_search_results' ) AND bbp_is_search_results() )
+			)
+		) {
 			$area_id = us_get_option( $area . '_forum_id' );
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'forum';
+			}
 		}
 
 		// Events calendar archive page
-		if ( is_post_type_archive( 'tribe_events' ) ) {
+		if ( $page_type == 'tribe_events' // Given page params
+			OR is_post_type_archive( 'tribe_events' ) // Current page
+		) {
 			$area_id = us_get_option( $area . '_tax_tribe_events_cat_id', '__defaults__' );
 
 			if ( $area_id == '__defaults__' ) {
 				$area_id = us_get_option( $area . '_archive_id', '' );
 			}
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'tribe_events';
+			}
 		}
 
 		// Search Results page
 		if (
-			is_search()
-			AND ! is_post_type_archive( 'product' )
-			AND $postID = us_get_option( 'search_page', 'default' )
-			AND is_numeric( $postID )
+			$page_type == 'search' // Given page params
+			OR ( // Current page
+				is_search()
+				AND ! is_post_type_archive( 'product' )
+				AND $postID = us_get_option( 'search_page', 'default' )
+				AND is_numeric( $postID )
+			)
 		) {
 			$area_id = usof_meta( 'us_' . $area . '_id', $postID );
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'search';
+			}
 		}
 
 		// Posts page
 		if (
-			is_home()
-			AND $postID = us_get_option( 'posts_page', 'default' )
-			AND $postID != 'default'
+			$page_type == 'home' // Given page params
+			OR ( // Current page
+				is_home()
+				AND $postID = us_get_option( 'posts_page', 'default' )
+				AND $postID != 'default'
+			)
 		) {
 			$area_id = usof_meta( 'us_' . $area . '_id', $postID );
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'home';
+			}
 		}
 
 		// 404 page
 		if (
-			is_404()
-			AND $postID = us_get_option( 'page_404', 'default' )
-			AND $postID != 'default'
+			$page_type == '404' // Given page params
+			OR ( // Current page
+				is_404()
+				AND $postID = us_get_option( 'page_404', 'default' )
+				AND $postID != 'default'
+			)
 		) {
 			$area_id = usof_meta( 'us_' . $area . '_id', $postID );
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = '404';
+			}
 		}
 
 		// Specific page
-		if ( is_singular() ) {
-			$postID = get_queried_object_id();
+		if (
+			$page_type == 'post' // Given page params
+			OR is_singular() // Current page
+		 ) {
+			$current_post_ID = ( $post_ID )
+				? $post_ID // Given page params
+				: get_queried_object_id(); // Current page
 
 			// Check all terms of the post and get "Pages Content template" term custom field (any first numeric value it's enough)
-			if ( $area === 'content' AND ! empty( get_post_taxonomies( $postID ) ) ) {
-				foreach ( get_post_taxonomies( $postID ) as $taxonomy_slug ) {
+			if ( $area === 'content' AND ! empty( get_post_taxonomies( $current_post_ID ) ) ) {
+				foreach ( get_post_taxonomies( $current_post_ID ) as $taxonomy_slug ) {
 
-					$terms = get_the_terms( $postID, $taxonomy_slug );
+					$terms = get_the_terms( $current_post_ID, $taxonomy_slug );
 
 					if ( ! empty( $terms ) AND is_array( $terms ) ) {
 						foreach ( $terms as $term ) {
@@ -1726,20 +1778,25 @@ if ( ! function_exists( 'us_get_page_area_id' ) ) {
 			}
 
 			// Check the existance of post custom field and get its value
-			if ( $postID AND metadata_exists( 'post', $postID, 'us_' . $area . '_id' ) ) {
+			if ( $current_post_ID AND metadata_exists( 'post', $current_post_ID, 'us_' . $area . '_id' ) ) {
 
-				$singular_area_id = usof_meta( 'us_' . $area . '_id', $postID );
+				$singular_area_id = usof_meta( 'us_' . $area . '_id', $current_post_ID );
 
 				// then check if the value has ID of non-existing Page Block (if it was deleted)
 				if ( $singular_area_id == '' OR is_registered_sidebar( $singular_area_id ) OR get_post_status( $singular_area_id ) != FALSE ) {
 					$area_id = $singular_area_id;
 				}
 			}
+
+			if ( $fill_page_args ) {
+				$us_page_args['page_type'] = 'post';
+				$us_page_args['post_ID'] = $current_post_ID;
+			}
 		}
 
 		// Reset Pages defaults
 		if ( $area_id == '__defaults__' ) {
-			$area_id = us_get_option( $area . '_id', '' );
+			$area_id = $default_area_id;
 		}
 
 		// If you have WPML or Polylang plugins then check the translations
@@ -1747,6 +1804,7 @@ if ( ! function_exists( 'us_get_page_area_id' ) ) {
 			$area_id = (int) apply_filters( 'us_tr_object_id', $area_id );
 		}
 
+		// TODO: improve filter - add 'area' param with area name in it
 		return apply_filters( 'us_get_page_area_id', $area_id );
 	}
 }
@@ -1832,7 +1890,6 @@ if ( ! function_exists( 'us_get_image_sizes_list' ) ) {
 	 * Get image size values for selection
 	 *
 	 * @param array [$size_names] List of size names
-	 *
 	 * @return array
 	 */
 	function us_get_image_sizes_list( $include_full = TRUE ) {
@@ -1887,7 +1944,6 @@ if ( ! function_exists( 'us_generate_link_atts' ) ) {
 	 * Generate attributes for link tag based on elements options
 	 *
 	 * @param string|array $link
-	 *
 	 * @return array
 	 */
 	function us_generate_link_atts( $link = '' ) {
@@ -1917,7 +1973,7 @@ if ( ! function_exists( 'us_generate_link_atts' ) ) {
 		}
 
 		// Check for custom fields values like '{{field_name}}'
-		if ( isset( $link_array['url'] ) AND preg_match( "#{{([^}]+)}}#", trim( $link_array['url'] ), $matches ) ) {
+		if ( isset( $link_array['url'] ) AND preg_match( "#{{([^}]+)}}#", trim( rawurldecode( $link_array['url'] ) ), $matches ) ) {
 			global $us_grid_term;
 			$postID = get_the_ID();
 
@@ -1967,9 +2023,13 @@ if ( ! function_exists( 'us_generate_link_atts' ) ) {
 
 				// If the value in terms
 			} elseif ( $term_id AND $term_metadata = get_metadata( 'term', $term_id, $matches[1], TRUE ) ) {
-				$link_array['url'] = ! empty( $term_metadata['url'] )
-					? $term_metadata['url']
-					: '';
+				if ( is_array( $term_metadata ) ) {
+					$link_array['url'] = ! empty( $term_metadata['url'] )
+						? $term_metadata['url']
+						: '';
+				} else {
+					$link_array['url'] = $term_metadata;
+				}
 
 				// If the value is empty, return empty 'url'
 			} else {
@@ -1977,14 +2037,22 @@ if ( ! function_exists( 'us_generate_link_atts' ) ) {
 			}
 		}
 
+
 		// Parse "url" attribute
 		if ( ! empty( $link_array['url'] ) ) {
 
 			// Replace [lang] shortcode with current language code
-			if ( strpos( $link_array['url'], '[lang]' ) !== FALSE ) {
+			if ( strpos( rawurldecode( $link_array['url'] ), '[lang]' ) !== FALSE ) {
 				$current_lang = apply_filters( 'us_tr_current_language', NULL );
+				$main_lang = apply_filters( 'us_tr_default_language', NULL );
 
-				$link_array['url'] = str_replace( '[lang]', $current_lang, $link_array['url'] );
+				if ( $current_lang != $main_lang ) {
+					$replacer = $current_lang;
+				} else {
+					$replacer = '';
+				}
+
+				$link_array['url'] = str_replace( '[lang]', $replacer, rawurldecode( $link_array['url'] ) );
 			}
 
 			// If the URL is email, add "mailto:"
@@ -2069,7 +2137,6 @@ if ( ! function_exists( 'us_get_smart_date' ) ) {
 	 *
 	 * @param int $from Unix timestamp from which the difference begins.
 	 * @param int $to Optional. Unix timestamp to end the time difference. Default becomes current_time() if not set.
-	 *
 	 * @return string Human readable date and time.
 	 */
 	function us_get_smart_date( $from, $to = '' ) {
@@ -2222,27 +2289,35 @@ if ( ! class_exists( 'Us_Vc_Base' ) ) {
 
 		/**
 		 * Add custom styles to the page
+		 * Note: This method outputs custom styles for both the page and the page blocks in the content,
+		 * which can lead to a lot of calls.
 		 *
 		 * @param mixed $id Unique post id
-		 * @return void
+		 * TODO: Update method after implementing new inference logic from #2457.
 		 */
 		public function addPageCustomCss( $id = NULL ) {
 			$ids = array();
-			if ( is_front_page() OR is_home() ) {
+			// If the ID is explicitly specified, then add it to get the styles if any
+			// (the ID is explicitly indicated to connect the page components, page blocks, content templates etc)
+			if ( is_numeric( $id ) ) {
+				$ids[] = $id;
+
+				// For pages, get the ID from the queried object
+			} else if ( is_front_page() OR is_home() OR is_singular() ) {
 				$ids[] = get_queried_object_id();
-			} elseif ( is_singular() ) {
-				$ids[] = ! is_null( $id )
-					? $id
-					: get_the_ID();
 			}
 
-			global $us_page_block_ids;
+			global $us_page_block_ids, $us_output_custom_css_ids;
 			if ( ! empty( $us_page_block_ids ) ) {
 				$ids = array_merge( $ids, $us_page_block_ids );
+				$ids = array_unique( $ids );
+			}
+			if ( ! is_array( $us_output_custom_css_ids ) ) {
+				$us_output_custom_css_ids = array();
 			}
 
 			// Get custom styles by available identifiers
-			foreach ( array_unique( $ids ) as $id ) {
+			foreach ( $ids as $id ) {
 				if ( $this->is_vc_active() AND 'true' === vc_get_param( 'preview' ) ) {
 					$latest_revision = wp_get_post_revisions( $id );
 					if ( ! empty( $latest_revision ) ) {
@@ -2250,8 +2325,17 @@ if ( ! class_exists( 'Us_Vc_Base' ) ) {
 						$id = $array_values[0]->ID;
 					}
 				}
+				/*
+				* Check if the css has not been displayed yet then output
+				* Note: Re-call can be for Page Blocks
+				*/
+				if ( in_array( $id, $us_output_custom_css_ids ) ) {
+					continue;
+				}
+				// Get and if available output custom styles
 				if ( $post_custom_css = get_metadata( 'post', $id, '_wpb_post_custom_css', TRUE ) ) {
-					echo sprintf( '<style data-type="us_custom-css">%s</style>', $post_custom_css );
+					$us_output_custom_css_ids[] = $id;
+					echo sprintf( '<style data-type="us_custom-css">%s</style>', us_minify_css( $post_custom_css ) );
 				}
 			}
 		}
@@ -2287,6 +2371,7 @@ if ( ! class_exists( 'Us_Vc_Base' ) ) {
 if ( ! function_exists( 'us_get_img_placeholder' ) ) {
 	/**
 	 * Returns image placeholder
+	 *
 	 * @param string $size The image size
 	 * @param string $src_only if TRUE returns file URL, if FALSE returns string with <img>
 	 * @return string
@@ -2294,24 +2379,31 @@ if ( ! function_exists( 'us_get_img_placeholder' ) ) {
 	function us_get_img_placeholder( $size = 'full', $src_only = FALSE ) {
 
 		// Default placeholder
-		$size_array = us_get_image_size_params( $size );
 		$img_src = US_CORE_URI . '/assets/images/placeholder.svg';
-		$img_full = '<img class="g-placeholder"';
-		$img_full .= ' src="' . US_CORE_URI . '/assets/images/placeholder.svg"';
-		$img_full .= ' width="' . $size_array['width'] . '"';
-		$img_full .= ' height="' . $size_array['height'] . '"';
-		$img_full .= ' alt="">';
+
+		$size_array = us_get_image_size_params( $size );
+		$img_atts = array(
+			'class' => 'g-placeholder',
+			'src' => $img_src,
+			'width' => $size_array['width'],
+			'height' => $size_array['height'],
+			'alt' => '',
+		);
+		$img_html = '<img' . us_implode_atts( $img_atts ) . '>';
 
 		// If Images Placeholder is set, use its attachment ID
-		if ( preg_match( '~^(\d+)(\|(.+))?$~', us_get_option( 'img_placeholder', '' ), $matches ) ) {
-			$img_src = wp_get_attachment_image_url( $matches[1], $size );
-			$img_full = wp_get_attachment_image( $matches[1], $size, TRUE, array( 'class' => 'g-placeholder' ) );
+		if (
+			$img_id = us_get_option( 'img_placeholder', '' )
+			AND is_numeric( $img_id )
+			AND $img_src = wp_get_attachment_image_url( $img_id, $size )
+		) {
+			$img_html = wp_get_attachment_image( $img_id, $size, TRUE, array( 'class' => 'g-placeholder' ) );
 		}
 
 		if ( $src_only ) {
 			return $img_src;
 		} else {
-			return $img_full;
+			return $img_html;
 		}
 	}
 }
@@ -2319,6 +2411,7 @@ if ( ! function_exists( 'us_get_img_placeholder' ) ) {
 if ( ! function_exists( 'us_wp_link_pages' ) ) {
 	/**
 	 * Custom Post Pagination
+	 *
 	 * @param bool $echo
 	 * @return string Returns or Echoes Pagination
 	 */
@@ -2373,7 +2466,8 @@ if ( ! function_exists( 'us_get_demo_import_config' ) ) {
 
 if ( ! function_exists( 'us_output_design_css' ) ) {
 	/**
-	 * Prepares all custom styles for page output.
+	 * Prepares all custom styles for page output
+	 *
 	 * @return string
 	 */
 	function us_output_design_css( $custom_posts = [] ) {
@@ -2381,6 +2475,13 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 
 		// Load css for specific page
 		$posts = is_404() ? array() : $wp_query->posts;
+
+		// Controlling the output of styles on the page, if the filter
+		// returns FALSE then the output will be canceled.
+		if ( ! apply_filters( 'us_is_output_design_css_for_content', TRUE ) ) {
+			$posts = array();
+		}
+
 		if ( ! empty( $custom_posts ) AND is_array( $custom_posts ) ) {
 			$posts = array_merge( $posts, $custom_posts );
 		}
@@ -2407,6 +2508,16 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 				: $maintenance_page_id;
 			if ( $maintenance_page = get_post( $maintenance_page_id ) ) {
 				$posts[] = $maintenance_page;
+			}
+		}
+
+		// Shop page
+		if ( function_exists( 'is_shop' ) AND is_shop() AND ( $shop_page_ID = get_option( 'woocommerce_shop_page_id' ) ) ) {
+			$shop_page_ID = has_filter( 'us_tr_object_id' )
+				? (int) apply_filters( 'us_tr_object_id', $shop_page_ID, 'page', TRUE )
+				: $shop_page_ID;
+			if ( $shop_page = get_post( $shop_page_ID ) ) {
+				$posts[] = $shop_page;
 			}
 		}
 
@@ -2437,7 +2548,7 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 							unset( $menu, $menu_items );
 
 							// Get Page Block IDs from Popup element
-						} else if ( strpos( $key, 'popup' ) === 0 AND ! empty( $item['use_page_block'] ) ) {
+						} elseif ( strpos( $key, 'popup' ) === 0 AND ! empty( $item['use_page_block'] ) ) {
 							$include_ids[] = (int) $item['use_page_block'];
 						}
 					}
@@ -2466,12 +2577,14 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 		}
 
 		// Get page block IDs from popups
-		foreach ( $posts as $post ) {
-			if (
-				strpos( $post->post_content, 'use_page_block="' )
-				AND preg_match_all( '/\suse_page_block="(\d+)"/', $post->post_content, $matches )
-			) {
-				$include_ids = array_merge( $include_ids, $matches[1] );
+		if ( apply_filters( 'us_is_output_design_css_for_content', TRUE ) ) {
+			foreach ( $posts as $post ) {
+				if (
+					strpos( $post->post_content, 'use_page_block="' )
+					AND preg_match_all( '/\suse_page_block="(\d+)"/', $post->post_content, $matches )
+				) {
+					$include_ids = array_merge( $include_ids, $matches[1] );
+				}
 			}
 		}
 
@@ -2522,7 +2635,6 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 		/**
 		 * Collect all Page Blocks into one variable
 		 * @param WP_Post $post
-		 * @return void
 		 */
 		$func_acc_posts = function ( $post ) use ( &$posts ) {
 			if ( $post instanceof WP_Post ) {
@@ -2551,24 +2663,7 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 			}
 			if ( ! empty( $jsoncss_data ) AND is_array( $jsoncss_data ) ) {
 				foreach ( $jsoncss_data as $jsoncss ) {
-					if ( ! empty( $jsoncss ) AND is_string( $jsoncss ) ) {
-						$class_name = us_get_design_css_class( $jsoncss );
-						$jsoncss = rawurldecode( $jsoncss );
-						if ( $jsoncss AND $jsoncss = json_decode( $jsoncss, TRUE ) ) {
-							foreach ( array( 'default', 'tablets', 'mobiles' ) as $device_type ) {
-								if ( $css_options = us_arr_path( $jsoncss, $device_type, FALSE ) ) {
-									if (
-										! empty( $jsoncss_collection[ $device_type ] )
-										AND in_array( $class_name, $jsoncss_collection[ $device_type ] )
-									) {
-										continue;
-									}
-									$css_options = apply_filters( 'us_output_design_css_options', $css_options, $device_type );
-									$jsoncss_collection[ $device_type ][ $class_name ] = $css_options;
-								}
-							}
-						};
-					}
+					us_add_jsoncss_to_collection( $jsoncss, $jsoncss_collection );
 				}
 			}
 		}
@@ -2583,6 +2678,39 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 	}
 
 	add_action( 'us_before_closing_head_tag', 'us_output_design_css', 10 );
+}
+
+if ( ! function_exists( 'us_add_jsoncss_to_collection' ) ) {
+	/**
+	 * Adds jsoncss styles to a jsoncss_collection
+	 *
+	 * @param string $jsoncss The jsoncss
+	 * @param array $jsoncss_collection The jsoncss collection
+	 * @return string Unique classname
+	 */
+	function us_add_jsoncss_to_collection( $jsoncss, &$jsoncss_collection ) {
+		$unique_classname = '';
+		if ( ! empty( $jsoncss ) AND is_string( $jsoncss ) ) {
+			$unique_classname = us_get_design_css_class( $jsoncss );
+			$jsoncss = rawurldecode( $jsoncss );
+			if ( $jsoncss AND $jsoncss = json_decode( $jsoncss, TRUE ) ) {
+				foreach ( (array) us_get_responsive_states( /* Only keys */ TRUE ) as $state ) {
+					if ( $css_options = us_arr_path( $jsoncss, $state, FALSE ) ) {
+						if (
+							! empty( $jsoncss_collection[ $state ] )
+							AND in_array( $unique_classname, $jsoncss_collection[ $state ] )
+						) {
+							continue;
+						}
+						$css_options = apply_filters( 'us_output_design_css_options', $css_options, $state );
+						$jsoncss_collection[ $state ][ $unique_classname ] = $css_options;
+					}
+				}
+			};
+		}
+
+		return $unique_classname;
+	}
 }
 
 if ( ! function_exists( 'us_filter_design_css_colors' ) ) {
@@ -2621,7 +2749,6 @@ if ( ! function_exists( 'us_get_recursive_parse_page_block' ) ) {
 	 * @param function $callback The callback `function( $post, $atts ){}`
 	 * @param integer $max_level The max level
 	 * @param integer $current_level The current level
-	 *
 	 * @return array page block ids
 	 */
 	function us_get_recursive_parse_page_block( $post, $callback = NULL, $max_level = 15, $current_level = 1 ) {
@@ -2663,7 +2790,6 @@ if ( ! function_exists( 'us_find_element_in_post_page_blocks' ) ) {
 	 *
 	 * @param inteer $post_id The post identifier
 	 * @param string $find_value The find value
-	 *
 	 * @return boolean
 	 */
 	function us_find_element_in_post_page_blocks( $post_id, $find_value = '' ) {
@@ -2707,26 +2833,73 @@ if ( ! function_exists( 'us_get_design_css_class' ) ) {
 	}
 }
 
-if ( ! function_exists( 'us_jsoncss_compile' ) ) {
+if ( ! function_exists( 'us_get_responsive_states' ) ) {
 	/**
-	 * Compilation of jsoncss styles
-	 * @param array $jsoncss_collection
-	 * @param array $device_breakpoints
-	 * @return string
+	 * Get responsive states
+	 *
+	 * @param bool $only_keys Enable only keys in the result
+	 * @return array( slug => array( title, breakpoint ) )
 	 */
-	function us_jsoncss_compile( $jsoncss_collection, $device_breakpoints = array() ) {
+	function us_get_responsive_states( $only_keys = FALSE ) {
+		$laptops_int = (int) us_get_option( 'laptops_breakpoint' );
+		$tablets_int = (int) us_get_option( 'tablets_breakpoint' );
+		$mobiles_int = (int) us_get_option( 'mobiles_breakpoint' );
 
-		$tablets_breakpoint = intval( us_get_option( 'tablets_breakpoint', '1024px' ) );
-		$mobiles_breakpoint = intval( us_get_option( 'mobiles_breakpoint', '600px' ) );
-
-		$device_breakpoints = array_merge(
-			array(
-				'default' => '',
-				'tablets' => '(min-width:' . $mobiles_breakpoint . 'px) and (max-width:' . ( $tablets_breakpoint - 1 ) . 'px)',
-				'mobiles' => '(max-width:' . ( $mobiles_breakpoint - 1 ) . 'px)',
-			), $device_breakpoints
+		// Note: The order of all keys is important, it affects the order of output in different parts of the project!
+		$result = array(
+			'default' => array(
+				'title' => __( 'Desktops', 'us' ) . ' <i>≥' . ( $laptops_int + 1 ) . 'px</i>',
+				'breakpoint' => '',
+			),
+			'laptops' => array(
+				'title' => __( 'Laptops', 'us' ) . ' <i>' . ( $tablets_int + 1 ) . '-' . $laptops_int . 'px</i>',
+				'breakpoint' => $laptops_int,
+			),
+			'tablets' => array(
+				'title' => __( 'Tablets', 'us' ) . ' <i>' . ( $mobiles_int + 1 ) . '-' . $tablets_int . 'px</i>',
+				'breakpoint' => $tablets_int,
+			),
+			'mobiles' => array(
+				'title' => __( 'Mobiles', 'us' ) . ' <i>≤' . $mobiles_int . 'px</i>',
+				'breakpoint' => $mobiles_int,
+			),
 		);
 
+		return $only_keys
+			? array_keys( $result )
+			: $result;
+	}
+}
+
+if ( ! function_exists( 'us_get_jsoncss_options' ) ) {
+	/**
+	 * Get all settings for jsoncss compilation
+	 * NOTE: A helper function is needed to get the settings for both the backend and the frontend
+	 *
+	 * @param array breakpoints The breakpoints of responsive states
+	 * @param array $custom_states The custom responsive states
+	 * @return array
+	 */
+	function us_get_jsoncss_options( $breakpoints = array(), $custom_states = array() ) {
+		// Get responsive states
+		$states = array_merge( (array) us_get_responsive_states(), $custom_states );
+
+		// Get breakpoints of responsive states
+		$breakpoints = array_merge(
+			array(
+				'default' => '',
+				'laptops' => '(min-width:' . ( $states['tablets']['breakpoint'] + 1 ) . 'px) and (max-width:' . $states['laptops']['breakpoint'] . 'px)',
+				'tablets' => '(min-width:' . ( $states['mobiles']['breakpoint'] + 1 ) . 'px) and (max-width:' . $states['tablets']['breakpoint'] . 'px)',
+				'mobiles' => '(max-width:' . $states['mobiles']['breakpoint'] . 'px)',
+			),
+			$breakpoints
+		);
+
+		/**
+		 * Masks for optimizing and combining styles
+		 * NOTE: The order of all values must match the specification of the css
+		 * @var array
+		 */
 		$css_mask = array(
 			'background' => 'color image repeat attachment position size',
 			'padding' => 'top right bottom left',
@@ -2742,30 +2915,59 @@ if ( ! function_exists( 'us_jsoncss_compile' ) ) {
 		}
 		unset( $mask_keys );
 
-		$default_options = us_config( 'elements_design_options.css.params', array() );
-		$default_option_types = wp_list_pluck( $default_options, 'type' );
+		return array(
+			'breakpoints' => $breakpoints,
+			'css_mask' => $css_mask,
+		);
+	}
+}
+
+if ( ! function_exists( 'us_jsoncss_compile' ) ) {
+	/**
+	 * Compilation of jsoncss styles
+	 *
+	 * @param array $jsoncss_collection
+	 * @param array $breakpoints
+	 * @return string
+	 */
+	function us_jsoncss_compile( $jsoncss_collection, $breakpoints = array() ) {
+		if ( empty( $jsoncss_collection ) OR ! is_array( $jsoncss_collection ) ) {
+			return '';
+		}
+
+		// Get all the necessary settings for compilation
+		$jsoncss_options = us_get_jsoncss_options( $breakpoints );
+		$breakpoints = $jsoncss_options['breakpoints'];
+		$css_mask = $jsoncss_options['css_mask'];
+		unset( $jsoncss_options );
 
 		/**
 		 * Optimization of the CSS options
 		 * @param array $css_options
 		 * @return array
 		 */
-		$css_optimize = function ( $css_options ) use ( $css_mask, $default_option_types ) {
+		$css_optimize = function ( $css_options ) use ( $css_mask ) {
+
 			// Normalization of css parameters
 			foreach ( $css_options as $prop_name => $prop_value ) {
-				if ( isset( $default_option_types[ $prop_name ] ) AND $default_option_types[ $prop_name ] === 'upload' ) {
-					// If the field is an upload, then we will receive and establish a link to the image
-					if (
-						strpos( $prop_value, '|' ) !== FALSE
-						AND $image_url = call_user_func_array( 'wp_get_attachment_image_url', explode( '|', $prop_value ) )
-					) {
+
+				// For background-image get an image URL by attachment ID
+				if ( $prop_name === 'background-image' AND ! empty( $prop_value ) ) {
+
+					// Get an image by ID
+					// DEV NOTE: do not use is_numeric() condition to support old values "123|full"
+					if ( $image_url = wp_get_attachment_image_url( $prop_value, 'full' ) ) {
 						$prop_value = sprintf( 'url(%s)', $image_url );
+
+						// Skip cases when the value has url(), like after Demo Import
+					} elseif ( strpos( $prop_value , 'url(' ) !== 0 ) {
+						$prop_value = sprintf( 'url(%s)', $prop_value );
 					}
 				}
 
 				// Generate correct font-family value
 				if ( $prop_name == 'font-family' ) {
-					$prop_value = us_get_font_css( $prop_value, TRUE );
+					$prop_value = us_get_font_family( $prop_value );
 				}
 
 				$css_options[ $prop_name ] = trim( $prop_value );
@@ -2854,7 +3056,12 @@ if ( ! function_exists( 'us_jsoncss_compile' ) ) {
 					if ( $mask_name == 'background' ) {
 
 						// If there is a gradinet, then add it to the end of the parameters
-						if ( ! empty( $mask_props['color'] ) AND strpos( $mask_props['color'], 'gradient' ) !== FALSE ) {
+						if ( ! empty( $mask_props['color'] )
+							AND (
+								strpos( $mask_props['color'], 'gradient' ) !== FALSE
+								OR preg_match( '~\s?var\(.*-grad\s?\)$~', $mask_props['color'] )
+							)
+						) {
 							if ( ! empty( $mask_props['image'] ) ) {
 								$_gradient = ', ' . $mask_props['color'];
 								unset( $mask_props['color'] );
@@ -2900,9 +3107,9 @@ if ( ! function_exists( 'us_jsoncss_compile' ) ) {
 		if ( ! empty( $jsoncss_collection ) ) {
 
 			// Optimization and the formation of CSS
-			foreach ( array_keys( $device_breakpoints ) as $device_type ) {
-				if ( ! empty( $jsoncss_collection[ $device_type ] ) ) {
-					foreach ( $jsoncss_collection[ $device_type ] as $class_name => &$css_options ) {
+			foreach ( array_keys( $breakpoints ) as $state ) {
+				if ( ! empty( $jsoncss_collection[ $state ] ) ) {
+					foreach ( $jsoncss_collection[ $state ] as $class_name => &$css_options ) {
 						$css_options = $css_optimize( $css_options );
 					}
 					unset( $css_options );
@@ -2910,14 +3117,14 @@ if ( ! function_exists( 'us_jsoncss_compile' ) ) {
 			}
 
 			// Convert options to css styles
-			foreach ( $device_breakpoints as $device_type => $media ) {
-				if ( ! empty( $jsoncss_collection[ $device_type ] ) ) {
+			foreach ( $breakpoints as $state => $media ) {
+				if ( ! empty( $jsoncss_collection[ $state ] ) ) {
 					$media_css = '';
-					foreach ( $jsoncss_collection[ $device_type ] as $class_name => $css_options ) {
+					foreach ( $jsoncss_collection[ $state ] as $class_name => $css_options ) {
 						$styles = '';
 
 						// Remove duplicate styles
-						if ( 'default' !== $device_type AND ! empty( $jsoncss_collection['default'][ $class_name ] ) ) {
+						if ( 'default' !== $state AND ! empty( $jsoncss_collection['default'][ $class_name ] ) ) {
 							$default_css_options = $jsoncss_collection['default'][ $class_name ];
 							foreach ( $css_options as $prop_name => $prop_value ) {
 								if ( isset( $default_css_options[ $prop_name ] ) AND $default_css_options[ $prop_name ] === $prop_value ) {
@@ -2962,7 +3169,6 @@ if ( ! function_exists( 'us_remove_url_protocol' ) ) {
 }
 
 if ( ! function_exists( 'us_get_terms_by_slug' ) ) {
-
 	/**
 	 * Get all terms by taxonomy slug
 	 *
@@ -3074,11 +3280,11 @@ if ( ! function_exists( 'us_get_aspect_ratio_values' ) ) {
 			$_width = 16;
 			$_height = 9;
 		} elseif ( $_ratio == 'custom' ) {
-			$_width = floatval( str_replace( ',', '.', preg_replace( '/^[^\d.,]+$/', '', $_width ) ) );
+			$_width = (float) str_replace( ',', '.', preg_replace( '/^[^\d.,]+$/', '', $_width ) );
 			if ( $_width <= 0 ) {
 				$_width = 1;
 			}
-			$_height = floatval( str_replace( ',', '.', preg_replace( '/^[^\d.,]+$/', '', $_height ) ) );
+			$_height = (float) str_replace( ',', '.', preg_replace( '/^[^\d.,]+$/', '', $_height ) );
 			if ( $_height <= 0 ) {
 				$_height = 1;
 			}
@@ -3127,8 +3333,13 @@ if ( ! function_exists( 'us_filter_posts_by_language' ) ) {
 }
 
 if ( ! function_exists( 'us_set_time_limit' ) ) {
+	/**
+	 * Set the number of seconds a script is allowed to run
+	 *
+	 * @param int $limit The limit
+	 */
 	function us_set_time_limit( $limit = 0 ) {
-		$limit = intval( $limit );
+		$limit = (int) $limit;
 		if (
 			function_exists( 'set_time_limit' )
 			&& FALSE === strpos( ini_get( 'disable_functions' ), 'set_time_limit' )
@@ -3150,7 +3361,7 @@ if ( ! function_exists( 'us_replace_dynamic_value' ) ) {
 	 * @param string $grid_object_type 'post' / 'term' - used for grid context only
 	 * @return string
 	 */
-	function us_replace_dynamic_value( $string, $elm_context, $grid_object_type = 'post' ) {
+	function us_replace_dynamic_value( $string, $elm_context = 'any', $grid_object_type = 'post' ) {
 		if ( ! is_string( $string ) ) {
 			return '';
 		}
@@ -3194,13 +3405,28 @@ if ( ! function_exists( 'us_replace_dynamic_value' ) ) {
 
 				$result = '';
 
-				// Predefined behavior: change '{{comment_count}}' to comments amount of the current post
+				// Predefined: change '{{comment_count}}' to comments amount of the current post
 				if ( $matches[0] === '{{comment_count}}' AND $object_type === 'post' ) {
-					$comments_amount = get_comment_count( $object_id );
-					$result = $comments_amount['approved'];
+					$result = wp_count_comments( $object_id )->approved;
 
-					// Check the metadata existance and replace by its value
-				} elseif ( $meta_value = get_metadata( $object_type, $object_id, $matches[1], TRUE ) ) {
+					// Predefined: change '{{post_count}}' to published posts amount
+				} elseif ( $matches[0] === '{{post_count}}' ) {
+					$result = wp_count_posts()->publish;
+
+					// Predefined: change '{{user_count}}' to total users amount
+				} elseif ( $matches[0] === '{{user_count}}' ) {
+					$result = count_users()['total_users'];
+
+					// Get the metadata value
+				} else {
+
+					// Use ACF function to return their specific format value
+					if ( function_exists( 'get_field' ) ) {
+						$meta_value = get_field( $matches[1], $object_id );
+					} else {
+						$meta_value = get_metadata( $object_type, $object_id, $matches[1], TRUE );
+					}
+
 					$result = is_string( $meta_value ) ? $meta_value : '';
 				}
 
@@ -3220,7 +3446,6 @@ if ( ! function_exists( 'us_register_context_layout' ) ) {
 	 * Register context layout
 	 *
 	 * @param string $layout
-	 * @return void
 	 */
 	function us_register_context_layout( $layout ) {
 		global $us_context_layout;
@@ -3231,6 +3456,7 @@ if ( ! function_exists( 'us_register_context_layout' ) ) {
 if ( ! function_exists( 'us_is_faqs_page' ) ) {
 	/**
 	 * The current page is FAQs
+	 *
 	 * @return bool
 	 */
 	function us_is_faqs_page() {
@@ -3242,9 +3468,46 @@ if ( ! function_exists( 'us_is_faqs_page' ) ) {
 	}
 }
 
+if ( ! function_exists( 'us_get_color_schemes' ) ) {
+	/**
+	 * Get available color schemes, both predefined and custom
+	 *
+	 * @return array
+	 */
+	function us_get_color_schemes( $only_titles = FALSE ) {
+		$schemes = $schemes_titles = array();
+
+		// Get custom schemes
+		$custom_schemes = get_option( 'usof_style_schemes_' . US_THEMENAME );
+
+		// Reverse Custom schemes order to make last added item first
+		if ( is_array( $custom_schemes ) ) {
+			$custom_schemes = array_reverse( $custom_schemes, TRUE );
+		} else {
+			$custom_schemes = array();
+		}
+
+		foreach ( $custom_schemes as $key => $custom_scheme ) {
+			$schemes += array( 'custom_' . $key => $custom_scheme );
+			$schemes_titles += array( 'custom_' . $key => $custom_scheme['title'] );
+		}
+
+		// Get predefined schemes
+		$predefined_schemes = us_config( 'color-schemes' );
+		$schemes += $predefined_schemes;
+
+		foreach ( $predefined_schemes as $key => $predefined_scheme ) {
+			$schemes_titles += array( $key => $predefined_scheme['title'] );
+		}
+
+		return ( $only_titles ) ? $schemes_titles : $schemes;
+	}
+}
+
 if ( ! function_exists( 'us_get_available_icon_sets' ) ) {
 	/**
 	 * Get available icon sets
+	 *
 	 * @return array
 	 */
 	function us_get_available_icon_sets() {
@@ -3262,6 +3525,7 @@ if ( ! function_exists( 'us_get_available_icon_sets' ) ) {
 if ( ! function_exists( 'us_amp' ) ) {
 	/**
 	 * The current page is AMP page
+	 *
 	 * @return bool
 	 */
 	function us_amp() {
@@ -3321,9 +3585,37 @@ if ( ! function_exists( 'us_map_lon_lat' ) ) {
 	}
 }
 
+if ( ! function_exists( 'us_set_params_weight' ) ) {
+	/**
+	 * Set weights for params to keep the correct position in output
+	 *
+	 * @params One or more arrays that will be combined into one common array
+	 * @return array
+	 */
+	function us_set_params_weight() {
+		$params = array();
+		foreach ( func_get_args() as $arg ) {
+			if ( empty( $arg ) OR ! is_array( $arg ) ) {
+				continue;
+			}
+			$params += $arg;
+		}
+		$count = count( $params );
+		foreach ( $params as &$param ) {
+			if ( isset( $param['weight'] ) ) {
+				continue;
+			}
+			$param['weight'] = $count --;
+		}
+
+		return $params;
+	}
+}
+
 if ( ! function_exists( 'us_user_profile_html' ) ) {
 	/**
 	 * Get profile info for Login element/widget
+	 *
 	 * @param $logout_redirect
 	 * @param bool $hidden
 	 * @return string
@@ -3346,6 +3638,102 @@ if ( ! function_exists( 'us_user_profile_html' ) ) {
 		$output .= '<a class="w-profile-link for_logout" href="' . esc_url( wp_logout_url( $logout_redirect ) ) . '">' . us_translate( 'Log Out' ) . '</a>';
 		$output .= '</div>';
 
-		return $output;
+		return apply_filters( 'us_user_profile_html', $output, $logout_redirect, $hidden );
+	}
+}
+
+if ( ! function_exists( 'us_design_options_has_property' ) ) {
+	/**
+	 * Check for CSS property in the shortcode attribute
+	 *
+	 * @param string|array $css
+	 * @param string|array $props
+	 * @param bool $strict
+	 * @return array
+	 */
+	function us_design_options_has_property( $css, $props, $strict = FALSE ) {
+		$result = array();
+
+		if ( empty( $props ) ) {
+			return $result;
+		}
+
+		if ( ! is_array( $props ) ) {
+			$props = array( (string) $props );
+		}
+
+		$props = array_map( 'trim', $props );
+		$props = array_map( 'us_strtolower', $props );
+
+		if ( is_string( $css ) ) {
+			$css = json_decode( rawurldecode( $css ), TRUE );
+		}
+
+		if ( ! empty( $css ) AND is_array( $css ) ) {
+			foreach ( $css as $state => $values ) {
+				$values = array_keys( $values );
+				$values = array_map( 'us_strtolower', $values );
+
+				foreach ( $props as $prop ) {
+					if ( ! in_array( $state, $result ) AND array_search( $prop, $values, $strict ) !== FALSE ) {
+						$result[] = $state;
+					}
+				}
+			}
+		}
+
+		return array_unique( $result );
+	}
+}
+
+if ( ! function_exists( 'us_add_page_shortcodes_custom_css' ) ) {
+	/**
+	 * Add design options CSS for shortcodes in custom pages and page blocks
+	 *
+	 * @param int $id The ID
+	 * TODO: Update method after implementing new inference logic from #2457.
+	 */
+	function us_add_page_shortcodes_custom_css( $id ) {
+		if ( class_exists( 'VC_Base' ) ) {
+			// Output css styles
+			$us_vc = new Us_Vc_Base;
+			$us_vc->addPageCustomCss( $id );
+			$us_vc->addShortcodesCustomCss( $id );
+		}
+	}
+}
+
+if ( ! function_exists( 'us_get_shortcode_full_name' ) ) {
+	/**
+	 * Get shortcode full name
+	 *
+	 * @param string $elm_name The elm name
+	 * @return string
+	 */
+	function us_get_shortcode_full_name( $elm_name ) {
+		return strpos( $elm_name, 'vc_' ) === 0 ? $elm_name : "us_{$elm_name}";
+	}
+}
+
+if ( ! function_exists( 'us_uniqid' ) ) {
+	/**
+	 * Generate unique ID with specified length, will not affect uniqueness!
+	 *
+	 * @param string $length amount of characters
+	 * @return string Returns unique id
+	 */
+	function us_uniqid( $length = 4 ) {
+		if ( $length <= 0 ) {
+			return '';
+		}
+		// Making sure first char of ID to be letter for correct CSS class/ID
+		$seed = str_split( 'abcdefghijklmnopqrstuvwxyz' );
+		$result = $seed[ array_rand( $seed ) ];
+
+		if ( (int) $length > 1 ) {
+			$result .= substr( uniqid(), - ( (int) $length - 1 ) );
+		}
+
+		return $result;
 	}
 }

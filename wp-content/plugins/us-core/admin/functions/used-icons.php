@@ -17,14 +17,13 @@ if ( ! function_exists( 'us_add_callbacks_to_search_used_icons' ) ) {
 		 *
 		 * @param array $icons The icons
 		 * @param WP_Post $post
-		 * @return void
 		 */
 		$func_save_used_icons = function( $icons, $post ) {
 			if ( empty( $icons ) ) {
 				return;
 			}
 
-			global $_us_used_icons, $usof_options;
+			global $_us_used_icons;
 			if ( empty( $_us_used_icons ) ) {
 				$_us_used_icons = array(
 					'icons' => array(),
@@ -378,8 +377,6 @@ if ( class_exists( 'US_Auto_Optimize_Assets' ) AND ! class_exists( 'US_Get_Used_
 		 *
 		 * Overriding the method and clearing the configuration from
 		 * unnecessary assets in accordance with the allowed assets
-		 *
-		 * @return void
 		 */
 		public function __construct() {
 
@@ -464,7 +461,6 @@ if ( ! function_exists( 'us_save_found_icons_to_db' ) ) {
 	 * then filter and add them to the general list of found icons, which will be saved to the database.
 	 *
 	 * @param US_Auto_Optimize_Assets|US_Get_Used_Icons $self This is an instance of the class from which the method was called
-	 * @return void
 	 */
 	function us_save_found_icons_to_db( $self ) {
 		global $_us_used_icons;

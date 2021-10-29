@@ -26,20 +26,21 @@ if ( is_front_page() ) {
 	return;
 }
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ' separator_' . $separator_type;
-$classes .= ' align_' . $align;
+$_atts['class'] = 'g-breadcrumbs';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+$_atts['class'] .= ' separator_' . $separator_type;
+$_atts['class'] .= ' align_' . $align;
+
 if ( ! $show_current ) {
-	$classes .= ' hide_current';
+	$_atts['class'] .= ' hide_current';
 }
 
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
-
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
-	$classes .= ' has_text_color';
+	$_atts['class'] .= ' has_text_color';
 }
+
+$item_atts['class'] = 'g-breadcrumbs-item';
 
 // Generate separator between crumbs
 $delimiter = '';
@@ -53,31 +54,35 @@ if ( $delimiter != '' ) {
 }
 
 // Generate microdata markup
-$microdata_list = $microdata_item = $link_attr = $name_attr = $position_attr = '';
+$link_attr = $name_attr = $position_attr = '';
 if ( us_get_option( 'schema_markup' ) ) {
-	$microdata_list = ' itemscope itemtype="http://schema.org/BreadcrumbList"';
-	$microdata_item = ' itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"';
+
+	// Do not add markup for WooCommerce Breadcrumbs
+	if ( ! ( function_exists( 'woocommerce_breadcrumb' ) AND is_woocommerce() ) ) {
+		$_atts['itemscope'] = '';
+		$_atts['itemtype'] = 'http://schema.org/BreadcrumbList';
+
+		$item_atts['itemscope'] = '';
+		$item_atts['itemprop'] = 'itemListElement';
+		$item_atts['itemtype'] = 'http://schema.org/ListItem';
+	}
+
 	$link_attr = ' itemprop="item"';
 	$name_attr = ' itemprop="name"';
 	$position_attr = ' itemprop="position"';
-}
-
-if ( function_exists( 'woocommerce_breadcrumb' ) AND is_woocommerce() ) {
-	// Remove markup from WooCommerce Breadcrumbs
-	$microdata_list = $microdata_item = '';
 }
 
 // Homepage Label
 $home = strip_tags( $home );
 
 // The breadcrumb’s container starting code
-$list_before = '<ol class="g-breadcrumbs' . $classes . '"' . $el_id . $microdata_list . '>';
+$list_before = '<ol' . us_implode_atts( $_atts ) . '>';
 
 // The breadcrumb’s container ending code
 $list_after = '</ol>';
 
 // Code before single crumb
-$item_before = '<li class="g-breadcrumbs-item"' . $microdata_item . '>';
+$item_before = '<li' . us_implode_atts( $item_atts ) . '>';
 
 // Code after single crumb
 $item_after = '</li>';

@@ -20,14 +20,15 @@ if ( ! isset( $color_schemes ) ) {
 	$color_schemes = us_config( 'color-schemes' );
 }
 if ( ! isset( $custom_color_schemes ) ) {
-	$custom_color_schemes = defined( 'US_THEMENAME' ) ? get_option( 'usof_style_schemes_' . US_THEMENAME ) : array();
-	if ( ! is_array( $custom_color_schemes ) ) {
+	$custom_color_schemes = get_option( 'usof_style_schemes_' . US_THEMENAME );
+
+	// Reverse Custom schemes order to make last added item first
+	if ( is_array( $custom_color_schemes ) ) {
+		$custom_color_schemes = array_reverse( $custom_color_schemes, TRUE );
+	} else {
 		$custom_color_schemes = array();
 	}
 }
-
-// Reverse Custom schemes order to make last added item first
-$custom_color_schemes = array_reverse( $custom_color_schemes, TRUE );
 
 // Window title and close control
 $output = '<div class="us-bld-window-title">' . __( 'Color Schemes', 'us' ) . '</div>';

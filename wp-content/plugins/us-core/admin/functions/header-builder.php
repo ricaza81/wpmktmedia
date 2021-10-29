@@ -52,7 +52,7 @@ if ( ! function_exists( 'us_hb_load_header_settings' ) ) {
 		$us_header_id = us_get_page_area_id( 'header' );
 
 		// Override Header ID and its settings for certain post when they set in metabox
-		$states = array( 'default', 'tablets', 'mobiles' );
+		$states = (array) us_get_responsive_states( /* Only keys */TRUE );
 		$override_options = array();
 		$is_shop = FALSE;
 		if ( is_singular() ) {
@@ -87,21 +87,23 @@ if ( ! function_exists( 'us_hb_load_header_settings' ) ) {
 					}
 				}
 				if ( usof_meta( 'us_header_sticky_override', $postID ) ) {
+					// Note: The value can be either an array or a delimited string.
 					$sticky_override = usof_meta( 'us_header_sticky', $postID );
-					if ( ! is_array( $sticky_override ) ) {
-						$sticky_override = array();
+					if ( is_string( $sticky_override ) ) {
+						$sticky_override = explode( ',' , $sticky_override );
 					}
 					foreach ( $states as $state ) {
-						$override_options[ $state ]['options']['sticky'] = in_array( $state, $sticky_override );
+						$override_options[ $state ]['options']['sticky'] = in_array( $state, (array) $sticky_override );
 					}
 				}
 				if ( usof_meta( 'us_header_transparent_override', $postID ) ) {
+					// Note: The value can be either an array or a delimited string.
 					$transparent_override = usof_meta( 'us_header_transparent', $postID );
-					if ( ! is_array( $transparent_override ) ) {
-						$transparent_override = array();
+					if ( is_string( $transparent_override ) ) {
+						$transparent_override = explode( ',' , $transparent_override );
 					}
 					foreach ( $states as $state ) {
-						$override_options[ $state ]['options']['transparent'] = in_array( $state, $transparent_override );
+						$override_options[ $state ]['options']['transparent'] = in_array( $state, (array) $transparent_override );
 					}
 				}
 				if ( usof_meta( 'us_header_shadow', $postID ) ) {
@@ -142,6 +144,19 @@ if ( ! function_exists( 'us_hb_load_header_settings' ) ) {
 			// Fallback
 			$header_settings = us_hb_settings_fallback( $header_settings );
 
+			/*
+			 * Applying global breakpoints where needed
+			 * Note: this should go after fallback because laptop state sometimes is not present before fallback
+			 */
+			foreach ( $states as $state ) {
+				if (
+					isset( $header_settings[ $state ]['options']['custom_breakpoint'] )
+					AND ! $header_settings[ $state ]['options']['custom_breakpoint']
+				) {
+					$header_settings[ $state ]['options']['breakpoint'] = us_get_option( $state . '_breakpoint' );
+				}
+			}
+
 		} else {
 			$header_settings['is_hidden'] = TRUE;
 		}
@@ -172,7 +187,7 @@ if ( ! function_exists( 'us_hb_enqueue_scripts' ) ) {
 		usof_print_scripts();
 
 		// Appending required assets
-		wp_enqueue_script( 'us-header-builder', US_CORE_URI . '/admin/js/header-builder.js', array( 'usof-scripts' ), US_CORE_VERSION, TRUE );
+		wp_enqueue_script( 'us-header-builder', US_CORE_URI . '/admin/js/header-builder.js', array(), US_CORE_VERSION, TRUE ); // TODO: check if we need deps
 
 		// Disabling WP auto-save
 		wp_dequeue_script( 'autosave' );
@@ -181,6 +196,10 @@ if ( ! function_exists( 'us_hb_enqueue_scripts' ) ) {
 
 if ( ! function_exists( 'us_hb_edit_form_top' ) ) {
 	function us_hb_edit_form_top( $post ) {
+		// Include all files needed to use the WordPress media API
+		wp_enqueue_media();
+		wp_enqueue_editor();
+
 		global $help_portal_url;
 		$post = get_post( $post->ID );
 		echo '<div class="usof-container type_builder';

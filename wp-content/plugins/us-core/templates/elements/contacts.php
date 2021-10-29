@@ -19,30 +19,35 @@
 
 $_atts['class'] = 'w-contacts';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
+
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
-$output .= '<div class="w-contacts-list">';
+$output = '';
 if ( ! empty( $address ) ) {
+	$address = us_replace_dynamic_value( $address );
 	$output .= '<div class="w-contacts-item for_address"><span class="w-contacts-item-value">' . $address . '</span></div>';
 }
 if ( ! empty( $phone ) ) {
+	$phone = us_replace_dynamic_value( $phone );
 	$output .= '<div class="w-contacts-item for_phone"><span class="w-contacts-item-value">' . $phone . '</span></div>';
 }
 if ( ! empty( $fax ) ) {
+	$fax = us_replace_dynamic_value( $fax );
 	$output .= '<div class="w-contacts-item for_mobile"><span class="w-contacts-item-value">' . $fax . '</span></div>';
 }
-if ( ! empty( $email ) AND is_email( $email ) ) {
-	$output .= '<div class="w-contacts-item for_email"><span class="w-contacts-item-value">';
-	$output .= '<a href="mailto:' . $email . '">' . $email . '</a></span></div>';
+if ( ! empty( $email ) ) {
+	$email = us_replace_dynamic_value( $email );
+	if ( is_email( $email ) ) {
+		$output .= '<div class="w-contacts-item for_email"><span class="w-contacts-item-value">';
+		$output .= '<a href="mailto:' . $email . '">' . $email . '</a></span></div>';
+	}
 }
-$output .= '</div>';
-$output .= '</div>';
 
-echo $output;
+if ( ! empty( $output ) ) {
+	$output = '<div class="w-contacts-list">'. $output .'</div>';
+}
+
+echo '<div' . us_implode_atts( $_atts ) . '>'. $output .'</div>';

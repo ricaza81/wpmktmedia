@@ -28,12 +28,19 @@ if ( us_get_option( 'enable_page_blocks_for_sidebars', 0 ) ) {
 
 $metabox_config = array();
 
+// Get responsive states
+$responsive_states = array();
+foreach ( us_get_responsive_states() as $state => $data ) {
+	$responsive_states[ $state ] = $data['title'];
+}
+
 // Page Layout
 $metabox_config[] = array(
 	'id' => 'us_page_settings',
 	'title' => __( 'Page Layout', 'us' ),
 	'post_types' => array_keys( us_get_public_post_types() ),
 	'context' => 'side',
+	'usb_context' => TRUE,
 	'priority' => 'low',
 	'fields' => array(
 
@@ -49,61 +56,58 @@ $metabox_config[] = array(
 				), us_arr_path( $posts_titles, 'us_header', array() )
 			),
 			'std' => '__defaults__',
-			'classes' => 'width_full',
+			'usb_preview' => TRUE,
 		),
 		'us_header_sticky_override' => array(
 			'title' => __( 'Sticky Header', 'us' ),
 			'type' => 'switch',
 			'switch_text' => __( 'Override this setting', 'us' ),
 			'std' => 0,
-			'classes' => 'width_full for_above',
+			'classes' => 'for_above',
 			'show_if' => array( 'us_header_id', '!=', array( '__defaults__', '' ) ),
+			'usb_preview' => TRUE
 		),
 		'us_header_sticky' => array(
 			'type' => 'checkboxes',
-			'options' => array(
-				'default' => __( 'On Desktops', 'us' ),
-				'tablets' => __( 'On Tablets', 'us' ),
-				'mobiles' => __( 'On Mobiles', 'us' ),
-			),
-			'std' => array(),
-			'classes' => 'width_full for_above vertical',
+			'options' => $responsive_states,
+			'std' => '',
+			'classes' => 'for_above vertical',
 			'show_if' => array(
 				array( 'us_header_id', '!=', array( '__defaults__', '' ) ),
 				'and',
 				array( 'us_header_sticky_override', '=', '1' ),
 			),
+			'usb_preview' => TRUE
 		),
 		'us_header_transparent_override' => array(
 			'title' => __( 'Transparent Header', 'us' ),
 			'type' => 'switch',
 			'switch_text' => __( 'Override this setting', 'us' ),
 			'std' => 0,
-			'classes' => 'width_full for_above',
+			'classes' => 'for_above',
 			'show_if' => array( 'us_header_id', '!=', array( '__defaults__', '' ) ),
+			'usb_preview' => TRUE
 		),
 		'us_header_transparent' => array(
 			'type' => 'checkboxes',
-			'options' => array(
-				'default' => __( 'On Desktops', 'us' ),
-				'tablets' => __( 'On Tablets', 'us' ),
-				'mobiles' => __( 'On Mobiles', 'us' ),
-			),
-			'std' => array(),
-			'classes' => 'width_full for_above vertical',
+			'options' => $responsive_states,
+			'std' => '',
+			'classes' => 'for_above vertical',
 			'show_if' => array(
 				array( 'us_header_id', '!=', array( '__defaults__', '' ) ),
 				'and',
 				array( 'us_header_transparent_override', '=', '1' ),
 			),
+			'usb_preview' => TRUE
 		),
 		'us_header_shadow' => array(
 			'title' => __( 'Header Shadow', 'us' ),
 			'type' => 'switch',
 			'switch_text' => __( 'Remove header shadow', 'us' ),
 			'std' => 0,
-			'classes' => 'width_full for_above',
+			'classes' => 'for_above',
 			'show_if' => array( 'us_header_id', '!=', array( '__defaults__', '' ) ),
+			'usb_preview' => TRUE
 		),
 		'us_header_sticky_pos' => array(
 			'title' => __( 'Sticky Header Initial Position', 'us' ),
@@ -115,8 +119,9 @@ $metabox_config[] = array(
 				'below' => __( 'Below the first content row', 'us' ),
 			),
 			'std' => '',
-			'classes' => 'width_full for_above',
+			'classes' => 'for_above',
 			'show_if' => array( 'us_header_id', '!=', array( '__defaults__', '' ) ),
+			'usb_preview' => TRUE
 		),
 
 		// Titlebar
@@ -131,8 +136,8 @@ $metabox_config[] = array(
 				), $us_page_blocks_list
 			),
 			'std' => '__defaults__',
-			'classes' => 'width_full',
 			'place_if' => us_get_option( 'enable_sidebar_titlebar', 0 ),
+			'usb_preview' => TRUE,
 		),
 
 		// Content template
@@ -147,7 +152,7 @@ $metabox_config[] = array(
 				), $us_content_templates_list
 			),
 			'std' => '__defaults__',
-			'classes' => 'width_full',
+			'usb_preview' => TRUE,
 		),
 
 		// Sidebar
@@ -162,8 +167,8 @@ $metabox_config[] = array(
 			),
 			'hints_for' => $sidebar_hints_for,
 			'std' => '__defaults__',
-			'classes' => 'width_full',
 			'place_if' => us_get_option( 'enable_sidebar_titlebar', 0 ),
+			'usb_preview' => TRUE,
 		),
 
 		// Sidebar Position
@@ -174,9 +179,10 @@ $metabox_config[] = array(
 				'right' => us_translate( 'Right' ),
 			),
 			'std' => 'right',
-			'classes' => 'width_full for_above',
+			'classes' => 'for_above',
 			'show_if' => array( 'us_sidebar_id', '!=', array( '', '__defaults__' ) ),
 			'place_if' => us_get_option( 'enable_sidebar_titlebar', 0 ),
+			'usb_preview' => TRUE
 		),
 		// Footer
 		'us_footer_id' => array(
@@ -190,7 +196,7 @@ $metabox_config[] = array(
 				), $us_page_blocks_list
 			),
 			'std' => '__defaults__',
-			'classes' => 'width_full',
+			'usb_preview' => TRUE,
 		),
 	),
 );
@@ -201,23 +207,33 @@ $metabox_config[] = array(
 	'title' => __( 'Custom appearance in Grid', 'us' ),
 	'post_types' => array_keys( us_get_public_post_types() ),
 	'context' => 'normal',
+	'usb_context' => TRUE,
 	'priority' => 'default',
 	'fields' => array(
-		'us_tile_bg_color' => array(
-			'title' => __( 'Background Color', 'us' ),
-			'type' => 'color',
-			'clear_pos' => 'right',
+		'us_tile_additional_image' => array(
+			'title' => us_translate( 'Images' ),
+			'title_pos' => 'side',
+			'type' => 'upload',
+			'is_multiple' => TRUE,
+			'extension' => 'png,jpg,jpeg,gif,svg',
+			'usb_preview' => TRUE,
+		),
+		'us_tile_link' => array(
+			'title' => __( 'Custom Link', 'us' ),
+			'title_pos' => 'side',
+			'type' => 'link',
+			'placeholder' => us_translate( 'Enter the URL' ),
 			'std' => '',
 		),
-		'us_tile_text_color' => array(
-			'title' => __( 'Text Color', 'us' ),
-			'type' => 'color',
-			'clear_pos' => 'right',
-			'with_gradient' => FALSE,
+		'us_tile_icon' => array(
+			'title' => __( 'Icon', 'us' ),
+			'title_pos' => 'side',
+			'type' => 'icon',
 			'std' => '',
 		),
 		'us_tile_size' => array(
 			'title' => __( 'Custom Size', 'us' ),
+			'title_pos' => 'side',
 			'type' => 'radio',
 			'options' => array(
 				'1x1' => us_translate( 'None' ),
@@ -227,20 +243,19 @@ $metabox_config[] = array(
 			),
 			'std' => '1x1',
 		),
-		'us_tile_link' => array(
-			'title' => __( 'Custom Link', 'us' ),
-			'type' => 'link',
-			'placeholder' => us_translate( 'Enter the URL' ),
+		'us_tile_bg_color' => array(
+			'title' => __( 'Background Color', 'us' ),
+			'title_pos' => 'side',
+			'type' => 'color',
+			'clear_pos' => 'right',
 			'std' => '',
 		),
-		'us_tile_additional_image' => array(
-			'title' => __( 'Additional Image', 'us' ),
-			'type' => 'upload',
-			'extension' => 'png,jpg,jpeg,gif,svg',
-		),
-		'us_tile_icon' => array(
-			'title' => __( 'Icon', 'us' ),
-			'type' => 'icon',
+		'us_tile_text_color' => array(
+			'title' => __( 'Text Color', 'us' ),
+			'title_pos' => 'side',
+			'type' => 'color',
+			'clear_pos' => 'right',
+			'with_gradient' => FALSE,
 			'std' => '',
 		),
 	)
@@ -256,27 +271,32 @@ $metabox_config[] = array(
 	'fields' => array(
 		'us_testimonial_author' => array(
 			'title' => __( 'Author Name', 'us' ),
+			'title_pos' => 'side',
 			'type' => 'text',
 			'std' => 'John Doe',
 		),
 		'us_testimonial_role' => array(
 			'title' => __( 'Author Role', 'us' ),
+			'title_pos' => 'side',
 			'type' => 'text',
 			'std' => '',
 		),
 		'us_testimonial_company' => array(
 			'title' => __( 'Author Company', 'us' ),
+			'title_pos' => 'side',
 			'type' => 'text',
 			'std' => '',
 		),
 		'us_testimonial_link' => array(
 			'title' => __( 'Author Link', 'us' ),
+			'title_pos' => 'side',
 			'type' => 'link',
 			'placeholder' => us_translate( 'Enter the URL' ),
 			'std' => '',
 		),
 		'us_testimonial_rating' => array(
 			'title' => __( 'Rating', 'us' ),
+			'title_pos' => 'side',
 			'type' => 'radio',
 			'options' => array(
 				'none' => us_translate( 'None' ),
@@ -302,7 +322,6 @@ $metabox_config[] = array(
 		'used_in_locations' => array(
 			'description' => '',
 			'type' => 'message',
-			'classes' => 'width_full',
 		),
 	)
 );
@@ -314,6 +333,7 @@ if ( us_get_option( 'og_enabled', 1 ) ) {
 		'title' => __( 'SEO meta tags', 'us' ),
 		'post_types' => array_keys( us_get_public_post_types() ),
 		'context' => 'normal',
+		'usb_context' => TRUE,
 		'priority' => 'default',
 		'fields' => us_config( 'seo-meta-fields', array() ),
 	);

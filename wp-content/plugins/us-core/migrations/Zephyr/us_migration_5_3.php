@@ -717,7 +717,7 @@ class us_migration_5_3 extends US_Migration_Translator {
 		}
 
 		// Settings
-		$states = array( 'default', 'tablets', 'mobiles' );
+		$states = (array) us_get_responsive_states( /* Only keys */TRUE );
 		foreach ( $states as $state ) {
 			if ( isset( $settings[ $state ] ) ) {
 				$settings[ $state ]['options']['width'] = ( ! empty( $settings[ $state ]['options']['width'] ) AND intval( $settings[ $state ]['options']['width'] ) > 0 )
@@ -753,7 +753,7 @@ class us_migration_5_3 extends US_Migration_Translator {
 	public function translate_theme_options( &$options ) {
 
 		// Custom fix to avoid issues in older versions
-		$options['custom_css'] = ".wpb_text_column:not(:last-child) { margin-bottom: 1.5rem; } /* migration 5.6 fix */ \n" . $options['custom_css'];
+		$options['custom_css'] = ".wpb_text_column:not(:last-of-type) { margin-bottom: 1.5rem; } /* migration 5.6 fix */ \n" . $options['custom_css'];
 
 		/* Add new checkboxes if Optimize option is ON */
 		if ( isset( $options['optimize_assets'] ) AND $options['optimize_assets'] == 1 AND is_array( $options['assets'] ) ) {

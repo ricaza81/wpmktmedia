@@ -47,7 +47,7 @@ if ( us_amp() ) {
 	$field_atts['required'] = TRUE;
 }
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<?php if ( ! empty( $label ) ) : ?>
 		<div class="w-form-row-label">
 			<span><?= strip_tags( $label, '<a><br><strong>' ) . ' <span class="required">*</span>' ?></span>
@@ -56,7 +56,7 @@ if ( us_amp() ) {
 	<div class="w-form-row-field">
 		<?php do_action( 'us_form_field_start', $vars ) ?>
 		<label>
-			<input <?= us_implode_atts( $field_atts ) ?>/>
+			<input<?= us_implode_atts( $field_atts ) ?>/>
 			<span class="w-form-checkbox"></span>
 			<span><?= strip_tags( $value, '<a><br><strong>' ) ?></span>
 		</label>
@@ -73,5 +73,5 @@ if ( us_amp() ) {
 		$_state_atts['validation-for'] = $field_atts['id'];
 	}
 	?>
-	<div <?php echo us_implode_atts( $_state_atts ) ?>><?php _e( 'You need to agree with the terms to proceed', 'us' ) ?></div>
+	<div<?= us_implode_atts( $_state_atts ) ?>><?php _e( 'You need to agree with the terms to proceed', 'us' ) ?></div>
 </div>

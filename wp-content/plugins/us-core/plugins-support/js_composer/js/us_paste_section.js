@@ -66,9 +66,9 @@
 				}.bind( this ) );
 			},
 			/**
-			 * Copy row to clipboard
-			 * @param object e jQueryEvent
-			 * @return void
+			 * Copy row to clipboard.
+			 *
+			 * @param {Event} e
 			 */
 			copyRowToClipboard: function( e ) {
 				e.stopPropagation();
@@ -82,9 +82,9 @@
 			}
 		},
 		/**
-		 * Copying value to clipboard
+		 * Copying value to clipboard.
+		 *
 		 * @param {string} value
-		 * @return void
 		 */
 		copyToClipboard: function( value ) {
 			var el = document.createElement( 'textarea' );
@@ -103,8 +103,7 @@
 			}
 		},
 		/**
-		 * Apply filters to shortcodes
-		 * @return void
+		 * Apply filters to shortcodes.
 		 */
 		applyFilterToValue: function() {
 			var placeholder = this.data.placeholder || '';
@@ -114,8 +113,14 @@
 			// Replacing images for new design options
 			this.value = this.value.replace( /css="([^\"]+)"/g, function( matches, match ) {
 				if ( match ) {
+					var attachment_ids = [];
 					var jsoncss = ( decodeURIComponent( match ) || '' )
-						.replace( /("background-image":")(.*?)(")/g, "$1"+ placeholder +"$3" );
+						.replace( /("background-image":")(.*?)(")/g, function( _, before, id, after ) {
+							if ( isNaN( parseInt( id ) ) ) {
+								id = placeholder;
+							}
+							return before + id + after;
+						} );
 					return 'css="%s"'.replace( '%s', encodeURIComponent( jsoncss ) );
 				}
 				return matches;

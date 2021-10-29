@@ -1,7 +1,7 @@
-/* 
+/*
  * Buttons
  */
-   
+
 .w-btn,
 .button,
 button[type="submit"],
@@ -60,29 +60,29 @@ input[type="submit"] {
 .w-btn-wrapper {
 	margin: 0.3rem 0;
 	}
-.w-btn-wrapper.align_left {
+.w-btn-wrapper.align_none {
 	display: inline-block;
 	vertical-align: top;
+	}
+*:not(.w-hwrapper) > .w-btn-wrapper.align_none {
 	margin-right: 0.6rem;
 	}
-.w-btn-wrapper.align_right {
-	float: right;
-	margin-left: 0.6rem;
+.w-btn-wrapper.width_full {
+	display: block;
 	}
-.wpb_column.align_center .w-btn-wrapper.align_left,
-.wpb_column.align_center .w-btn-wrapper.align_right {
-	margin-left: 0.6rem;
-	margin-right: 0.6rem;
-	}
-.w-btn-wrapper.width_full .w-btn {
-	width: 100% !important;
-	}
+	.w-btn-wrapper.width_full .w-btn {
+		width: 100% !important;
+		}
 
 /* Badge style by default */
 .us-btn-style_badge {
 	padding: 0.7em 1.2em;
 	border-radius: 5em;
+	background: var(--color-content-primary-grad);
 	color: #fff !important;
+	}
+.no-touch .us-btn-style_badge:hover {
+	background: var(--color-content-secondary-grad);
 	}
 	.us-btn-style_badge:before {
 		display: none;
@@ -97,8 +97,8 @@ input[type="submit"] {
 /* Responsive
    ========================================================================== */
 @media screen and (max-width: 767px) {
-.wpb_column.align_center_xs .w-btn-wrapper.align_left,
-.wpb_column.align_center_xs .w-btn-wrapper.align_right {
+.vc_column_container.align_center_xs .w-btn-wrapper.align_left,
+.vc_column_container.align_center_xs .w-btn-wrapper.align_right {
 	margin-left: 0.6rem;
 	margin-right: 0.6rem;
 	}

@@ -1,83 +1,90 @@
 
 /* TYPE Upload */
-.usof-upload-preview {
+.usof-upload {
 	position: relative;
-	padding: 7px 10px;
-	border-radius: 3px;
-	border: 1px solid #eee;
-	border-top-color: #ddd;
-	background-color: #f1f1f1;
 	}
-.usof-upload.preview_image .usof-upload-preview {
-	min-height: 60px;
-	}
-	.usof-upload-preview > .usof-preloader {
-		opacity: 1;
-		}
-	.usof-upload img {
-		display: block;
-		width: auto;
-		height: auto;
-		max-width: 100%;
-		max-height: 200px;
-		margin: 0 auto;
+	.usof-upload-preview-file {
 		position: relative;
-		background-color: #f1f1f1;
+		cursor: pointer;
 		}
-	.usof-upload.preview_image .usof-upload-controls {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		align-content: center;
-		justify-content: center;
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		visibility: hidden;
-		}
-	.usof-upload-preview:hover .usof-upload-controls {
-		visibility: visible !important;
-		}
-		.usof-upload.preview_image .usof-upload-controls .usof-button {
-			margin: 4px;
-			background-color: #999;
-			color: #fff;
-			}
-		.usof-upload.preview_image .usof-upload-controls .usof-button:hover {
-			background-color: #777;
-			text-decoration: none;
-			}
-.usof-upload.preview_text .usof-upload-preview {
-	display: flex;
-	align-items: center;
-	}
-	.usof-upload-file {
-		margin-right: 15px;
-		}
-		.usof-upload-file > span {
+		.usof-upload-preview-file img {
 			display: block;
-			line-height: 18px;
-			padding: 3px 0;
+			width: 100%;
 			}
-			.usof-upload-file > span:before {
-				content: '\f15b';
-				font-family: fontawesome;
-				font-weight: 900;
-				vertical-align: top;
-				margin-right: 5px;
-				color: #999;
-				}
-	.usof-upload.preview_text .usof-upload-controls {
-		visibility: hidden;
+		.usof-upload-preview-file .ui-icon_delete {
+			position: absolute;
+			z-index: 1;
+			top: 0;
+			right: 0;
+			visibility: hidden;
+			}
+		.usof-upload-preview-file:hover .ui-icon_delete {
+			visibility: visible !important;
+			}
+	.usof-upload .ui-icon_add {
+		display: inline-block;
+		vertical-align: top;
+		line-height: 75px;
+		height: 75px;
+		width: 75px;
+		background-color: var(--usof-color-gray-2);
 		}
-		.usof-upload.preview_text .usof-upload-controls .usof-button {
-			line-height: inherit;
-			padding: 0 5px;
-			background: none;
-			box-shadow: none;
+	.usof-upload .ui-icon_add:hover {
+		background-color: var(--usof-color-gray-5);
+		}
+	.usof-upload:not(.is_multiple) .usof-upload-preview:not(.hidden) ~ .ui-icon_add {
+		display: none;
+		}
+	.usof-upload-preview-file > .ui-icon_delete {
+		text-align: center;
+		font-size: 14px;
+		line-height: 32px;
+		width: 32px;
+		cursor: pointer;
+		background-color: var(--usof-color-white);
+		}
+
+/* Preview Image */
+.usof-upload.preview_image:not(.is_multiple) {
+	display: inline-block;
+	vertical-align: top;
+	}
+	.usof-upload.preview_image .usof-upload-preview {
+		display: inline-flex;
+		vertical-align: top;
+		text-align: center;
+		flex-wrap: wrap;
+		min-height: 32px;
+		}
+		.usof-upload.preview_image .usof-upload-preview-file {
+			width: 150px;
+			box-shadow: var(--usof-box-shadow-small);
 			}
+		.usof-upload.preview_image.is_multiple .usof-upload-preview-file {
+			width: 75px;
+			cursor: move;
+			}
+
+/* Preview Text */
+.usof-upload.preview_text .usof-upload-preview {
+	margin-bottom: 12px;
+	}
+	.usof-upload.preview_text .usof-upload-preview-file {
+		display: block;
+		width: 100%;
+		line-height: 30px;
+		}
+		.usof-upload.preview_text .usof-upload-preview-file:before {
+			content: '\f15b';
+			font-family: fontawesome;
+			font-weight: 900;
+			vertical-align: top;
+			margin-right: 5px;
+			opacity: 0.5;
+			}
+	.usof-upload.preview_text.is_multiple .usof-upload-preview-file {
+		cursor: default;
+		}
 
 /* TYPE Backup */
 .usof-backup-status {
@@ -95,3 +102,23 @@
 .usof-transfer .usof-button.type_import {
 	margin: 10px 10px 10px 0;
 	}
+
+/* drag & drop */
+.usof-dragshadow {
+	position: relative;
+	}
+	.usof-dragshadow:before {
+		content: '';
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		right: 2px;
+		bottom: 2px;
+		border: 2px dashed;
+		}
+.usof-upload-preview-file.detached {
+	opacity: 0.5;
+	}
+	.us-bld-editor.dragstarted .ui-icon_delete {
+		display: none;
+		}

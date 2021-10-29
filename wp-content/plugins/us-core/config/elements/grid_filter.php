@@ -1,7 +1,11 @@
 <?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
+/**
+ * Configuration for shortcode: grid_filter
+ */
+
 $misc = us_config( 'elements_misc' );
-$design_options = us_config( 'elements_design_options' );
+$design_options_params = us_config( 'elements_design_options' );
 
 $_custom_fields = array();
 
@@ -23,30 +27,38 @@ if ( function_exists( 'acf_get_field_groups' ) AND $acf_groups = acf_get_field_g
 	}
 }
 
+/**
+ * @return array
+ */
 return array(
 	'title' => __( 'Grid Filter', 'us' ),
+	'category' => __( 'Grid', 'us' ),
 	'icon' => 'fas fa-filter',
-	'params' => array_merge(
-		array(
+	'params' => us_set_params_weight(
 
-			// General
+		// General section
+		array(
+			// 'assigned_grid' => array(
+				// 'title' => __( 'Grid ID to filter', 'us' ),
+				// 'description' => __( 'If no ID is set, the first found Grid will be filtered.', 'us' ),
+				// 'type' => 'text',
+				// 'std' => '',
+			// ),
 			'filter_items' => array(
 				'title' => __( 'Filter by', 'us' ),
 				'type' => 'group',
+				'show_controls' => TRUE,
+				'is_sortable' => TRUE,
+				'is_accordion' => TRUE,
+				'accordion_title' => 'source',
 				'params' => array(
 					'source' => array(
-						'type' => 'us_grouped_select',
-						'settings' => array(
-							array(
-								'label' => __( 'Taxonomies', 'us' ),
-								'options' => us_get_taxonomies( FALSE, TRUE, '', 'tax|' ),
-							),
-							array(
-								'label' => us_translate( 'Custom fields' ),
-								'options' => $_custom_fields,
-							),
+						'type' => 'select',
+						'options' => array(
+							__( 'Taxonomies', 'us' ) => us_get_taxonomies( FALSE, TRUE, '', 'tax|' ),
+							us_translate( 'Custom fields' ) => $_custom_fields,
 						),
-						'std' => 'category',
+						'std' => 'tax|category',
 						'admin_label' => TRUE,
 					),
 					'ui_type' => array(
@@ -80,12 +92,24 @@ return array(
 						'admin_label' => TRUE,
 					),
 				),
+				'std' => array(
+					array(
+						'source' => 'tax|category',
+						'ui_type' => 'checkbox',
+						'show_all_value' => '1',
+						'show_amount' => FALSE,
+						'label' => '',
+					),
+				),
+				'usb_preview' => TRUE,
 			),
+		),
 
-			// Appearance
+		// Appearance section
+		array(
 			'layout' => array(
 				'title' => __( 'Layout', 'us' ),
-				'type' => 'select',
+				'type' => 'radio',
 				'options' => array(
 					'hor' => __( 'Horizontal', 'us' ),
 					'ver' => __( 'Vertical', 'us' ),
@@ -93,6 +117,7 @@ return array(
 				'std' => 'hor',
 				'admin_label' => TRUE,
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => TRUE,
 			),
 			'style' => array(
 				'title' => us_translate( 'Style' ),
@@ -108,24 +133,32 @@ return array(
 				'admin_label' => TRUE,
 				'show_if' => array( 'layout', '=', 'hor' ),
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'mod' => 'style',
+				),
 			),
 			'align' => array(
 				'title' => us_translate( 'Alignment' ),
-				'type' => 'select',
+				'type' => 'radio',
+				'labels_as_icons' => 'fas fa-align-*',
 				'options' => array(
+					'none' => us_translate( 'Default' ),
 					'left' => us_translate( 'Left' ),
 					'center' => us_translate( 'Center' ),
 					'right' => us_translate( 'Right' ),
 					'justify' => us_translate( 'Justify' ),
 				),
-				'std' => 'left',
+				'std' => 'none',
 				'cols' => 2,
 				'show_if' => array( 'layout', '=', 'hor' ),
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'mod' => 'align',
+				),
 			),
 			'values_drop' => array(
 				'title' => __( 'Show the list of values', 'us' ),
-				'type' => 'select',
+				'type' => 'radio',
 				'options' => array(
 					'hover' => __( 'On hover', 'us' ),
 					'click' => __( 'On click', 'us' ),
@@ -133,6 +166,9 @@ return array(
 				'std' => 'hover',
 				'show_if' => array( 'style', '=', array( 'drop_default', 'drop_trendy' ) ),
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'mod' => 'show_on',
+				),
 			),
 			'show_item_title' => array(
 				'switch_text' => __( 'Show titles before values', 'us' ),
@@ -140,6 +176,9 @@ return array(
 				'std' => FALSE,
 				'show_if' => array( 'style', '=', array( 'switch_default', 'switch_trendy' ) ),
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'toggle_class_inverse' => 'hide_item_title',
+				),
 			),
 			'values_max_height' => array(
 				'title' => __( 'Max Height of the list of values', 'us' ),
@@ -147,6 +186,10 @@ return array(
 				'type' => 'text',
 				'std' => '40vh',
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'elm' => '.w-filter-item-values',
+					'css' => 'max-height',
+				),
 			),
 			'hide_disabled_values' => array(
 				'switch_text' => __( 'Hide unavailable values', 'us' ),
@@ -154,21 +197,31 @@ return array(
 				'type' => 'switch',
 				'std' => FALSE,
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'toggle_class' => 'hide_disabled_values',
+				),
 			),
+		),
 
-			// Mobiles
+		// Mobiles section
+		array(
 			'mobile_width' => array(
 				'title' => __( 'Mobile view at screen width', 'us' ),
 				'description' => __( 'Leave blank to not apply mobile view.', 'us' ),
 				'type' => 'text',
 				'std' => '600px',
 				'group' => __( 'Mobiles', 'us' ),
+				'usb_preview' => TRUE,
 			),
 			'mobile_button_label' => array(
 				'title' => __( 'Button Label', 'us' ),
 				'type' => 'text',
 				'std' => __( 'Filters', 'us' ),
 				'group' => __( 'Mobiles', 'us' ),
+				'usb_preview' => array(
+					'elm' => '.w-filter-opener > span',
+					'attr' => 'html',
+				),
 			),
 			'mobile_button_style' => array(
 				'title' => __( 'Button Style', 'us' ),
@@ -182,12 +235,17 @@ return array(
 				),
 				'std' => '',
 				'group' => __( 'Mobiles', 'us' ),
+				'usb_preview' => array(
+					'elm' => '.w-filter-opener',
+					'mod' => 'us-btn-style',
+				),
 			),
 			'mobile_button_icon' => array(
 				'title' => __( 'Icon', 'us' ),
 				'type' => 'icon',
 				'std' => '',
 				'group' => __( 'Mobiles', 'us' ),
+				'usb_preview' => TRUE,
 			),
 			'mobile_button_iconpos' => array(
 				'title' => __( 'Icon Position', 'us' ),
@@ -198,8 +256,12 @@ return array(
 				),
 				'std' => 'left',
 				'group' => __( 'Mobiles', 'us' ),
+				'usb_preview' => TRUE,
 			),
+		),
 
-		), $design_options
+		$design_options_params
 	),
+
+	'usb_init_js' => '$elm.wGridFilter()',
 );

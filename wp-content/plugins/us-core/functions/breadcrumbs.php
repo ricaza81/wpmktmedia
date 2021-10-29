@@ -48,7 +48,7 @@ class US_Breadcrumbs {
 			: trailingslashit( home_url() );
 
 		// Predefined text
-		$this->config['text']['search'] = us_translate( 'Search Results' ); // text for a search results page
+		$this->config['text']['search'] = __( 'Search Results', 'us' ); // text for a search results page
 		$this->config['text']['404'] = us_translate( 'Page not found' ); // text for the 404 page
 		$this->config['text']['forums'] = us_translate( 'Forums', 'bbpress' ); // text for the forums page
 

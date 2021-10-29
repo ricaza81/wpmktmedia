@@ -5,7 +5,7 @@ if ( ! function_exists( 'us_get_header_option' ) ) {
 	 * Get header option for the specified state
 	 *
 	 * @param string $name Option name
-	 * @param string $state Header state: 'default' / 'tablets' / 'mobiles'
+	 * @param string $state Header state: default|laptops|tablets|mobiles
 	 * @param string $default
 	 *
 	 * @return string
@@ -114,19 +114,21 @@ function us_get_header_layout( $state = 'default' ) {
  * Load the current header settings for all possible responsive states
  */
 function us_load_header_settings_once() {
-
 	global $us_header_settings;
 
-	if ( isset( $us_header_settings ) ) {
+	// Note: At this point, a check for the presence of options is necessary because
+	// the current function can be called from the helpers.php file that is connected
+	// before `after_setup_theme`
+	if ( ! empty( $us_header_settings['default']['options'] ) ) {
 		return;
 	}
 	// Basic structure
-	$us_header_settings = array(
-		'default' => array( 'options' => array(), 'layout' => array() ),
-		'tablets' => array( 'options' => array(), 'layout' => array() ),
-		'mobiles' => array( 'options' => array(), 'layout' => array() ),
-		'data' => array(),
+	$us_header_settings = array_fill_keys(
+		us_get_responsive_states( /* only keys */TRUE ),
+		array( 'options' => array(), 'layout' => array() )
 	);
+	// Add space for data
+	$us_header_settings['data'] = array();
 	$us_header_settings = apply_filters( 'us_load_header_settings', $us_header_settings );
 }
 
@@ -148,7 +150,9 @@ function us_output_builder_elms( &$settings, $state, $place, $context = 'header'
 	}
 
 	// Set 3 states for header and 1 for other contexts, like Grid Layouts
-	$_states = ( $context === 'header' ) ? array( 'default', 'tablets', 'mobiles' ) : array( 'default' );
+	$_states = ( $context === 'header' )
+		? (array) us_get_responsive_states( /* Only keys */TRUE )
+		: array( 'default' );
 
 	$visible_elms = array();
 	foreach ( $_states as $_state ) {
@@ -178,6 +182,24 @@ function us_output_builder_elms( &$settings, $state, $place, $context = 'header'
 			$classes .= ' usg_' . str_replace( ':', '_', $elm );
 		}
 
+		// Add custom class name, if set
+		if ( ! empty( $data[ $elm ]['el_class'] ) ) {
+			$classes .= ' ' . $data[ $elm ]['el_class'];
+		}
+
+		// Add animation class if set in Design options
+		if (
+			! us_amp()
+			AND ! empty( $data[ $elm ][ 'css' ] )
+			AND us_design_options_has_property( $data[ $elm ][ 'css' ], 'animation-name' )
+		) {
+			if ( ! isset( $data[ $elm ]['el_class'] ) ) {
+				$classes = ' us_animate_this';
+			} else {
+				$classes .= ' us_animate_this';
+			}
+		}
+
 		// Wrapper
 		if ( substr( $elm, 1, 7 ) == 'wrapper' ) {
 			$wrapper_atts = array(
@@ -192,9 +214,6 @@ function us_output_builder_elms( &$settings, $state, $place, $context = 'header'
 				}
 				if ( ! empty( $data[ $elm ]['wrap'] ) ) {
 					$wrapper_atts['class'] .= ' wrap';
-				}
-				if ( ! empty( $data[ $elm ]['el_class'] ) ) {
-					$wrapper_atts['class'] .= ' ' . $data[ $elm ]['el_class'];
 				}
 				if ( isset( $data[ $elm ]['inner_items_gap'] ) ) {
 					$inner_items_gap = trim( $data[ $elm ]['inner_items_gap'] );
@@ -211,7 +230,7 @@ function us_output_builder_elms( &$settings, $state, $place, $context = 'header'
 					}
 				}
 			}
-			echo '<div ' . us_implode_atts( $wrapper_atts ) . '>';
+			echo '<div' . us_implode_atts( $wrapper_atts ) . '>';
 			us_output_builder_elms( $settings, $state, $elm, $context );
 			echo '</div>';
 
@@ -268,8 +287,8 @@ function us_get_elm_defaults( $type, $context = 'header' ) {
 			}
 			$us_elm_defaults[ $context ][ $type ][ $field_name ] = $value;
 		}
-		if ( isset( $elm_config['deprecated_params'] ) ) {
-			foreach ( $elm_config['deprecated_params'] as $field_name ) {
+		if ( ! empty( $elm_config['fallback_params'] ) ) {
+			foreach ( $elm_config['fallback_params'] as $field_name ) {
 				$us_elm_defaults[ $context ][ $type ][ $field_name ] = '';
 			}
 		}
@@ -332,7 +351,7 @@ function us_fix_header_settings( $value ) {
 			$options_defaults[ $opt_name ] = isset( $opt['std'] ) ? $opt['std'] : '';
 		}
 	}
-	foreach ( array( 'default', 'tablets', 'mobiles' ) as $state ) {
+	foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
 		if ( ! isset( $value[ $state ] ) OR ! is_array( $value[ $state ] ) ) {
 			$value[ $state ] = array();
 		}
@@ -386,12 +405,15 @@ function us_fix_header_template_settings( $value ) {
 		// Don't need this in data processing
 		unset( $value['title'] );
 	}
-	$template_structure = array(
-		'default' => array( 'options' => array(), 'layout' => array() ),
-		'tablets' => array( 'options' => array(), 'layout' => array() ),
-		'mobiles' => array( 'options' => array(), 'layout' => array() ),
-		'data' => array(),
+
+	// Basic structure
+	$template_structure = array_fill_keys(
+		us_get_responsive_states( /* only keys */TRUE ),
+		array( 'options' => array(), 'layout' => array() )
 	);
+	// Add space for data
+	$template_structure['data'] = array();
+
 	$value = us_array_merge( $template_structure, $value );
 	$layout_structure = array(
 		'top_left' => array(),
@@ -405,9 +427,11 @@ function us_fix_header_template_settings( $value ) {
 		'bottom_right' => array(),
 		'hidden' => array(),
 	);
-	foreach ( array( 'default', 'tablets', 'mobiles' ) as $state ) {
+	foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
+
 		// Options
 		$value[ $state ]['options'] = array_merge( ( $state == 'default' ) ? array() : $value['default']['options'], $value[ $state ]['options'] );
+
 		// Layout
 		$value[ $state ]['layout'] = array_merge( $layout_structure, ( $state == 'default' ) ? array() : $value['default']['layout'], $value[ $state ]['layout'] );
 	}
@@ -474,10 +498,16 @@ if ( ! function_exists( 'us_pass_header_settings_to_js' ) ) {
 		if ( isset( $header_settings['data'] ) ) {
 			unset( $header_settings['data'] );
 		}
-		echo '<script>';
-		echo 'if ( window.$us === undefined ) window.$us = {};';
-		echo '$us.headerSettings = ' . json_encode( $header_settings ) . ';';
-		echo '</script>';
+
+		$output =  '<script>';
+		$output .= 'if ( window.$us === undefined ) window.$us = {};';
+		$output .= '$us.headerSettings = ' . json_encode( $header_settings ) . ';';
+		$output .= '</script>';
+
+		/**
+		 * Header Settings output filter
+		 */
+		echo apply_filters( 'us_pass_header_settings_to_js', $output );
 	}
 }
 
@@ -489,33 +519,35 @@ if ( ! function_exists( 'us_pass_header_settings_to_js' ) ) {
 function us_get_header_design_options_css() {
 	global $us_header_settings;
 	us_load_header_settings_once();
-	$tablets_breakpoint = ( isset( $us_header_settings['tablets']['options']['breakpoint'] ) )
-		? intval( $us_header_settings['tablets']['options']['breakpoint'] )
-		: 900;
-	$mobiles_breakpoint = ( isset( $us_header_settings['mobiles']['options']['breakpoint'] ) )
-		? intval( $us_header_settings['mobiles']['options']['breakpoint'] )
-		: 600;
-	$device_sizes = array(
-		'default' => '',
-		'tablets' => '(min-width: ' . $mobiles_breakpoint . 'px) and (max-width: ' . ( $tablets_breakpoint - 1 ) . 'px)',
-		'mobiles' => '(max-width: ' . ( $mobiles_breakpoint - 1 ) . 'px)',
-	);
+
+	// Get header states
+	$header_states = array();
+	foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
+		if ( ! empty( $us_header_settings[ $state ]['options']['custom_breakpoint'] ) ) {
+			$header_states[ $state ]['breakpoint'] = (int) $us_header_settings[ $state ]['options']['breakpoint'];
+		} else {
+			$header_states[ $state ]['breakpoint'] = (int) us_get_option( $state . '_breakpoint' );
+		}
+	}
+
+	// Get breakpoints from jsoncss parameters
+	$breakpoints = (array) us_get_jsoncss_options( /* breakpoints */array(), $header_states )['breakpoints'];
 
 	$jsoncss_collection = array();
 	foreach ( $us_header_settings['data'] as $elm_id => $elm ) {
 		if ( ! isset( $elm['css'] ) OR empty( $elm['css'] ) OR ! is_array( $elm['css'] ) ) {
 			continue;
 		}
-		foreach ( array_keys( $device_sizes ) as $device_type ) {
-			if ( $css_options = us_arr_path( $elm, 'css.' . $device_type, FALSE ) ) {
+		foreach ( array_keys( $breakpoints ) as $state ) {
+			if ( $css_options = us_arr_path( $elm, 'css.' . $state, FALSE ) ) {
 				$class_name = 'ush_' . str_replace( ':', '_', $elm_id );
-				$css_options = apply_filters( 'us_output_design_css_options', $css_options, $device_type );
-				$jsoncss_collection[ $device_type ][ $class_name ] = $css_options;
+				$css_options = apply_filters( 'us_output_design_css_options', $css_options, $state );
+				$jsoncss_collection[ $state ][ $class_name ] = $css_options;
 			}
 		}
 	}
 
-	return us_jsoncss_compile( $jsoncss_collection, $device_sizes );
+	return us_jsoncss_compile( $jsoncss_collection, $breakpoints );
 }
 
 /**
@@ -587,7 +619,6 @@ if ( ! function_exists( 'us_admin_bar_menu' ) ) {
 	 * Add link to Admin bar to edit the current header, content template and page blocks
 	 *
 	 * @param WP_Admin_Bar $wp_admin_bar The admin bar
-	 * @return void
 	 */
 	function us_admin_bar_menu( WP_Admin_Bar $wp_admin_bar ) {
 		global $pagenow;
@@ -610,7 +641,6 @@ if ( ! function_exists( 'us_admin_bar_menu' ) ) {
 			/**
 			 * Add the page blocks in a collection $area_ids and $received_posts
 			 * @param WP_Post $post
-			 * @return void
 			 */
 			$func_acc_page_blocks = function ( $post ) use ( &$area_ids, &$received_posts ) {
 				if ( $post instanceof WP_Post AND ! empty( $post->post_content ) ) {
@@ -707,6 +737,7 @@ if ( ! function_exists( 'us_admin_bar_menu' ) ) {
 					}
 				}
 			}
+
 			if ( ! empty( $edit_menu ) ) {
 
 				// US Admin bar styles
@@ -777,32 +808,45 @@ if ( ! function_exists( 'us_hb_settings_fallback' ) ) {
 			return $header_settings;
 		}
 
-		// Fallback for options
+		// Populate Laptops settings with values from the Default.
+		// Also set a custom breakpoint equals the Tablets breakpoint, needed to avoid fallback in metabox (Sticky and Transparent settings)
+		if ( ! isset( $header_settings['laptops'] ) ) {
+			$header_settings['laptops'] = $header_settings['default'];
+			$header_settings['laptops']['options']['custom_breakpoint'] = 1;
+			$header_settings['laptops']['options']['breakpoint'] = $header_settings['tablets']['options']['breakpoint'];
+		}
+
+		// Fallback for colors
 		if ( ! isset( $header_settings['default']['options']['top_transparent_text_hover_color'] ) ) {
 			$header_settings['default']['options']['top_transparent_text_hover_color'] =
 				isset( $usof_options['color_header_bottom_text_hover'] ) ? '_header_transparent_text_hover' : '_header_top_transparent_text_hover';
 		}
-
 		if ( ! isset( $header_settings['default']['options']['bottom_bg_color'] ) ) {
 			$header_settings['default']['options']['bottom_bg_color'] =
 				us_arr_path( $usof_options, 'color_header_bottom_bg', '_header_middle_bg' );
 		}
-
 		if ( ! isset( $header_settings['default']['options']['bottom_text_hover_color'] ) ) {
 			$header_settings['default']['options']['bottom_text_hover_color'] =
 				us_arr_path( $usof_options, 'color_header_bottom_text_hover', '_header_middle_text_hover' );
 		}
-
 		if ( ! isset( $header_settings['default']['options']['bottom_text_color'] ) ) {
 			$header_settings['default']['options']['bottom_text_color'] =
 				us_arr_path( $usof_options, 'color_header_bottom_text', '_header_middle_text' );
+		}
+
+		// Turn on the custom breakpoint option for Tablets and Mobiles, if it wasn't exist
+		if ( ! isset( $header_settings['tablets']['options']['custom_breakpoint'] ) ) {
+			$header_settings['tablets']['options']['custom_breakpoint'] = 1;
+		}
+		if ( ! isset( $header_settings['mobiles']['options']['custom_breakpoint'] ) ) {
+			$header_settings['mobiles']['options']['custom_breakpoint'] = 1;
 		}
 
 		// Fallback for elements
 		foreach ( $header_settings['data'] as $elm_id => $elm_data ) {
 
 			// Menu
-			if ( substr( $elm_id, 0, 4 ) == 'menu' ) {
+			if ( strpos( $elm_id, 'menu' ) === 0 ) {
 				if ( ! isset( $elm_data['color_active_bg'] ) ) {
 					$header_settings['data'][ $elm_id ]['color_active_bg'] =
 						us_arr_path( $usof_options, 'color_menu_active_bg', 'transparent' );
@@ -854,7 +898,7 @@ if ( ! function_exists( 'us_hb_settings_fallback' ) ) {
 			}
 
 			// Search
-			if ( substr( $elm_id, 0, 5 ) == 'search' ) {
+			if ( strpos( $elm_id, 'search' ) === 0 ) {
 				if ( ! isset( $elm_data['field_bg_color'] ) ) {
 					$header_settings['data'][ $elm_id ]['field_bg_color'] =
 						us_arr_path( $usof_options, 'color_header_search_bg', '' );
@@ -863,10 +907,30 @@ if ( ! function_exists( 'us_hb_settings_fallback' ) ) {
 					$header_settings['data'][ $elm_id ]['field_text_color'] =
 						us_arr_path( $usof_options, 'color_header_search_text', '' );
 				}
+
+				// Search Shop Products only
+				if ( ! empty( $elm_data['product_search'] ) ) {
+					$header_settings['data'][ $elm_id ]['search_post_type'] = 'product';
+					unset( $header_settings['data'][ $elm_id ]['product_search'] );
+				}
 			}
 
 		}
 
 		return $header_settings;
 	}
+}
+
+if ( ! function_exists( 'us_hb_post_edit_form_tag' ) ) {
+	/**
+	 * Block the submission of a standard form in the header builder.
+	 *
+	 * @param WP_Post $post The post
+	 */
+	function us_hb_post_edit_form_tag( WP_Post $post ) {
+		if ( $post->post_type === 'us_header' ) {
+			echo ' onsubmit="return false"';
+		}
+	}
+	add_action( 'post_edit_form_tag', 'us_hb_post_edit_form_tag', 1, 1 );
 }

@@ -28,6 +28,16 @@ return array(
 		'url' => 'https://codecanyon.net/item/visual-composer-page-builder-for-wordpress/242431',
 	),
 	array(
+		'name' => 'Advanced Custom Fields PRO',
+		'slug' => 'acf',
+		'folder' => 'advanced-custom-fields-pro', // needed when the folder name is different from the main PHP file
+		'description' => __( 'Add fields to edit screens and display their values on website pages.', 'us' ),
+		'premium' => TRUE,
+		'changelog_url' => 'https://www.advancedcustomfields.com/changelog/',
+		'url' => 'https://www.advancedcustomfields.com/pro/',
+		'icon_url' => 'https://ps.w.org/advanced-custom-fields/assets/icon-128x128.png',
+	),
+	array(
 		'name' => 'FileBird PRO',
 		'slug' => 'filebird',
 		'folder' => 'filebird-pro',
@@ -36,6 +46,14 @@ return array(
 		'changelog_url' => 'https://codecanyon.net/item/media-folders-manager-for-wordpress/21715379',
 		'url' => 'https://codecanyon.net/item/media-folders-manager-for-wordpress/21715379',
 		'icon_url' => 'https://ps.w.org/filebird/assets/icon-128x128.gif',
+	),
+	array(
+		'name' => 'WP Rocket',
+		'slug' => 'wp-rocket',
+		'description' => __( 'Reduce your load time and boost your Google PageSpeed and Core Web Vitals scores.', 'us' ),
+		'premium' => TRUE,
+		'changelog_url' => 'https://wp-rocket.me/changelog/',
+		'url' => 'https://wp-rocket.me/',
 	),
 	array(
 		'name' => 'Slider Revolution',
@@ -54,11 +72,6 @@ return array(
 		'name' => 'Custom Post Type UI',
 		'slug' => 'custom-post-type-ui',
 		'description' => __( 'Create and manage custom post types and taxonomies.', 'us' ),
-	),
-	array(
-		'name' => 'Advanced Custom Fields',
-		'slug' => 'advanced-custom-fields',
-		'description' => __( 'Add fields to edit screens and display their values on website pages.', 'us' ),
 	),
 	array(
 		'name' => 'TablePress',

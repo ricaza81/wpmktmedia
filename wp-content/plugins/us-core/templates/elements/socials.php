@@ -7,9 +7,6 @@
 $_atts['class'] = 'w-socials';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -29,26 +26,24 @@ if ( $shape != 'none' ) {
 	$_atts['class'] .= ' hover_' . $hover;
 }
 
-$list_inline_css = $item_inline_css = '';
 if ( $us_elm_context == 'shortcode' ) {
-	$list_inline_css = us_prepare_inline_css(
-		array(
-			'margin' => empty( $gap ) ? '' : '-' . $gap,
-			'font-size' => empty( $size ) ? '' : $size, // used in Widget
-		)
-	);
-	$item_inline_css = us_prepare_inline_css(
-		array(
-			'padding' => empty( $gap ) ? '' : $gap,
-		)
-	);
+	$_atts['style'] = '';
+
+	if ( ! in_array( $gap, array( '', '0', '0em', '0px' ) ) ) {
+		$_atts['style'] .= '--gap:' . $gap . ';';
+	}
+
+	// Used in Widget
+	if ( ! empty( $size ) ) {
+		$_atts['style'] .= 'font-size:' . $size;
+	}
 } else {
-	$hide_tooltip = TRUE; // force hidding tooltip in header
+	$hide_tooltip = TRUE; // force hiding tooltip in header
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
-$output .= '<div class="w-socials-list"' . $list_inline_css . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
+$output .= '<div class="w-socials-list">';
 
 $social_links = us_config( 'social_links' );
 
@@ -73,7 +68,7 @@ foreach ( $items as $index => $item ) {
 		'class' => 'w-socials-item-link',
 		'href' => $item['url'],
 		'target' => '_blank',
-		'rel' => 'noopener nofollow',
+		'rel' => 'noopener' . ( $nofollow ? ' nofollow' : '' ),
 	);
 
 	// Custom type
@@ -105,6 +100,10 @@ foreach ( $items as $index => $item ) {
 	} elseif ( $item['type'] == 'wechat' ) {
 		$item_icon = 'fab|weixin';
 
+	// Tripadvisor fallback (due to removing their icon from FA)
+	} elseif ( $item['type'] == 'tripadvisor' ) {
+		$item_icon = 'fas|plane';
+
 	// RSS
 	} elseif ( $item['type'] == 'rss' ) {
 		$item_icon = 'fas|rss';
@@ -134,9 +133,9 @@ foreach ( $items as $index => $item ) {
 	$link_atts['title'] = $item_title;
 	$link_atts['aria-label'] = $item_title;
 
-	$output .= '<div class="w-socials-item ' . $item['type'] . '"' . $item_inline_css . '>';
+	$output .= '<div class="w-socials-item ' . $item['type'] . '">';
 
-	$output .= '<a ' . us_implode_atts( $link_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $link_atts ) . '>';
 	$output .= '<span class="w-socials-item-link-hover"' . $item_custom_bg . '></span>';
 	$output .= us_prepare_icon_tag( $item_icon );
 	$output .= '</a>';

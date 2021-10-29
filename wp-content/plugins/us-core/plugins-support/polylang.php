@@ -27,7 +27,7 @@ if ( is_admin() ) {
 			) {
 				$data['post_status'] = 'publish';
 
-				if ( $original_post = get_post( intval( $_GET['from_post'] ) ) ) {
+				if ( $original_post = get_post( (int) $_GET['from_post'] ) ) {
 					$data = array_merge(
 						$data, array(
 							'post_title' => $original_post->post_title,
@@ -48,7 +48,6 @@ if ( is_admin() ) {
 		 * @param int $post_ID
 		 * @param WP_Post $post
 		 * @param bool $update
-		 * @return void
 		 */
 		function us_pll_save_post_types( $post_ID, $post, $update ) {
 			if (
@@ -287,4 +286,48 @@ if ( ! function_exists( 'us_pll_tr_setting' ) ) {
 	}
 
 	add_filter( 'us_tr_setting', 'us_pll_tr_setting', 10, 2 );
+}
+
+/**
+ * Keeps current values on original post Page Layout
+ *
+ * @param $value string Meta value
+ * @param $key   string Meta key
+ * @param $lang  string Language slug of the target post
+ * @param $from  integer Id of the post from which we copy information
+ * @param $to    integer Id of the post to which we paste information
+ */
+if ( ! function_exists( 'us_pll_translate_post_meta' ) ) {
+	add_filter( 'pll_translate_post_meta', 'us_pll_translate_post_meta', 10, 5 );
+	function us_pll_translate_post_meta( $value, $key, $lang, $from, $to ) {
+		$skipped_metas = array(
+			'us_header_id',
+			'us_footer_id',
+			'us_content_id',
+			'us_titlebar_id',
+			'us_sidebar_id',
+		);
+
+		if (
+			in_array( $key, $skipped_metas )
+			AND function_exists( 'pll_default_language' )
+			AND function_exists( 'pll_get_post_language' )
+		) {
+
+			$default_language = pll_default_language();
+			$current_language = pll_get_post_language( $from );
+
+			// Check whether we translate to default language
+			if ( $default_language == $lang ) {
+				if ( $current_language != $default_language ) {
+					// Save values of the main post as the current post values
+					update_post_meta( $from, $key, get_post_meta( $to, $key, TRUE ) );
+				}
+
+				return get_post_meta( $to, $key, TRUE );
+			}
+		}
+
+		return $value;
+	}
 }

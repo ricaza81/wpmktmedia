@@ -18,7 +18,8 @@
 		// Apply options
 		if ( container.onclick != undefined ) {
 			options = $.extend( {}, container.onclick() || {}, typeof options == 'object' && options );
-			this.container.removeProp( 'onclick' );
+			// Delete data everywhere except for the preview of the USBuilder, the data may be needed again to restore the elements.
+			if ( ! $us.usbPreview ) this.container.removeProp( 'onclick' );
 		}
 		options = $.extend( {}, $.fn.horparallax.defaults, typeof options == 'object' && options );
 		this.options = options;

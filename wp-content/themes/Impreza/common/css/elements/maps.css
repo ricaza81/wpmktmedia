@@ -1,0 +1,45 @@
+/**
+ * Maps
+ */
+
+.w-map {
+	height: 400px; /* default value */
+	background: rgba(0,0,0,0.1);
+	}
+.w-hwrapper > .w-map,
+.w-vwrapper > .w-map {
+	width: 100%;
+	}
+.w-map img {
+	max-width: none !important;
+	}
+.w-map label {
+	display: inline;
+	width: auto;
+	}
+.w-map .gm-style {
+	font: inherit;
+	}
+	.w-map .gm-style-iw {
+		font-weight: inherit !important;
+		color: #111;
+		}
+	.w-map.has_text_color .gm-style-iw {
+		color: inherit;
+		}
+	.w-map.has_font_size .gm-style-iw {
+		font-size: inherit;
+		}
+		.w-map .gm-style-iw h1,
+		.w-map .gm-style-iw h2,
+		.w-map .gm-style-iw h3,
+		.w-map .gm-style-iw h4,
+		.w-map .gm-style-iw h5,
+		.w-map .gm-style-iw h6,
+		.w-map .gm-style-iw p,
+		.w-map .gm-style-iw ul,
+		.w-map .gm-style-iw ol {
+			margin: 0 !important;
+			padding: 0.2rem 0 !important;
+			color: inherit !important;
+			}

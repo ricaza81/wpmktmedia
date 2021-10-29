@@ -12,7 +12,7 @@ $_atts = array(
 	'data-nonce' => wp_create_nonce( 'usof_ajax_used_icons_info' ),
 );
 
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="usof-button type_show_used_icons">';
 $output .= '<span class="usof-button-text">' . strip_tags( $field['button_text'] ) . '</span>';
 $output .= '<span class="usof-preloader"></span>';

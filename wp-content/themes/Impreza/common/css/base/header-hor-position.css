@@ -1,0 +1,70 @@
+/*
+ * Initial header positions
+ */
+
+/* ABOVE */
+.headerinpos_above .l-header.pos_fixed {
+	overflow: hidden;
+	transition: transform 0.3s;
+	transform: translate3d(0,-100%,0);
+	}
+.headerinpos_above .l-header.pos_fixed.sticky {
+	overflow: visible;
+	transform: none;
+	}
+.headerinpos_above .l-header.pos_fixed ~ .l-section > .l-section-h,
+.headerinpos_above .l-header.pos_fixed ~ .l-main .l-section:first-of-type > .l-section-h {
+	padding-top: 0 !important;
+	}
+
+/* BELOW */
+.headerinpos_below .l-header.pos_fixed:not(.sticky) {
+	position: absolute;
+	top: 100%;
+	}
+.headerinpos_below .l-header.pos_fixed ~ .l-main > .l-section:first-of-type > .l-section-h {
+	padding-top: 0 !important;
+	}
+.headerinpos_below .l-header.pos_fixed ~ .l-main .l-section.full_height:nth-of-type(2) {
+	min-height: 100vh;
+	}
+.headerinpos_below .l-header.pos_fixed ~ .l-main > .l-section:nth-of-type(2) > .l-section-h {
+	padding-top: var(--header-height);
+	}
+	
+/* BOTTOM */
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) {
+	position: absolute;
+	top: 100vh;
+	}
+.headerinpos_bottom .l-header.pos_fixed ~ .l-main > .l-section:first-of-type > .l-section-h {
+	padding-top: 0 !important;
+	}
+.headerinpos_bottom .l-header.pos_fixed ~ .l-main > .l-section:first-of-type > .l-section-h {
+	padding-bottom: var(--header-height);
+	}
+.headerinpos_bottom .l-header.pos_fixed.bg_transparent ~ .l-main .l-section.valign_center:not(.height_auto):first-of-type > .l-section-h {
+	top: calc( var(--header-height) / 2 );
+	}
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) .w-cart-dropdown,
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) .w-nav.type_desktop .w-nav-list.level_2 {
+	bottom: 100%;
+	transform-origin: 0 100%;
+	}
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) .w-nav.type_mobile.m_layout_dropdown .w-nav-list.level_1 {
+	top: auto;
+	bottom: 100%;
+	box-shadow: var(--box-shadow-up);
+	}
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) .w-nav.type_desktop .w-nav-list.level_3,
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) .w-nav.type_desktop .w-nav-list.level_4 {
+	top: auto;
+	bottom: 0;
+	transform-origin: 0 100%;
+	}
+.headerinpos_bottom .l-header.pos_fixed:not(.sticky) .w-dropdown-list {
+	top: auto;
+	bottom: -0.4em;
+	padding-top: 0.4em;
+	padding-bottom: 2.4em;
+	}

@@ -24,14 +24,8 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 if ( ! empty( $wrap ) ) {
 	$_atts['class'] .= ' wrap';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
-if ( ! empty( $el_id ) ) {
-	$_atts['id'] = $el_id;
-}
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
@@ -41,9 +35,13 @@ if ( ! empty( $align ) ) {
 	$_atts['class'] .= ' align_' . $align;
 }
 
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
+}
+
 // Apply filters to text
-$text = strip_tags( $text, '<br>' );
 $text = us_replace_dynamic_value( $text, $us_elm_context, $us_grid_object_type );
+$text = strip_tags( $text, '<strong><br>' );
 $text = wptexturize( $text );
 
 // Link
@@ -98,8 +96,8 @@ if ( ! empty( $link_atts['href'] ) ) {
 $link_atts['class'] = 'w-text-h';
 
 // Output the element
-$output = '<' . $tag . ' ' . us_implode_atts( $_atts ) . '>';
-$output .= '<' . $link_tag . ' ' . us_implode_atts( $link_atts ) . '>';
+$output = '<' . $tag . us_implode_atts( $_atts ) . '>';
+$output .= '<' . $link_tag . us_implode_atts( $link_atts ) . '>';
 
 if ( ! empty( $icon ) ) {
 	$output .= us_prepare_icon_tag( $icon );

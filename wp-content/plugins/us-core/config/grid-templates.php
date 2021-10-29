@@ -1409,7 +1409,7 @@ return array(
 	'cols' => '4',
 	'data' => array(
 		'post_title:1' => array(
-			'tag' => 'h4',
+			'tag' => 'h2',
 			'css' => array(
 				'default' => array(
 					'font-size' => '1rem',
@@ -1421,7 +1421,7 @@ return array(
 			'css' => array(
 				'default' => array(
 					'color' => '_content_faded',
-					'font-size' => '14px',
+					'font-size' => '0.8rem',
 				),
 			),
 		),
@@ -2196,6 +2196,7 @@ return array(
 			'transition_duration' => '0.4s',
 		),
 		'html:1' => array(
+			'content' => '',
 			'css' => array(
 				'default' => array(
 					'position' => 'absolute',
@@ -2514,6 +2515,7 @@ return array(
 			'taxonomy_name' => 'us_portfolio_category',
 		),
 		'html:1' => array(
+			'content' => '',
 			'css' => array(
 				'default' => array(
 					'position' => 'absolute',
@@ -2675,6 +2677,7 @@ return array(
 			'translateY' => '100px',
 		),
 		'html:1' => array(
+			'content' => '',
 			'css' => array(
 				'default' => array(
 					'width' => '100%',

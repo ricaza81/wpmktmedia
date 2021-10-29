@@ -74,21 +74,28 @@ if ( defined( 'US_CORE_DIR' ) ) {
 /**
  * Theme Setup
  */
-add_filter( 'wpcf7_form_elements', 'delicious_wpcf7_form_elements' );
- 
-function delicious_wpcf7_form_elements( $form ) {
-$form = do_shortcode( $form );
-return $form;
-}
 add_action( 'after_setup_theme', 'us_theme_setup', 9 );
 function us_theme_setup() {
 	global $us_template_directory;
 
 	add_theme_support( 'automatic-feed-links' );
-	add_theme_support( 'post-formats', array( 'video', 'gallery', 'audio', 'link' ) );
 	add_theme_support( 'title-tag' );
 	add_theme_support( 'post-thumbnails' );
-	add_theme_support( 'html5' ); // adds "Search..." placeholder to search widget
+	add_theme_support( 'post-formats', array(
+		'video',
+		'gallery',
+		'audio',
+		'link',
+	) );
+	add_theme_support( 'html5', array(
+		'comment-list',
+		'comment-form',
+		'search-form',
+		'gallery',
+		'caption',
+		'script',
+		'style',
+	) );
 
 	// Add Gutenberg features
 	add_theme_support( 'align-wide' );
@@ -114,8 +121,8 @@ function us_theme_setup() {
 		foreach ( $custom_image_sizes as $size_index => $size ) {
 			$crop = ( ! empty( $size['crop'][0] ) );
 			$crop_str = ( $crop ) ? '_crop' : '';
-			$width = ( ! empty( $size['width'] ) AND intval( $size['width'] ) > 0 ) ? intval( $size['width'] ) : 0;
-			$height = ( ! empty( $size['height'] ) AND intval( $size['height'] ) > 0 ) ? intval( $size['height'] ) : 0;
+			$width = ( ! empty( $size['width'] ) AND (int) $size['width'] > 0 ) ? (int) $size['width'] : 0;
+			$height = ( ! empty( $size['height'] ) AND (int) $size['height'] > 0 ) ? (int) $size['height'] : 0;
 
 			add_image_size( 'us_' . $width . '_' . $height . $crop_str, $width, $height, $crop );
 		}
@@ -131,7 +138,7 @@ function us_theme_setup() {
 	us_maybe_load_theme_textdomain();
 
 	// Set the maximum size for the theme
-	$GLOBALS['content_width'] = intval( us_get_option( 'site_content_width' ) );
+	$GLOBALS['content_width'] = (int) us_get_option( 'site_content_width' );
 
 	// Set default embed sizes
 	add_filter( 'embed_defaults', 'us_embed_defaults' );
@@ -166,7 +173,7 @@ function delete_intermediate_image_sizes( $sizes ) {
 
 // Change Big Image Size Threshold
 add_filter( 'big_image_size_threshold', function() {
-	return intval( us_get_option( 'big_image_size_threshold', 2560 ) );
+	return (int) us_get_option( 'big_image_size_threshold', 2560 );
 } );
 
 // Disable CSS file of WPML plugin
@@ -226,7 +233,7 @@ function us_response_for_svg( $response, $attachment, $meta ) {
  * Without this filter, the width and height are set to "1" since
  * WordPress core can't seem to figure out an SVG file's dimensions.
  */
-if ( ! is_admin() ) {
+if ( ! is_admin() OR wp_doing_ajax() ) {
 	add_filter( 'image_downsize', 'us_fix_svg_size_attributes', 10, 3 );
 }
 function us_fix_svg_size_attributes( $out, $id, $size ) {

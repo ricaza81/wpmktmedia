@@ -26,15 +26,11 @@ if ( empty( $items ) ) {
 		$items = array();
 	}
 }
-
 if ( ! empty( $style ) ) {
 	$_atts['class'] .= ' style_' . $style;
 }
 if ( count( $items ) > 0 ) {
 	$_atts['class'] .= ' items_' . count( $items );
-}
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
 }
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
@@ -46,7 +42,7 @@ foreach ( $items as $index => $item ) {
 	 * Filtering the included items
 	 *
 	 * @param $item ['title'] string Item title
-	 * @param $item ['type'] string Item type: 'default' / 'featured'
+	 * @param $item ['type'] string Item type: 1/0
 	 * @param $item ['price'] string Item price
 	 * @param $item ['substring'] string Price substring
 	 * @param $item ['features'] string Comma-separated list of features
@@ -64,21 +60,21 @@ foreach ( $items as $index => $item ) {
 	$items_html .= '<div class="w-pricing-item-h">';
 	$items_html .= '<div class="w-pricing-item-header">';
 	if ( ! empty( $item['title'] ) ) {
-		$items_html .= '<div class="w-pricing-item-title">' . $item['title'] . '</div>';
+		$items_html .= '<div class="w-pricing-item-title">' . us_replace_dynamic_value( $item['title'] ) . '</div>';
 	}
 	$items_html .= '<div class="w-pricing-item-price">';
 	if ( ! empty( $item['price'] ) ) {
-		$items_html .= $item['price'];
+		$items_html .= us_replace_dynamic_value( $item['price'] );
 	}
 	if ( ! empty( $item['substring'] ) ) {
-		$items_html .= '<small>' . $item['substring'] . '</small>';
+		$items_html .= '<small>' . us_replace_dynamic_value( $item['substring'] ) . '</small>';
 	}
 	$items_html .= '</div></div>';
 	if ( ! empty( $item['features'] ) ) {
 		$items_html .= '<ul class="w-pricing-item-features">';
 		$features = explode( "\n", trim( $item['features'] ) );
 		foreach ( $features as $feature ) {
-			$items_html .= '<li class="w-pricing-item-feature">' . $feature . '</li>';
+			$items_html .= '<li class="w-pricing-item-feature">' . us_replace_dynamic_value( $feature ) . '</li>';
 		}
 		$items_html .= '</ul>';
 	}
@@ -103,10 +99,15 @@ foreach ( $items as $index => $item ) {
 		}
 		$btn_link_atts = us_generate_link_atts( $item['btn_link'] );
 
+		// Apply filters to button label
+		$btn_label = us_replace_dynamic_value( $item['btn_text'] );
+		$btn_label = strip_tags( $btn_label, '<br>' );
+		$btn_label = wptexturize( $btn_label );
+
 		$items_html .= '<div class="w-pricing-item-footer">';
-		$items_html .= '<a ' . us_implode_atts( $btn_atts + $btn_link_atts ) . '>';
+		$items_html .= '<a' . us_implode_atts( $btn_atts + $btn_link_atts ) . '>';
 		$items_html .= ( $item['btn_iconpos'] == 'left' ) ? $icon_html : '';
-		$items_html .= '<span class="w-btn-label">' . strip_tags( $item['btn_text'], '<br>' ) . '</span>';
+		$items_html .= '<span class="w-btn-label">' . $btn_label . '</span>';
 		$items_html .= ( $item['btn_iconpos'] == 'right' ) ? $icon_html : '';
 		$items_html .= '</a>';
 
@@ -116,6 +117,6 @@ foreach ( $items as $index => $item ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>' . $items_html . '</div>';
+$output = '<div' . us_implode_atts( $_atts ) . '>' . $items_html . '</div>';
 
 echo $output;

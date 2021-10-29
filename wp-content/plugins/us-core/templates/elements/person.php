@@ -38,14 +38,11 @@ if ( ! empty( $content ) ) {
 	$_atts['class'] .= ' with_desc';
 }
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -69,7 +66,7 @@ if ( empty( $img_html ) ) {
 
 // Append image on hover
 if ( ! empty( $image_hover ) ) {
-	$img_hover = wp_get_attachment_image_url( intval( $image_hover ), $img_size );
+	$img_hover = wp_get_attachment_image_url( $image_hover, $img_size );
 	if ( $img_hover !== FALSE ) {
 		$img_html .= '<div class="img_hover" style="background-image:url(' . $img_hover . ')"></div>';
 	}
@@ -85,7 +82,7 @@ $social_links = array(
 	'linkedin' => 'LinkedIn',
 	'skype' => 'Skype',
 );
-foreach( $social_links as $type => $title ) {
+foreach ( $social_links as $type => $title ) {
 	$social_link = $$type;
 
 	if ( empty( $social_link ) ) {
@@ -121,7 +118,7 @@ foreach( $social_links as $type => $title ) {
 		$social_links_atts['rel'] = 'noopener nofollow';
 	}
 
-	$social_links_html .= '<a ' . us_implode_atts( $social_links_atts ) . '><i class="' . $social_icon_class . '"></i></a>';
+	$social_links_html .= '<a' . us_implode_atts( $social_links_atts ) . '><i class="' . $social_icon_class . '"></i></a>';
 }
 
 // Custom social link
@@ -133,7 +130,7 @@ if ( ! empty( $custom_icon ) AND ! empty( $custom_link ) ) {
 		'rel' => 'noopener',
 		'aria-label' => $custom_icon,
 	);
-	$social_links_html .= '<a ' . us_implode_atts( $links_atts ) . '>' . us_prepare_icon_tag( $custom_icon ) . '</a>';
+	$social_links_html .= '<a' . us_implode_atts( $links_atts ) . '>' . us_prepare_icon_tag( $custom_icon ) . '</a>';
 }
 
 if ( ! empty( $social_links_html ) ) {
@@ -147,23 +144,46 @@ $link_atts = us_generate_link_atts( $link );
 if ( ! empty( $link_atts['href'] ) ) {
 	$link_atts['class'] = 'w-person-link';
 	$link_atts['aria-label'] = strip_tags( $name );
-	$link_opener = '<a ' . us_implode_atts( $link_atts ) . '>';
+	$link_opener = '<a' . us_implode_atts( $link_atts ) . '>';
 	$link_closer = '</a>';
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="w-person-image">';
 $output .= $link_opener . $img_html . $link_closer;
+
 if ( in_array( $layout, array( 'square', 'circle' ) ) ) {
 	$output .= $social_links_html;
 }
+
 $output .= '</div>';
 $output .= '<div class="w-person-content">';
 if ( ! empty( $name ) ) {
-	$output .= $link_opener . '<h4 class="w-person-name"' . $schema_name . '><span>' . $name . '</span></h4>' . $link_closer;
+	$name_atts = array(
+		'class' => 'w-person-name',
+		'style' => '',
+	);
+	if ( ! empty( $name_size ) ) {
+		$name_atts['style'] = 'font-size:' . $name_size;
+	}
+
+	// Apply filters to name
+	$name = us_replace_dynamic_value( $name );
+	$name = wptexturize( $name );
+
+	$output .= $link_opener;
+	$output .= '<' . $name_tag . $schema_name . us_implode_atts( $name_atts ) . '>';
+	$output .= '<span>' . $name . '</span>';
+	$output .= '</' . $name_tag . '>';
+	$output .= $link_closer;
 }
 if ( ! empty( $role ) ) {
+
+	// Apply filters to role
+	$role = us_replace_dynamic_value( $role );
+	$role = wptexturize( $role );
+
 	$output .= '<div class="w-person-role"' . $schema_job . '>' . $role . '</div>';
 }
 if ( $layout == 'trendy' AND ( ! empty( $content ) OR ! empty( $social_links_html ) ) ) {
@@ -172,7 +192,7 @@ if ( $layout == 'trendy' AND ( ! empty( $content ) OR ! empty( $social_links_htm
 if ( ! in_array( $layout, array( 'square', 'circle' ) ) ) {
 	$output .= $social_links_html;
 }
-if ( ! empty( $content ) ) {
+if ( ! empty( $content ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
 	$output .= '<div class="w-person-description"' . $schema_desc . '>' . do_shortcode( wpautop( $content ) ) . '</div>';
 }
 $output .= '</div></div>';

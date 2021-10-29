@@ -64,33 +64,23 @@
 			z-index: 1
 			}
 	.pagination > :not(.custom) .page-numbers {
-		font-size: 1.2rem;
+		font-size: 1.4rem;
 		line-height: 3.5rem;
 		height: 3.5rem;
 		width: 3.5rem;
 		overflow: hidden;
 		border-radius: 50%;
-		color: inherit;
+		transition: none;
 		}
 	.pagination > :not(.custom) a.page-numbers {
 		color: inherit;
 		}
-	.no-touch .pagination > :not(.custom) a.page-numbers:hover {
-		color: #fff;
-		}
-		.no-touch .pagination > :not(.custom) a.page-numbers:before {
-			height: 0;
-			bottom: auto;
-			border-width: 0;
-			border-radius: 0;
-			transition: height 0.3s;
-			}
-		.no-touch .pagination > :not(.custom) a.page-numbers:hover:before {
-			height: 100%;
-			}
 	.pagination > :not(.custom) .page-numbers.current {
-		box-shadow: none !important;
+		background: var(--color-content-primary-grad);
 		color: #fff !important;
+		}
+	.no-touch .pagination > :not(.custom) a.page-numbers:not(.current):hover {
+		background: var(--color-content-bg-alt-grad);
 		}
 	.pagination .page-numbers.dots {
 		background: none !important;
@@ -99,7 +89,7 @@
 		color: inherit !important;
 		}
 		.pagination .page-numbers.dots:before,
-		.pagination > :not(.custom) .page-numbers.current:before {
+		.pagination > :not(.custom) .page-numbers:before {
 			display: none;
 			}
 	.pagination > :not(.custom) .page-numbers.prev,
@@ -110,7 +100,7 @@
 		}
 		.pagination > :not(.custom) .page-numbers.prev:after,
 		.pagination > :not(.custom) .page-numbers.next:after {
-			font-size: 1.2rem;
+			font-size: 1.5rem;
 			}
 		.pagination .page-numbers.prev:after {
 			content: '\f104';
@@ -128,6 +118,15 @@
 			position: relative;
 			padding-left: 0.1em;
 			}
+
+/* Colors
+   ========================================================================== */
+.color_alternate .pagination > :not(.custom) .page-numbers.current {
+	background: var(--color-alt-content-primary-grad);
+	}
+.no-touch .color_alternate .pagination > :not(.custom) a.page-numbers:not(.current):hover {
+	background: var(--color-alt-content-bg-alt-grad);
+	}
 
 /* Responsive
    ========================================================================== */

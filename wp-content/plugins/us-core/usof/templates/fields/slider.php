@@ -62,6 +62,7 @@ $max = isset( $field['options'][ $current_unit ]['max'] ) ? $field['options'][ $
 $min = isset( $field['options'][ $current_unit ]['min'] ) ? $field['options'][ $current_unit ]['min'] : 0;
 $step = isset( $field['options'][ $current_unit ]['step'] ) ? $field['options'][ $current_unit ]['step'] : 1;
 
+// TODO replace this with single array structure exported with JSON help with corresponding JS changes
 // Output units selection based on config
 $output .= '<div class="usof-slider-selector-units"';
 $output .= ' data-units_expression="' . $units_expression . '"';
@@ -88,7 +89,7 @@ $output .= '</div></div>';
 
 // Calculate slider range offset in percents based on current "min" and "max" values
 $offset_direction = ( is_rtl() ) ? 'right' : 'left';
-$float_value = floatval( $value );
+$float_value = (float) $value;
 
 if ( $max <= $min ) {
 	$offset = 100;

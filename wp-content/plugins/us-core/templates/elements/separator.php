@@ -34,21 +34,17 @@
 $_atts['class'] = 'w-separator';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' size_' . $size;
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
-if ( ! empty( $el_id ) ) {
-	$_atts['id'] = $el_id;
-}
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
-
-// When font-size is set in Design Options, add the specific class
 if ( us_design_options_has_property( $css, 'font-size' ) ) {
 	$_atts['class'] .= ' has_font_size';
+}
+
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
 }
 
 // Link
@@ -56,7 +52,7 @@ $link_opener = $link_closer = '';
 $link_atts = us_generate_link_atts( $link );
 if ( ! empty( $link_atts['href'] ) ) {
 	$link_atts['class'] = 'smooth-scroll';
-	$link_opener = '<a ' . us_implode_atts( $link_atts ) . '>';
+	$link_opener = '<a' . us_implode_atts( $link_atts ) . '>';
 	$link_closer = '</a>';
 }
 
@@ -73,8 +69,10 @@ if ( $show_line ) {
 	if ( ! empty( $text ) ) {
 		$_atts['class'] .= ' with_text';
 
-		$text = wptexturize( $text );
+		// Apply filters to text
+		$text = us_replace_dynamic_value( $text );
 		$text = strip_tags( $text, '<strong><br>' );
+		$text = wptexturize( $text );
 
 		$inner_html .= '<' . $title_tag . ' class="w-separator-text">';
 		$inner_html .= $link_opener;
@@ -101,22 +99,24 @@ if ( $size == 'custom' ) {
 // Set element index to apply <style> for responsive CSS
 $responsive_styles = '';
 if ( $size == 'custom' AND $breakpoint_1_height != '' OR $breakpoint_2_height != '' ) {
-	global $us_separator_index;
-	$us_separator_index = isset( $us_separator_index ) ? ( $us_separator_index + 1 ) : 1;
-	$_atts['class'] .= ' us_separator_' . $us_separator_index;
+
+	// Generate unique ID to apply responsive styles to the current element only
+	if ( empty( $_atts['id'] ) ) {
+		$_atts['id'] = us_uniqid();
+	}
 
 	$responsive_styles = '<style>';
 	if ( $breakpoint_1_height != '' AND $breakpoint_1_height != $height ) {
-		$responsive_styles .= '@media(max-width:' . ( intval( $breakpoint_1_width ) - 1 ) . 'px){.us_separator_' . $us_separator_index . '{height:' . esc_attr( $breakpoint_1_height ) . '!important}}';
+		$responsive_styles .= '@media(max-width:' . ( (int) $breakpoint_1_width - 1 ) . 'px){ #' . $_atts['id'] . '{height:' . esc_attr( $breakpoint_1_height ) . '!important}}';
 	}
 	if ( $breakpoint_2_height != '' AND $breakpoint_2_height != $height ) {
-		$responsive_styles .= '@media(max-width:' . ( intval( $breakpoint_2_width ) - 1 ) . 'px){.us_separator_' . $us_separator_index . '{height:' . esc_attr( $breakpoint_2_height ) . '!important}}';
+		$responsive_styles .= '@media(max-width:' . ( (int) $breakpoint_2_width - 1 ) . 'px){ #' . $_atts['id'] . '{height:' . esc_attr( $breakpoint_2_height ) . '!important}}';
 	}
 	$responsive_styles .= '</style>';
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= $responsive_styles;
 $output .= $inner_html;
 $output .= '</div>';

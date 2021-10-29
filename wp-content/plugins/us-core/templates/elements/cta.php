@@ -35,17 +35,19 @@
  * @param $css			 string CSS box
  */
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ' color_' . $color;
-$classes .= ' controls_' . $controls;
+$_atts['class'] = 'w-actionbox';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+$_atts['class'] .= ' color_' . $color;
+$_atts['class'] .= ' controls_' . $controls;
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design Options, add the specific class
 if ( us_design_options_has_property( $css, 'color' ) ) {
-	$classes .= ' has_text_color';
+	$_atts['class'] .= ' has_text_color';
 }
 
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
+}
 
 // Button keys that will be parsed
 $btn_prefixes = array( 'btn' );
@@ -87,28 +89,43 @@ foreach ( $btn_prefixes as $prefix ) {
 		}
 	}
 
+	// Apply filters to button label
+	$btn_label = us_replace_dynamic_value( ${$prefix . '_label'} );
+	$btn_label = strip_tags( $btn_label, '<br>' );
+	$btn_label = wptexturize( $btn_label );
+
 	// Add link attributes
 	$btn_atts = $btn_atts + us_generate_link_atts( ${$prefix . '_link'} );
 
-	$buttons[ $prefix ] = '<a ' . us_implode_atts( $btn_atts ) . $btn_inline_css . '>';
+	$buttons[ $prefix ] = '<a' . us_implode_atts( $btn_atts ) . $btn_inline_css . '>';
 	$buttons[ $prefix ] .= ( ${$prefix . '_iconpos'} == 'left' ) ? $icon_html : '';
-	$buttons[ $prefix ] .= '<span class="w-btn-label">' . wptexturize( ${$prefix . '_label'} ) . '</span>';
+	$buttons[ $prefix ] .= '<span class="w-btn-label">' . $btn_label . '</span>';
 	$buttons[ $prefix ] .= ( ${$prefix . '_iconpos'} == 'right' ) ? $icon_html : '';
 	$buttons[ $prefix ] .= '</a>';
 }
 
 // Output the element
-$output = '<div class="w-actionbox' . $classes . '"' . $el_id . '><div class="w-actionbox-text">';
-if ( ! empty( $title ) ) {
-	$title_inline_css = us_prepare_inline_css(
-		array(
-			'font-size' => $title_size,
-		)
+$output = '<div' . us_implode_atts( $_atts ) . '>';
+$output .= '<div class="w-actionbox-text">';
+if ( ! empty( $title ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+
+	// Apply filters to title
+	$title = us_replace_dynamic_value( $title );
+	$title = wptexturize( $title );
+
+	$title_atts = array(
+		'class' => 'w-actionbox-title',
+		'style' => '',
 	);
-	$output .= '<' . $title_tag . $title_inline_css . '>' . wptexturize( $title ) . '</' . $title_tag . '>';
+	if ( ! empty( $title_size ) ) {
+		$title_atts['style'] = 'font-size:' . $title_size;
+	}
+	$output .= '<' . $title_tag . us_implode_atts( $title_atts ) . '>' . $title . '</' . $title_tag . '>';
 }
-if ( ! empty( $content ) ) {
+if ( ! empty( $content ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+	$output .= '<div class="w-actionbox-description">';
 	$output .= do_shortcode( wpautop( $content ) );
+	$output .= '</div>';
 }
 $output .= '</div>';
 if ( ! empty( $buttons ) ) {

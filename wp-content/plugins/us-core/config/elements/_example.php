@@ -9,19 +9,57 @@ return array(
 	// Shows element's name in the editors UI
 	'title' => 'Element name',
 
-	// Shows element's description in the WPB "Add New Element" window
-	'description' => 'Element description',
-
-	// Defines tab in the WPB "Add New Element" window
+	// Defines tab in the "Add Element" list
 	'category' => 'Post Elements',
 
-	// Defines icon in the WPB "Add New Element" window
-	'icon' => 'icon-wpb-graph',
+	// Defines icon in the "Add Element" list
+	'icon' => 'fas fa-text',
 
-	// Load JS file in the WPB element editing window
+	// Hide element in the "Add Element" list
+	'hide_on_adding_list' => TRUE,
+
+	// Enables element for certain post types only
+	'shortcode_post_type' => array( 'us_content_template', 'us_page_block' ),
+
+	// Enables element only via condition
+	'place_if' => class_exists( 'woocommerce' ),
+
+	// Allows adding other elements inside this element. Used in BOTH builders
+	'is_container' => TRUE,
+
+	// Sets position in "Add element" lists. Used in BOTH builders
+	'weight' => 400,
+
+	// Preload the fieldset for Live Builder, if not set, settings will be loaded via AJAX
+	'usb_preload' => TRUE,
+
+	// Sets dependence on containers elements
+	'as_child' => array(
+		'only' => 'vc_column',
+	),
+	'as_parent' => array(
+		'only' => 'vc_column_inner'
+	),
+
+	// Not used params, required for correct fallback while editing element
+	'fallback_params' => array(
+		'columns_type',
+		'gap',
+	),
+
+	// WPBakery params which are not supported by the theme in "vc_" shortcodes
+	'vc_remove_params' => array(
+		'css_animation',
+		'rtl_reverse',
+	),
+
+	// ONLY WPBakery: doesn't open editing window after adding element
+	'show_settings_on_create' => FALSE,
+
+	// ONLY WPBakery: Load JS file in the WPB element editing window
 	'admin_enqueue_js' => '/plugins-support/js_composer/js/us_icon_view.js',
 
-	// Defines JS class to apply custom appearance in the WPB editor UI
+	// ONLY WPBakery: Defines JS class to apply custom appearance in the WPB editor UI
 	'js_view' => 'ViewUsIcon',
 
 	// Sets element's settings and default values
@@ -32,6 +70,9 @@ return array(
 
 			// Shows name of option, can be absent
 			'title' => 'Option name',
+
+			// Shows the title at side (at left on LTR, at right on RTL) of the control field.
+			'title_pos' => 'side',
 
 			// Sets type of option control. See all available types below
 			'type' => 'text',
@@ -51,20 +92,80 @@ return array(
 			// Sets display conditions depending on other option's values
 			'show_if' => array( 'some_option', '=', 'some_value' ),
 
+			// Outputs the option depending on "if" condition, e.g. "plugin is active"
+			'place_if' => class_exists( 'woocommerce' ),
+
 			// Combines several options into separate tab in the editing window
 			'group' => 'Tab Name',
 
 			// Sets where the option can be used
 			'context' => array( 'header', 'grid', 'shortcode', 'widget' ),
 
-			// Shows option's name and value in the editors UI
+			// ONLY WPBakery: Shows option's name and value in the editors UI
 			'admin_label' => TRUE,
 
-			// Shows option's value inside a <div> in the editors UI
+			// ONLY WPBakery: Shows option's value inside a <div> in the editors UI
 			'holder' => 'div',
 
-			// Outputs the option depending on "if" condition, e.g. "plugin is active"
-			'place_if' => class_exists( 'woocommerce' ),
+			// Sets how the preview is rendering in US Builder. See all available values below
+			'usb_preview' => TRUE,
+		),
+
+		/************ US BUILDER PREVIEW ************/
+
+		// Renders the whole element
+		'usb_preview' => TRUE,
+
+		// Changes CSS class of the main container (between available values only)
+		'usb_preview' => array(
+			'mod' => 'align',
+		),
+
+		// Toggles CSS class of the main container
+		'usb_preview' => array(
+			'toggle_class' => 'no_view_cart_link',
+		),
+
+		// Toggles CSS class of the main container (inverse)
+		'usb_preview' => array(
+			'toggle_class_inverse' => 'no_view_cart_link',
+		),
+
+		// Changes inline CSS attribute of the main container
+		'usb_preview' => array(
+			'css' => 'width',
+		),
+
+		// Adds CSS class to the main container
+		'usb_preview' => array(
+			'attr' => 'class',
+		),
+
+		// Changes html in the main container
+		'usb_preview' => array(
+			'attr' => 'html',
+		),
+
+		// If 'elm' is set, applies changes to that container
+		'usb_preview' => array(
+			'css' => 'width',
+			'elm' => '.w-counter-title',
+		),
+		'usb_preview' => array(
+			'attr' => 'html',
+			'elm' => '.w-counter-title',
+		),
+
+		// Multiple values
+		'usb_preview' => array(
+			array(
+				'elm' => '.b-socials-link',
+				'css' => 'height',
+			),
+			array(
+				'elm' => '.b-socials-link',
+				'css' => 'line-height',
+			),
 		),
 
 		/************ OPTIONS TYPES ************/
@@ -89,9 +190,9 @@ return array(
 			'options' => array( // shows possible values for selection
 				'key1' => 'Value Name',
 				'key2' => 'Value Name',
-				'key3' => array( // sets <optgroup> for several values
-					'optgroup' => TRUE,
-					'title' => 'Values Group Name',
+				'label' => array( // sets <optgroup> for several values
+					'key3' => 'Value Name',
+					'key4' => 'Value Name',
 				),
 			),
 			'std' => 'key1', // string
@@ -106,6 +207,7 @@ return array(
 				'key3' => 'Value Name',
 			),
 			'std' => 'key1', // string
+			'labels_as_icons' => 'fas fa-align-*', // output icons instead of labels, uses FA icon name where * is changed to the option key
 		),
 
 		// CHECKBOXES: multiple selection between several values, based on several <input type="checkbox">
@@ -116,7 +218,7 @@ return array(
 				'key2' => 'Value Name',
 				'key3' => 'Value Name',
 			),
-			'std' => array( 'key2' ), // array
+			'std' => 'key1,key3', // string
 		),
 
 		// SWITCH: ON/OFF switch, based on a single <input type="checkbox">
@@ -144,7 +246,7 @@ return array(
 			'type' => 'color',
 			'std' => '#fff', // string: HEX, RGBA or "_content_text" value
 			'clear_pos' => 'left', // enables "clear" button at the "left" or "right". If not set, clearing is disabled
-			'with_gradient' => FALSE, // disables Gradients, TRUE by daefault
+			'with_gradient' => TRUE, // enables Gradients, TRUE by default
 			'disable_dynamic_vars' => TRUE // disables list of variables from Theme Options > Colors
 		),
 
@@ -167,16 +269,11 @@ return array(
 			'std' => '', // string
 		),
 
-		// HTML: used for code input, based on <textarea>
+		// HTML: used for html code input, has a code highlight via WordPress CodeMirror
 		'option_name' => array(
 			'type' => 'html',
 			'encoded' => TRUE, // encodes the value to the base64
 			'std' => '', // string
-		),
-
-		// WPB Design Options: adds special control for box properties: margin, border, padding and some additional options
-		'option_name' => array(
-			'type' => 'css_editor',
 		),
 
 		// GROUP: Group of several items. Every item may have all other option types. Group allows to add/delete/reorder items
@@ -186,9 +283,10 @@ return array(
 			'is_duplicate' => FALSE, // enables duplicating items, shows "Clone" button
 			'is_sortable' => TRUE, // enables drag & drop items, shows "Move" button
 			'is_accordion' => FALSE, // enables heading sections for items, which work as toggles
+			'accordion_title' => 'item_name_1', // enables dynamic title using one or several param's value, when 'is_accordion' => TRUE
 			'params' => array( // items with their settings and default values
 				'item_name_1' => array(
-					'type' => 'image',
+					'type' => 'upload',
 					'std' => '',
 				),
 				'item_name_2' => array(
@@ -213,11 +311,11 @@ return array(
 			),
 			'settings' => array(
 				'action' => 'action_name',
-				'_nonce' => wp_create_nonce( 'some text' ),
-				'multiple' => TRUE,
-				'sortable' => FALSE,
+				'nonce_name' => 'some text',
 				'slug' => 'items_slug',
 			),
+			'is_multiple' => TRUE,
+			'is_sortable' => TRUE,
 			'params_separator' => ',', // Default: ','
 		),
 
@@ -225,11 +323,11 @@ return array(
 		'option_name' => array(
 			'type' => 'design_options',
 			'params' => array(
-				'item_name_1' => array(
-					'type' => 'image',
+				'font-size' => array(
+					'type' => 'radio',
 					'std' => '',
 				),
-				'item_name_2' => array(
+				'height' => array(
 					'type' => 'text',
 					'std' => '',
 				),

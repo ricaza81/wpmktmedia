@@ -1,15 +1,17 @@
 /**
- * Base class to working with a $us.header
- * Dev note: should be initialized after $us.canvas
+ * Base class to working with a $us.header.
+ * Dev note: should be initialized after $us.canvas.
  */
 ! function( $, undefined ) {
 	"use strict";
 
+	// Private variables that are used only in the context of this function, it is necessary to optimize the code.
+	var _window = window;
+
 	/**
 	 * @class USHeader
 	 *
-	 * @param {object} settings - The header settings
-	 * @return void
+	 * @param {object} settings - The header settings.
 	 */
 	function USHeader( settings ) {
 
@@ -19,8 +21,17 @@
 
 		// Variables
 		this.settings = settings || {};
-		this.state = 'default'; // possible values: default|tablets|mobiles
+		this.state = 'default'; // possible values: default|laptops|tablets|mobiles
 		this.$elms = {};
+
+		// Calculates offset for tables, mobiles bars
+		this.canvasOffset = 0;
+
+		// Save body height for tall vertical headers
+		this.bodyHeight = $us.$body.height();
+
+		// Sets admin bar height
+		this.adminBarHeight = 0;
 
 		if ( this.$container.length === 0 ) {
 			return;
@@ -30,7 +41,7 @@
 			hidden: $( '.l-subheader.for_hidden', this.$container )
 		};
 
-		// Data for the current states of various settings
+		// Data for the current states of various settings.
 		this._states = {
 			sticky: false,
 			sticky_auto_hide: false,
@@ -45,9 +56,16 @@
 		this.shadow = this.$container.usMod( 'shadow' ); // possible values: none|thin|wide
 		this.orientation = $us.$body.usMod( 'header' ); // possible values: hor|ver
 
-		// Screen Width Breakpoints
-		this.tabletsBreakpoint = parseInt( settings.tablets && settings.tablets.options && settings.tablets.options.breakpoint ) || /* Default */900;
-		this.mobilesBreakpoint = parseInt( settings.mobiles && settings.mobiles.options && settings.mobiles.options.breakpoint ) || /* Default */600;
+		// Screen Width Breakpoints (Defaults)
+		this.breakpoints = {
+			laptops: 1280,
+			tablets: 1024,
+			mobiles: 600
+		};
+		// Get breakpoint from config
+		for ( var k in this.breakpoints ) {
+			this.breakpoints[ k ] = parseInt( ( ( settings[ k ] || {} ).options || {} ).breakpoint ) || this.breakpoints[ k ];
+		}
 
 		// Get all places in the header
 		$( '.l-subheader-cell', this.$container ).each( function( _, place ) {
@@ -67,7 +85,7 @@
 			}
 			var id = matches[ 2 ] + ':' + matches[ 3 ];
 			this.$elms[ id ] = $elm;
-			// If the element is a wrapper, store it into the this.$places list
+			// If the element is a wrapper, store it into the this.$places list.
 			if ( $elm.is( '.w-vwrapper, .w-hwrapper' ) ) {
 				this.$places[ id ] = $elm;
 			}
@@ -87,14 +105,14 @@
 
 		this._events.resize.call( this );
 
-		// If auto-hide is enabled, then add a class for the css styles to work correctly
+		// If auto-hide is enabled, then add a class for the css styles to work correctly.
 		if ( this.isStickyAutoHideEnabled() ) {
 			this.$container
 				.addClass( 'sticky_auto_hide' );
 		}
 
 		// Triggering an event in the internal event system, this will allow subscribing
-		// to external scripts to understand when the animation ends in the header
+		// to external scripts to understand when the animation ends in the header.
 		this.$container
 			.on( 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function() {
 				$us.debounce( this.trigger.bind( this, 'transitionEnd' ), 1 )();
@@ -104,7 +122,7 @@
 	// Export API
 	$.extend( USHeader.prototype, $us.mixins.Events, {
 
-		// Stores the previous scroll position to determine the direction of scrolling
+		// Stores the previous scroll position to determine the direction of scrolling.
 		prevScrollTop: 0,
 
 		/**
@@ -114,7 +132,7 @@
 		 * @return {boolean} True if the state matches, False otherwise.
 		 */
 		currentStateIs: function( state ) {
-			return ( state && ['default', 'tablets', 'mobiles'].indexOf( state ) !== - 1 && this.state === state );
+			return ( state && ( ['default'].concat( Object.keys( this.breakpoints ) ) ).indexOf( state ) !== - 1 && this.state === state );
 		},
 
 		/**
@@ -162,7 +180,7 @@
 		 */
 		_isWithinScrollBoundaries: function( scrollTop ) {
 			scrollTop = parseInt( scrollTop );
-			return ( scrollTop + window.innerHeight >= $us.$document.height() ) || scrollTop <= 0;
+			return ( scrollTop + _window.innerHeight >= $us.$document.height() ) || scrollTop <= 0;
 		},
 
 		/**
@@ -225,10 +243,9 @@
 		 * @return {number} Height of admin bar.
 		 */
 		getAdminBarHeight: function() {
-			var $wpAdminBar = $( '#wpadminbar', $us.$body );
-			return $wpAdminBar.length
-				? parseInt( $wpAdminBar.height() )
-				: 0;
+			var wpAdminBar = document.getElementById('wpadminbar');
+
+			return wpAdminBar ? wpAdminBar.offsetHeight : 0;
 		},
 
 		/**
@@ -251,8 +268,8 @@
 			}
 
 			// This is an alternative height if there is no data from css, this option does not work
-			// correctly if the header contains images from lazy-load, but it still makes the header work more reliable
-			// NOTE: Used in a vertical header that ignores pseudo-element :before!
+			// correctly if the header contains images from lazy-load, but it still makes the header work more reliable.
+			// Note: Used in a vertical header that ignores pseudo-element :before!
 			if ( ! height ) {
 				height = this.$container.outerHeight();
 			}
@@ -280,18 +297,17 @@
 		 * @return {number} Current header height + admin bar height if displayed.
 		 */
 		getCurrentHeight: function() {
-			var height = 0,
-				adminBarHeight = this.getAdminBarHeight();
+			var height = 0;
 
 			// If there is an admin bar, add its height to the height
 			if (
 				this.isHorizontal()
 				&& (
 					! this.currentStateIs( 'mobiles' )
-					|| ( adminBarHeight && adminBarHeight >= this.getScrollTop() )
+					|| ( this.adminBarHeight && this.adminBarHeight >= this.getScrollTop() )
 				)
 			) {
-				height += adminBarHeight;
+				height += this.adminBarHeight;
 			}
 
 			// Adding the header height if it is not hidden
@@ -335,8 +351,7 @@
 		/**
 		 * Set the state.
 		 *
-		 * @param {string} state The new state.
-		 * @return void
+		 * @param {string} state The new state
 		 */
 		setState: function( state ) {
 			if ( this.currentStateIs( state ) ) {
@@ -362,7 +377,7 @@
 			this._setLayout( this.settings[ state ].layout || {} );
 			$us.$body.usMod( 'state', this.state = state );
 
-			if ( this.currentStateIs( 'default' ) ) {
+			if ( this.currentStateIs( 'default' ) || this.currentStateIs( 'laptops' ) ) {
 				$us.$body.removeClass( 'header-show' );
 			}
 
@@ -381,7 +396,6 @@
 		 *
 		 * @private This private method is not intended to be called by other scripts.
 		 * @param {string} pos New position (possible values: fixed|static).
-		 * @return void
 		 */
 		_setPos: function( pos ) {
 			if ( pos === this.pos ) {
@@ -397,8 +411,7 @@
 		 * Set the background.
 		 *
 		 * @private This private method is not intended to be called by other scripts.
-		 * @param {string} bg New background (possible values: solid|transparent)
-		 * @return void
+		 * @param {string} bg New background (possible values: solid|transparent).
 		 */
 		_setBg: function( bg ) {
 			if ( bg != this.bg ) {
@@ -410,8 +423,7 @@
 		 * Set the shadow.
 		 *
 		 * @private This private method is not intended to be called by other scripts.
-		 * @param {string} shadow New shadow (possible values: none|thin|wide)
-		 * @return void
+		 * @param {string} shadow New shadow (possible values: none|thin|wide).
 		 */
 		_setShadow: function( shadow ) {
 			if ( shadow != this.shadow ) {
@@ -424,7 +436,6 @@
 		 *
 		 * @private This private method is not intended to be called by other scripts.
 		 * @param {string} value New layout.
-		 * @return void
 		 */
 		_setLayout: function( layout ) {
 			for ( var place in layout ) {
@@ -440,7 +451,6 @@
 		 *
 		 * @private This private method is not intended to be called by other scripts.
 		 * @param {string} orientation New orientation ( possible values: hor|ver ).
-		 * @return void
 		 */
 		_setOrientation: function( orientation ) {
 			if ( orientation != this.orientation ) {
@@ -449,12 +459,11 @@
 		},
 
 		/**
-		 * Recursive function to place elements based on their ids
+		 * Recursive function to place elements based on their ids.
 		 *
 		 * @private This private method is not intended to be called by other scripts.
 		 * @param {array} elms This is a list of all the elements in the header.
-		 * @param {jqueryObject} $place
-		 * @return void
+		 * @param {jQuery} $place
 		 */
 		_placeElements: function( elms, $place ) {
 			for ( var i = 0; i < elms.length; i ++ ) {
@@ -479,13 +488,12 @@
 		},
 
 		/**
-		 * Check vertical scrolling capability for the header
+		 * Check vertical scrolling capability for the header.
 		 *
-		 * This method compares the header height and the window height
+		 * This method compares the header height and the window height.
 		 * and optionally enables or disables scrolling for the header content.
 		 *
 		 * @private This private method is not intended to be called by other scripts.
-		 * @return void
 		 */
 		_isVerticalScrollable: function() {
 			if ( ! this.isVertical() ) {
@@ -493,7 +501,10 @@
 			}
 
 			if (
-				this.currentStateIs( 'default' )
+				(
+					this.currentStateIs( 'default' )
+					|| this.currentStateIs( 'laptops' )
+				)
 				&& this.isFixed()
 			) {
 				// Initially, let's add a class to override the styles and get the correct values.
@@ -503,7 +514,7 @@
 					canvasHeight = parseInt( $us.canvas.winHeight ),
 					documentHeight = parseInt( $us.$document.height() );
 
-				// Removing a class after getting all values
+				// Removing a class after getting all values.
 				this.$container.removeClass( 'scrollable' );
 
 				if ( headerHeight > canvasHeight ) {
@@ -520,7 +531,7 @@
 					} );
 				}
 
-				// Remove ability to scroll header
+				// Remove ability to scroll header.
 			} else if ( this._states.vertical_scrollable ) {
 				this.trigger( 'swichVerticalScrollable', false );
 			}
@@ -538,7 +549,6 @@
 			 * @private This private handler is intended for the needs of the current script.
 			 * @param {object} _ The self object.
 			 * @param {boolean} state Is scrollable.
-			 * @return void
 			 */
 			_swichVerticalScrollable: function( _, state ) {
 				this.$container
@@ -556,7 +566,6 @@
 			 * @private This private handler is intended for the needs of the current script.
 			 * @param {object} _ The self object.
 			 * @param {boolean} state Is sticky.
-			 * @return void
 			 */
 			_changeSticky: function( _, state ) {
 				this._states.sticky = !! state;
@@ -568,7 +577,7 @@
 						// Reset the indent if it was set.
 						.resetInlineCSS( 'position', 'top', 'bottom' );
 					// If the height of the header after sticky does not change, we will fire an
-					// event so that additional libraries know that the change has occurred
+					// event so that additional libraries know that the change has occurred.
 					if ( currentHeight == this.getCurrentHeight() ) {
 						this.trigger( 'transitionEnd' );
 					}
@@ -576,19 +585,16 @@
 			},
 
 			/**
-			 * Content change event.
-			 *
-			 * @return void
+			 * Content change event
 			 */
 			contentChange: function() {
 				this._isVerticalScrollable.call( this );
 			},
 
 			/**
-			 * Show the button.
+			 * Show the button
 			 *
 			 * @param {object} e The jQuery event object.
-			 * @return void
 			 */
 			showBtn: function( e ) {
 				if ( $us.$body.hasClass( 'header-show' ) ) {
@@ -620,8 +626,6 @@
 			 * Page scroll event.
 			 *
 			 * Dev note: This event is fired very often when the page is scrolled.
-			 *
-			 * @return void
 			 */
 			scroll: function() {
 				// Get the current scroll position.
@@ -661,26 +665,29 @@
 					return;
 				}
 
-				// Header is attached to the first section bottom or below position
+				// Header is attached to the first section bottom or below position.
 				var headerAttachedFirstSection = ['bottom', 'below'].indexOf( $us.canvas.headerInitialPos ) !== - 1;
 
-				// Logic for a horizontal header located at the top of the page
+				// Logic for a horizontal header located at the top of the page.
 				if (
 					this.isHorizontal()
 					&& (
 						headerAbovePosition
 						|| (
-							// Forced for tablets and mobiles devices. This is done in order to avoid on small screens mismatched cases
-							// with a mobile menu and other header elements when it is NOT on top
+							// Forced for tablets and mobiles devices. This is done in order to avoid on small screens
+							// mismatched cases with a mobile menu and other header elements when it is NOT on top.
 							headerAttachedFirstSection
-							&& ! this.currentStateIs( 'default' )
+							&& (
+								this.currentStateIs( 'tablets' )
+								|| this.currentStateIs( 'mobiles' )
+							)
 						)
 						|| ! headerAttachedFirstSection
 					)
 				) {
 					if ( this.isStickyEnabled() ) {
-						// We observe the movement of the scroll and when the change breakpoint is reached, we will launch
-						// the event
+						// We observe the movement of the scroll and when the change breakpoint is reached, we will
+						// launch the event.
 						var scrollBreakpoint = parseInt( this.settings[ this.state ].options.scroll_breakpoint ) || /* Default */100,
 							isSticky = scrollTop >= scrollBreakpoint;
 						if ( isSticky != this.isSticky() ) {
@@ -688,7 +695,7 @@
 						}
 					}
 
-					// Additional check for delay scroll position as working with the DOM can take time
+					// Additional check for delay scroll position as working with the DOM can take time.
 					if ( this.isSticky() ) {
 						$us.debounce( function() {
 							if ( ! $us.$window.scrollTop() ) {
@@ -699,23 +706,26 @@
 				}
 
 				// Logic for a horizontal header located at the bottom or below the first section,
-				// these checks only work for default (desktop) devices.
+				// these checks only work for default (desktop) and laptops devices.
 				if (
 					this.isHorizontal()
 					&& headerAttachedFirstSection
 					&& ! headerAbovePosition
-					&& this.currentStateIs( 'default' )
+					&& (
+						this.currentStateIs( 'default' )
+						|| this.currentStateIs( 'laptops' )
+					)
 				) {
-					// The height of the first section for placing the header under it
-					var top = ( $us.canvas.getHeightFirstSection() + this.getAdminBarHeight() );
+					// The height of the first section for placing the header under it.
+					var top = ( $us.canvas.getHeightFirstSection() + this.adminBarHeight );
 
 					// The calculate height of the header from the height of the first section
-					// so that it is at the bottom of the first section
+					// so that it is at the bottom of the first section.
 					if ( $us.canvas.headerInitialPos == 'bottom' ) {
 						top -= this.getInitHeight();
 					}
 
-					// Checking the position of the header relative to the scroll to sticky it at the page top
+					// Checking the position of the header relative to the scroll to sticky it at the page top.
 					if ( this.isStickyEnabled() ) {
 						var isSticky = scrollTop >= top;
 						if ( isSticky != this.isSticky() ) {
@@ -726,85 +736,102 @@
 					}
 
 					// Sets the heading padding if the heading should be placed at the bottom or below the first
-					// section
+					// section.
 					if ( ! this.isSticky() && top != this.getOffsetTop() ) {
 						this.$container.css( 'top', top );
 					}
 				}
 
 				// Logic for a vertical header located on the left or right,
-				// with content scrolling implemented
-				var headerHeight = this.getHeight(),
-					documentHeight = parseInt( $us.$document.height() );
-
+				// with content scrolling implemented.
 				if (
 					this.isVertical()
 					&& ! headerAttachedFirstSection
 					&& ! headerAbovePosition
-					&& ! jQuery.isMobile
 					&& this._states.vertical_scrollable
-					&& documentHeight > headerHeight
 				) {
-					var canvasHeight = parseInt( $us.canvas.winHeight ),
-						scrollRangeDiff = ( headerHeight - canvasHeight ),
-						cssProps;
+					var headerHeight = this.getHeight(),
+						documentHeight = parseInt( $us.$document.height() );
 
-					if ( this._headerScrollRange === undefined ) {
-						this._headerScrollRange = [ 0, scrollRangeDiff ];
-					}
+					// If the header is taller than whole document
+					if ( documentHeight > headerHeight ) {
+						var canvasHeight = parseInt( $us.canvas.winHeight ) + this.canvasOffset,
+							scrollRangeDiff = ( headerHeight - canvasHeight ),
+							cssProps;
 
-					if ( scrollTop <= this._headerScrollRange[ 0 ] ) {
-						this._headerScrollRange[ 0 ] = Math.max( 0, scrollTop );
-						this._headerScrollRange[ 1 ] = ( this._headerScrollRange[ 0 ] + scrollRangeDiff );
-						cssProps = {
-							position: 'fixed',
-							top: this.getAdminBarHeight()
-						};
-					} else if (
-						this._headerScrollRange[ 0 ] < scrollTop
-						&& scrollTop < this._headerScrollRange[ 1 ]
-					) {
-						cssProps = {
-							position: 'absolute',
-							top: this._headerScrollRange[ 0 ]
-						};
-					} else if ( this._headerScrollRange[ 1 ] <= scrollTop ) {
-						this._headerScrollRange[ 1 ] = Math.min( documentHeight - canvasHeight, scrollTop );
-						this._headerScrollRange[ 0 ] = ( this._headerScrollRange[ 1 ] - scrollRangeDiff );
-						cssProps = {
-							position: 'fixed',
-							top: ( canvasHeight - headerHeight )
-						};
-					}
+						if ( this._headerScrollRange === undefined ) {
+							this._headerScrollRange = [0, scrollRangeDiff];
+						}
 
-					// Add styles from variable cssProps
-					if ( cssProps ) {
-						this.$container.css( cssProps );
+						// If the header is shorter than content - process 3 states
+						if ( this.bodyHeight > headerHeight ) {
+							// 1 stage - fixed to top
+							if ( scrollTop < this._headerScrollRange[ 0 ] ) {
+								this._headerScrollRange[ 0 ] = Math.max( 0, scrollTop );
+								this._headerScrollRange[ 1 ] = ( this._headerScrollRange[ 0 ] + scrollRangeDiff );
+								cssProps = {
+									position: 'fixed',
+									top: this.adminBarHeight
+								};
+								// 2 stage - scrolling with document
+							} else if (
+								this._headerScrollRange[ 0 ] < scrollTop
+								&& scrollTop < this._headerScrollRange[ 1 ]
+							) {
+								cssProps = {
+									position: 'absolute',
+									top: this._headerScrollRange[ 0 ]
+								};
+								// 3 stage - fixed to bottom
+							} else if ( this._headerScrollRange[ 1 ] <= scrollTop ) {
+								this._headerScrollRange[ 1 ] = Math.min( documentHeight - canvasHeight, scrollTop );
+								this._headerScrollRange[ 0 ] = ( this._headerScrollRange[ 1 ] - scrollRangeDiff );
+								cssProps = {
+									position: 'fixed',
+									top: ( canvasHeight - headerHeight )
+								};
+							}
+							// If the header is taller than content, it should allways scroll with document
+						} else {
+							cssProps = {
+								position: 'absolute',
+								top: this.adminBarHeight,
+							};
+						}
+
+						// Add styles from variable cssProps.
+						if ( cssProps ) {
+							this.$container.css( cssProps );
+						}
 					}
 				}
 			},
 
 			/**
 			 * This method is called every time the browser window is resized.
-			 *
-			 * @return void
 			 */
 			resize: function() {
 
-				// Determine the state based on the current size of the browser window
+				// Determine the state based on the current size of the browser window.
 				var newState = 'default';
-				if ( window.innerWidth < this.tabletsBreakpoint ) {
-					newState = ( window.innerWidth < this.mobilesBreakpoint )
-						? 'mobiles'
-						: 'tablets';
+				for ( var state in this.breakpoints ) {
+					if ( _window.innerWidth <= this.breakpoints[ state ] ) {
+						newState = state;
+					} else {
+						break;
+					}
 				}
-				this.setState( newState );
+				this.setState( newState || 'default' );
+
+				this.canvasOffset = $us.$window.outerHeight() - $us.$window.innerHeight();
+				this.bodyHeight = $us.$body.height();
+				this.adminBarHeight = this.getAdminBarHeight();
 
 				// Stop all transitions of CSS animations
 				if ( this.isFixed() && this.isHorizontal() ) {
-					this.$container.addClass( 'notransition' )
+					this.$container.addClass( 'notransition' );
 
-					// Remove class with a small delay to prevent css glitch
+					// Remove class with a small delay to prevent css glitch.
 					$us.timeout( function() {
 						this.$container.removeClass( 'notransition' );
 					}.bind( this ), 50 );
@@ -816,6 +843,6 @@
 		}
 	} );
 
-	// Init header
-	$us.header = new USHeader($us.headerSettings || {} );
+	// Init header.
+	$us.header = new USHeader( $us.headerSettings || {} );
 }( window.jQuery );

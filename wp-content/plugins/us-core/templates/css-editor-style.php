@@ -71,7 +71,7 @@ strong {
 	}
 .mce-content-body a[data-mce-selected] {
 	box-shadow: none;
-	background: <?php echo us_hex2rgba( us_get_color( 'color_content_link' ), 0.2 ) ?>;
+	background: <?php echo us_hex2rgba( us_get_color( '_content_link', FALSE, FALSE ), 0.2 ) ?>;
 	}
 h1, h2, h3, h4, h5, h6 {
 	font-family: inherit;
@@ -110,7 +110,7 @@ fieldset {
    =============================================================================================================================== */
 
 <?php echo $prefix; ?>a {
-	color: <?php echo us_get_color( 'color_content_link' ) ?>;
+	color: <?php echo us_get_color( '_content_link', FALSE, FALSE ) ?>;
 	}
 <?php echo $prefix; ?>ul li,
 <?php echo $prefix; ?>ol li {
@@ -160,28 +160,41 @@ fieldset {
 <?php echo $prefix; ?>h4,
 <?php echo $prefix; ?>h5,
 <?php echo $prefix; ?>h6 {
-	color: <?php echo us_get_color( 'color_content_heading' ) ?>;
+	color: <?php echo us_get_color( '_content_heading', FALSE, FALSE ) ?>;
 	}
 <?php echo $prefix; ?>td,
 <?php echo $prefix; ?>th {
-	border-color: <?php echo us_get_color( 'color_content_border' ) ?>;
+	border-color: <?php echo us_get_color( '_content_border', FALSE, FALSE ) ?>;
 	}
 
 <?php
 
 // Global Text
 $css = $body . '{';
-$css .= us_get_font_css( 'body', FALSE, TRUE );
+$css .= 'font-family:' . strstr( us_get_option( 'body_font_family' ), '|', TRUE ) . ';';
 $css .= 'font-size:' . us_get_option( 'body_fontsize' ) . ';';
 $css .= 'line-height:' . us_get_option( 'body_lineheight' ) . ';';
-$css .= 'background:' . us_get_color( 'color_content_bg', TRUE ) . ';';
-$css .= 'color:' . us_get_color( 'color_content_text' ) . ';';
+$css .= 'background:' . us_get_color( '_content_bg', TRUE, FALSE ) . ';';
+$css .= 'color:' . us_get_color( '_content_text', FALSE, FALSE ) . ';';
 $css .= '}';
 
 // Headings h1-h6
 for ( $i = 1; $i <= 6; $i ++ ) {
 	$css .= $prefix . 'h' . $i . '{';
-	$css .= us_get_font_css( 'h' . $i );
+
+	// Get only font-name, because the value also contains the font-weight
+	$font_name = strstr( us_get_option( 'h' . $i . '_font_family' ), '|', TRUE );
+
+	// For 'get_h1' value get the Heading 1 font name
+	if ( $font_name === 'get_h1' ) {
+		$font_name = strstr( us_get_option( 'h1_font_family' ), '|', TRUE );
+	}
+
+	// Exclude "No font specified" value
+	if ( $font_name !== 'none' ) {
+		$css .= 'font-family:' . $font_name . ';';
+	}
+
 	$css .= 'font-weight:' . us_get_option( 'h' . $i . '_fontweight' ) . ';';
 	$css .= 'font-size:' . us_get_option( 'h' . $i . '_fontsize' ) . ';';
 	$css .= 'line-height:' . us_get_option( 'h' . $i . '_lineheight' ) . ';';
@@ -189,15 +202,15 @@ for ( $i = 1; $i <= 6; $i ++ ) {
 	if ( $editor == 'tinymce' ) {
 		$css .= 'margin-bottom:' . us_get_option( 'h' . $i . '_bottom_indent' ) . ';';
 	}
-	if ( is_array( us_get_option( 'h' . $i . '_transform' ) ) ) {
-		if ( in_array( 'italic', us_get_option( 'h' . $i . '_transform' ) ) ) {
+	if ( ! empty( us_get_option( 'h' . $i . '_transform' ) ) ) {
+		if ( strpos( us_get_option( 'h' . $i . '_transform' ), 'italic' ) !== FALSE ) {
 			$css .= 'font-style: italic;';
 		}
-		if ( in_array( 'uppercase', us_get_option( 'h' . $i . '_transform' ) ) ) {
+		if ( strpos( us_get_option( 'h' . $i . '_transform' ), 'uppercase' ) !== FALSE ) {
 			$css .= 'text-transform: uppercase;';
 		}
 	}
-	if ( $color = us_get_color( 'h' . $i . '_color' ) ) {
+	if ( $color = us_get_color( us_get_option( 'h' . $i . '_color' ), FALSE, FALSE ) ) {
 		$css .= 'color:' . $color . ';';
 	}
 	$css .= '}';

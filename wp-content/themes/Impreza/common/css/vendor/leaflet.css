@@ -21,7 +21,6 @@
 .leaflet-marker-icon,
 .leaflet-marker-shadow {
 	-webkit-user-select: none;
-	-moz-user-select: none;
 	user-select: none;
 	-webkit-user-drag: none;
 }
@@ -61,7 +60,7 @@
 	-webkit-tap-highlight-color: transparent;
 }
 .leaflet-container a {
-	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+	-webkit-tap-highlight-color: var(--color-content-primary-faded);
 }
 .leaflet-tile {
 	filter: inherit;
@@ -195,7 +194,7 @@
 
 /* general toolbar styles */
 .leaflet-bar {
-	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	box-shadow: var(--box-shadow);
 	border-radius: 0.2rem;
 }
 .leaflet-bar a,
@@ -265,7 +264,8 @@
 	line-height: 1.4;
 }
 .leaflet-popup-content > * {
-	margin: 0.6rem 0 !important;
+	margin: 0 !important;
+	padding: 0.2rem 0 !important;
 	color: inherit !important;
 }
 .leaflet-popup-tip-container {
@@ -286,7 +286,9 @@
 }
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	box-shadow: var(--box-shadow);
+	background: var(--color-content-bg-grad);
+	color: var(--color-content-text);
 }
 .leaflet-container a.leaflet-popup-close-button {
 	position: absolute;

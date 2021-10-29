@@ -78,7 +78,7 @@ if ( us_amp() ) {
 	$field_atts['required'] = TRUE;
 }
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<div class="w-form-row-label">
 		<span><?= $label ?></span>
 	</div>
@@ -86,7 +86,7 @@ if ( us_amp() ) {
 		<?php do_action( 'us_form_captcha_start', $vars ) ?>
 		<input type="hidden" name="<?= ( ! empty( $name ) ? $name : $field_id ) ?>_hash" value="<?= $result_hash ?>" />
 		<?= us_prepare_icon_tag( $icon ) ?>
-		<input <?= us_implode_atts( $field_atts ) ?>/>
+		<input<?= us_implode_atts( $field_atts ) ?>/>
 		<?php do_action( 'us_form_captcha_end', $vars ) ?>
 	</div>
 	<?php if ( ! empty( $description ) ) : ?>
@@ -100,5 +100,5 @@ if ( us_amp() ) {
 		$_state_atts['validation-for'] = $field_atts['id'];
 	}
 	?>
-	<div <?php echo us_implode_atts( $_state_atts ) ?>><?php _e( 'Enter the equation result to proceed', 'us' ) ?></div>
+	<div<?= us_implode_atts( $_state_atts ) ?>><?php _e( 'Enter the equation result to proceed', 'us' ) ?></div>
 </div>

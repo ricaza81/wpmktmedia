@@ -15,17 +15,15 @@ if ( ! array_key_exists( $style, $btn_styles ) ) {
 $_atts['class'] = 'w-btn us-btn-style_' . $style;
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
 
 $wrapper_class = '';
 if ( $us_elm_context == 'shortcode' ) {
-	$wrapper_class .= ' width_' . $width_type;
-	if ( $width_type != 'full' ) {
+	if ( $width_type ) {
+		$wrapper_class .= ' width_full';
+	} else {
 		$wrapper_class .= ' align_' . $align;
 	}
 }
@@ -42,9 +40,12 @@ if ( ! empty( $icon ) ) {
 	}
 }
 
-// Text
-$text = trim( strip_tags( $label, '<br>' ) );
-if ( $text == '' ) {
+// Apply filters to button label
+$label = us_replace_dynamic_value( $label, $us_elm_context, $us_grid_object_type );
+$label = trim( strip_tags( $label, '<br>' ) );
+$label = wptexturize( $label );
+
+if ( $label === '' ) {
 	$_atts['class'] .= ' text_none';
 	$_atts['aria-label'] = us_translate( 'Button' );
 }
@@ -67,26 +68,38 @@ if ( $link_type === 'none' ) {
 			$link_atts['rel'] = 'noopener';
 		}
 	}
-} elseif ( $link_type === 'elm_value' AND ! empty( $text ) ) {
-	if ( is_email( $text ) ) {
-		$link_atts['href'] = 'mailto:' . $text;
-	} elseif ( strpos( $text, '+' ) === 0 ) {
-		$link_atts['href'] = 'tel:' . $text;
+} elseif ( $link_type === 'elm_value' AND ! empty( $label ) ) {
+	if ( is_email( $label ) ) {
+		$link_atts['href'] = 'mailto:' . $label;
+	} elseif ( strpos( $label, '+' ) === 0 ) {
+		$link_atts['href'] = 'tel:' . $label;
 	} else {
-		$link_atts['href'] = esc_url( $text );
+		$link_atts['href'] = esc_url( $label );
 	}
 } elseif ( $link_type === 'custom' ) {
 	$link_atts = us_generate_link_atts( $link );
 } elseif ( $link_type === 'onclick' ) {
-	$onclick_code = ! empty( $onclick_code ) ? $onclick_code : 'return false';
+	if ( ! empty( $onclick_code ) ) {
+		// If there are errors in custom JS, an error message will be displayed
+		// in the console, and this will not break the work of the site.
+		$onclick_code = 'try{' . trim( $onclick_code ) . '}catch(e){console.error(e)}';
+	} else {
+		$onclick_code = 'return false'; // Default value
+	}
+	// NOTE: On the output, the value is filtered using `esc_attr()`,
+	// and there is no need for additional filtering `esc_js()`.
+	$link_atts['onclick'] = $onclick_code;
 	$link_atts['href'] = '#';
-	$link_atts['onclick'] = esc_js( trim( $onclick_code ) );
+
 } else {
 	$link_atts = us_generate_link_atts( 'url:{{' . $link_type . '}}|||' );
 }
 
 // Don't show the button if it has no link
-if ( empty( $link_atts['href'] ) ) {
+if (
+	empty( $link_atts['href'] )
+	AND ! apply_filters( 'usb_is_preview_page', NULL )
+) {
 	return;
 
 	// Force "Open in a new tab" attributes
@@ -97,20 +110,17 @@ if ( empty( $link_atts['href'] ) ) {
 
 $_atts = $_atts + $link_atts;
 
-// Apply filters to button text
-$text = us_replace_dynamic_value( $text, $us_elm_context, $us_grid_object_type );
-
 // Output the element
 $output = '';
 if ( $us_elm_context == 'shortcode' ) {
 	$output .= '<div class="w-btn-wrapper' . $wrapper_class . '">';
 }
-$output .= '<a ' . us_implode_atts( $_atts ) . '>';
+$output .= '<a' . us_implode_atts( $_atts ) . '>';
 if ( $iconpos == 'left' ) {
 	$output .= $icon_html;
 }
-if ( $text != '' ) {
-	$output .= '<span class="w-btn-label">' . wptexturize( $text ) . '</span>';
+if ( $label !== '' ) {
+	$output .= '<span class="w-btn-label">' . $label . '</span>';
 }
 if ( $iconpos == 'right' ) {
 	$output .= $icon_html;

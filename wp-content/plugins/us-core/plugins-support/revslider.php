@@ -37,10 +37,19 @@ if ( ! function_exists( 'us_move_revslider_js_footer' ) ) {
 		remove_action( 'wp_footer', array( 'RevSliderFront', 'putAdminBarMenus' ) );
 		add_action( 'wp_footer', array( 'RevSliderFront', 'putAdminBarMenus' ), 99 );
 	}
+
 	add_action( 'wp_enqueue_scripts', 'us_move_revslider_js_footer' );
 }
 
-if ( !function_exists( 'us_include_revslider_js_for_row_bg' ) ) {
+// Remove Slider's FontAwesome library
+if ( ! function_exists( 'us_remove_slider_fontawesome' ) ) {
+	add_action( 'wp_enqueue_scripts', 'us_remove_slider_fontawesome' );
+	function us_remove_slider_fontawesome() {
+		remove_action( 'wp_footer', array( 'RevSliderFront', 'load_icon_fonts' ) );
+	}
+}
+
+if ( ! function_exists( 'us_include_revslider_js_for_row_bg' ) ) {
 	function us_include_revslider_js_for_row_bg() {
 		$isPutIn = FALSE;
 		if ( class_exists( 'UniteFunctionsRev' ) ) {
@@ -104,11 +113,11 @@ if ( !function_exists( 'us_include_revslider_js_for_row_bg' ) ) {
 				// If current page is special - get current page id and check is used rev slider in content
 				if ( is_404() ) {
 					$postID = us_get_option( 'page_404' );
-				} else if ( is_search() ) {
+				} elseif ( is_search() ) {
 					$postID = us_get_option( 'search_page' );
-				} else if ( is_home() ) {
+				} elseif ( is_home() ) {
 					$postID = us_get_option( 'posts_page' );
-				} else if ( get_post_type() == 'us_portfolio' AND us_get_option( 'portfolio_breadcrumbs_page' ) != '' ) {
+				} elseif ( get_post_type() == 'us_portfolio' AND us_get_option( 'portfolio_breadcrumbs_page' ) != '' ) {
 					$postID = us_get_option( 'portfolio_breadcrumbs_page' );
 				}
 
@@ -129,5 +138,6 @@ if ( !function_exists( 'us_include_revslider_js_for_row_bg' ) ) {
 			}
 		}
 	}
+
 	add_action( 'wp_enqueue_scripts', 'us_include_revslider_js_for_row_bg', 5 );
 }

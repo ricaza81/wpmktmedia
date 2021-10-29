@@ -43,7 +43,6 @@ if ( ! empty( $us_cform_prev_post_id ) AND $us_cform_prev_post_id != $post_id ) 
 // Form indexes start from 1
 $us_cform_index = ! empty( $us_cform_index ) ? ( $us_cform_index + 1 ) : 1;
 $us_cform_prev_post_id = $post_id;
-$us_form_index = $us_cform_index;
 
 if ( ! empty( $button_fullwidth ) ) {
 	$submit_classes = 'width_full';
@@ -52,7 +51,7 @@ if ( ! empty( $button_fullwidth ) ) {
 }
 $classes = isset( $classes ) ? $classes : '';
 $classes .= ' layout_' . $fields_layout;
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
+
 $el_id = ( ! empty( $el_id ) ) ? $el_id : '';
 
 // Generate fields params

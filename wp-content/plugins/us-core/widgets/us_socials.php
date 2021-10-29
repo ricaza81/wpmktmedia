@@ -29,6 +29,8 @@ class US_Widget_Socials extends US_Widget {
 		$template_vars = array(
 			'us_elm_context' => 'shortcode',
 			'hide_tooltip' => 0,
+			'nofollow' => 1,
+			'css' => '',
 			'gap' => ( $instance['style'] != 'default' ) ? '0.1em' : '',
 		);
 

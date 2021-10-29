@@ -80,14 +80,11 @@ if ( $color_link ) {
 	$_atts['class'] .= ' color_link_inherit';
 }
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 	$_atts['id'] = $el_id;
 }
@@ -128,14 +125,14 @@ if ( us_get_option( 'schema_markup' ) AND $us_elm_context == 'shortcode' ) {
 }
 
 // Output the element
-$output = '<' . $tag . ' ' . us_implode_atts( $_atts ) . '>';
+$output = '<' . $tag . us_implode_atts( $_atts ) . '>';
 
 if ( ! empty( $icon ) ) {
 	$output .= us_prepare_icon_tag( $icon );
 }
 
 if ( ! empty( $link_atts['href'] ) ) {
-	$output .= '<a ' . us_implode_atts( $link_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $link_atts ) . '>';
 }
 
 $output .= wptexturize( $title );

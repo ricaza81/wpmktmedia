@@ -135,6 +135,7 @@
 	z-index: 11111; /* the highest value in the theme */
 	overflow: hidden;
 	transition: opacity 0.3s cubic-bezier(.6,.3,.3,.6);
+	background: var(--color-content-bg-grad);
 	}
 .l-preloader.done {
 	opacity: 0;

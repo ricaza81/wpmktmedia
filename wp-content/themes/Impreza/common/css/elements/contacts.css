@@ -36,7 +36,8 @@
 			width: 3.5rem;
 			margin-right: 1rem;
 			border-radius: 50%;
-			box-shadow: 0 0 0 2px currentColor inset;
+			box-shadow: inset 0 0 0 2px;
+			color: var(--color-content-primary);
 			}
 		.l-section.color_primary .w-contacts-item:before,
 		.l-section.color_secondary .w-contacts-item:before {

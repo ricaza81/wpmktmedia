@@ -24,7 +24,7 @@ if ( window.$us === undefined ) {
 	window.$us = {};
 }
 
-// NOTE: The variable is needed for the page-scroll.js file which changes only in menu.js
+// Note: The variable is needed for the page-scroll.js file which changes only in menu.js
 $us.mobileNavOpened = 0;
 
 // The parameters that are in the code but not applied in the absence of a header
@@ -50,30 +50,26 @@ $us.header = {
 
 /**
  * Retrieve/set/erase dom modificator class <mod>_<value> for UpSolution CSS Framework
- * @param {String} mod Modificator namespace
- * @param {String} [value] Value
- * @returns {string|jQuery}
+ * @param {string} mod Modificator namespace
+ * @param {string} [value] Value
+ * @returns {string|self}
  */
 jQuery.fn.usMod = function( mod, value ) {
-	if ( this.length == 0 ) {
-		return this;
-	}
-	// Remove class modificator
-	if ( value === false ) {
-		this.get( 0 ).className = this.get( 0 ).className.replace( new RegExp( '(^| )' + mod + '\_[a-zA-Z0-9\_\-]+( |$)' ), '$2' );
-		return this;
-	}
-	var pcre = new RegExp( '^.*?' + mod + '\_([a-zA-Z0-9\_\-]+).*?$' ),
-		arr;
-	// Retrieve modificator
+	if ( this.length == 0 ) return this;
+	// Retrieve modificator (The modifier will only be obtained from the first node)
 	if ( value === undefined ) {
-		return ( arr = pcre.exec( this.get( 0 ).className ) ) ? arr[ 1 ] : false;
+		var pcre = new RegExp( '^.*?' + mod + '\_([a-zA-Z0-9\_\-]+).*?$' );
+		return ( pcre.exec( this.get( 0 ).className ) || [] )[ 1 ] || false;
 	}
-	// Set modificator
-	else {
-		this.usMod( mod, false ).get( 0 ).className += ' ' + mod + '_' + value;
-		return this;
-	}
+	// Set/Remove class modificator
+	this.each( function( _, item ) {
+		// Remove class modificator
+		item.className = item.className.replace( new RegExp( '(^| )' + mod + '\_[a-zA-Z0-9\_\-]+( |$)' ), '$2' );
+		if ( value !== false ) {
+			item.className += ' ' +  mod + '_' + value;
+		}
+	} );
+	return this;
 };
 
 /**
@@ -82,11 +78,12 @@ jQuery.fn.usMod = function( mod, value ) {
  * @returns {Boolean}
  */
 $us.toBool = function( value ) {
-	if ( typeof value == 'string' ) {
-		return ( value == 'true' || value == 'True' || value == 'TRUE' || value == '1' );
-	}
 	if ( typeof value == 'boolean' ) {
 		return value;
+	}
+	if ( typeof value == 'string' ) {
+		value = value.trim();
+		return ( value.toLocaleLowerCase() == 'true' || value == '1' );
 	}
 	return !! parseInt( value );
 };
@@ -344,6 +341,11 @@ jQuery( 'html' ).toggleClass( 'ie11', $us.detectIE() == 11 );
 	$us.$body = $( '.l-body:first' );
 	$us.$htmlBody = $us.$html.add( $us.$body );
 	$us.$canvas = $( '.l-canvas:first' );
+	/**
+	 * Definition this is the USBuilder preview page
+	 * @var {boolean} True if the page is open in the USBuilder, otherwise it is False.
+	 */
+	$us.usbPreview = $us.$body.is( '.usb_preview' );
 }( jQuery );
 
 /**
@@ -366,11 +368,12 @@ jQuery( 'html' ).toggleClass( 'ie11', $us.detectIE() == 11 );
 		// Commonly used dom elements
 		this.$header = $( '.l-header', $us.$canvas );
 		this.$main = $( '.l-main', $us.$canvas );
-		this.$sections = $( '.l-section', $us.$canvas );
+		// Content sections
+		this.$sections = $( '> *:not(.l-header) .l-section', $us.$canvas );
 		this.$firstSection = this.$sections.first();
 		this.$firstStickySection = this.$sections.filter( '.type_sticky:first:visible' );
 		this.$secondSection = this.$sections.eq( 1 );
-		this.$fullscreenSections = this.$sections.filter( '.height_full' );
+		this.$fullscreenSections = this.$sections.filter( '.full_height' );
 		this.$topLink = $( '.w-toplink' );
 
 		// Canvas modificators
@@ -389,7 +392,7 @@ jQuery( 'html' ).toggleClass( 'ie11', $us.detectIE() == 11 );
 		// The position of the sticky element on the page at the time of initialization
 		if ( this.isStickySection() ) {
 			// Defining the sticky block assigned via css
-			// NOTE: IE not support IntersectionObserver.
+			// Note: IE not support IntersectionObserver.
 			if ( !! window['IntersectionObserver'] ) {
 				this.observer = ( new IntersectionObserver( function( e ) {
 					e[0].target.classList.toggle( 'is_sticky', e[0].intersectionRatio === 1 );
@@ -472,8 +475,6 @@ jQuery( 'html' ).toggleClass( 'ie11', $us.detectIE() == 11 );
 		_events: {
 			/**
 			 * Scroll-driven logics
-			 *
-			 * @return void
 			 */
 			scroll: function() {
 				var scrollTop = parseInt( $us.$window.scrollTop() );
@@ -495,8 +496,6 @@ jQuery( 'html' ).toggleClass( 'ie11', $us.detectIE() == 11 );
 
 			/**
 			 * Resize-driven logics
-			 *
-			 * @return void
 			 */
 			resize: function() {
 				// Window dimensions
@@ -755,58 +754,60 @@ jQuery( function( $ ) {
 		} );
 	}
 
-	// Force popup opening on links with ref
-	if ( $( 'a[ref=magnificPopup][class!=direct-link]' ).length != 0 ) {
-		$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/magnific-popup.js', function() {
-			$( 'a[ref=magnificPopup][class!=direct-link]' ).magnificPopup( {
-				type: 'image',
-				removalDelay: 300,
+	//  Force popup opening on links with ref
+	var USPopupLink = function( context, options ) {
+		var $links = $( 'a[ref=magnificPopup][class!=direct-link]:not(.inited)', context || document ),
+			defaultOptions = {
+				fixedContentPos: true,
 				mainClass: 'mfp-fade',
-				fixedContentPos: true
-			} );
-		} );
-	}
-
-	// Hide background images until are loaded
-	jQuery( '.l-section-img' ).each( function() {
-		var $this = $( this ),
-			img = new Image(),
-			bgImg = $this.css( 'background-image' ) || '';
-
-		// If the background image CSS seems to be valid, preload an image and then show it
-		if ( bgImg.match( /url\(['"]*(.*?)['"]*\)/i ) ) {
-			img.onload = function() {
-				if ( ! $this.hasClass( 'loaded' ) ) {
-					$this.addClass( 'loaded' );
-				}
+				removalDelay: 300,
+				type: 'image'
 			};
-			img.src = bgImg.replace( /url\(['"]*(.*?)['"]*\)/i, '$1' );
-			// If we cannot parse the background image CSS, just add loaded class to the background tag so a background
-			// image is shown anyways
-		} else {
-			$this.addClass( 'loaded' );
-		}
-	} );
-
-	// Hide/Show video backgrounds under certain widths
-	var $usSectionVideoContainer = $( '.l-section-video' );
-	if ( $usSectionVideoContainer.length ) {
-		$( window ).on( 'resize load', function() {
-			$usSectionVideoContainer.each( function() {
-				var $container = $( this );
-
-				if ( ! $container.data( 'video-disable-width' ) ) {
-					return false;
-				}
-
-				if ( window.innerWidth < parseInt( $container.data( 'video-disable-width' ) ) ) {
-					$container.addClass( 'hidden' );
-				} else {
-					$container.removeClass( 'hidden' );
-				}
+		if ( $links.length ) {
+			$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/magnific-popup.js', function() {
+				$links
+					.addClass( 'inited' )
+					.magnificPopup( $.extend( {}, defaultOptions, options || {} ) );
 			} );
+		}
+	};
+	$.fn.wPopupLink = function( options ) {
+		return this.each( function() {
+			$( this ).data( 'wPopupLink', new USPopupLink( this, options ) );
 		} );
-	}
+	};
+
+	// Init wPopupLink
+	$( document ).wPopupLink();
+
+	var USSectionVideo = function( container ) {
+		this.$usSectionVideoContainer = $( '.l-section-video', container );
+		if ( ! this.$usSectionVideoContainer.length ) {
+			return;
+		}
+		$us.$window
+			.on( 'resize load', function() {
+				this.$usSectionVideoContainer
+					.each( function() {
+						var $videoContainer = $( this );
+						if ( ! $videoContainer.data( 'video-disable-width' ) ) {
+							return false;
+						}
+						if ( window.innerWidth < parseInt( $videoContainer.data( 'video-disable-width' ) ) ) {
+							$videoContainer.addClass( 'hidden' );
+						} else {
+							$videoContainer.removeClass( 'hidden' );
+						}
+					} );
+			}.bind( this ) );
+	};
+	$.fn.wSectionVideo = function( options ) {
+		return this.each( function() {
+			$( this ).data( 'wSectionVideo', new USSectionVideo( this, options ) );
+		} );
+	};
+	$( '.l-section' ).wSectionVideo();
+
 
 	( function() {
 		// Footer Reveal handler
@@ -821,7 +822,7 @@ jQuery( function( $ ) {
 				} else {
 					$us.$canvas.css( 'margin-bottom', '' );
 				}
-			}
+			};
 
 			usFooterReveal();
 
@@ -1087,8 +1088,7 @@ if ( $us.$body.hasClass( 'single-format-video' ) ) {
 			/**
 			 * Toggle show or hide post content.
 			 *
-			 * @param {eventObject} e
-			 * @return void
+			 * @param {Event} e
 			 */
 			elmToggleShowMore: function( e ) {
 				e.preventDefault();
@@ -1117,14 +1117,21 @@ if ( $us.$body.hasClass( 'single-format-video' ) ) {
 }( jQuery );
 
 /*
- * Post Image object-fit polyfill for Internet Explorer
+ * Support for Internet Explorer
  */
 ! function( $, undefined ) {
 	"use strict";
-	if ( $us.detectIE() == 11 && $( '.w-post-elm.has_ratio' ).length && ! $( '.w-grid' ).length ) {
-		// Add object-fit support library for IE11
-		$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/objectFitPolyfill.js', function() {
-			objectFitPolyfill();
+	if ( $us.detectIE() == 11 ) {
+		// Post Image object-fit polyfill
+		if( $( '.w-post-elm.has_ratio' ).length && ! $( '.w-grid' ).length ) {
+			// Add object-fit support library for IE11
+			$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/objectFitPolyfill.js', function() {
+				objectFitPolyfill();
+			} );
+		}
+		// Css variables
+		$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/css-vars-ponyfill.js', function() {
+			cssVars({});
 		} );
 	}
 }( jQuery );

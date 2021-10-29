@@ -158,7 +158,7 @@ function usof_ajax_save_style_scheme() {
 	} else {
 		$max_index = 0;
 		if ( count( $custom_color_schemes ) > 0 ) {
-			$max_index = intval( max( array_keys( $custom_color_schemes ) ) );
+			$max_index = (int) max( array_keys( $custom_color_schemes ) );
 		}
 		$scheme_id = $max_index + 1;
 	}
@@ -368,8 +368,8 @@ if ( wp_doing_ajax() AND ! function_exists( 'usof_all_fonts_autocomplete' ) ) {
 		}
 
 		// Get all fonts
-		$get_h1 = isset( $_GET['get_h1'] ) ? boolval( $_GET['get_h1'] ) : FALSE;
-		$only_google = isset( $_GET['only_google'] ) ? boolval( $_GET['only_google'] ) : TRUE;
+		$get_h1 = isset( $_GET['get_h1'] ) ? (bool) $_GET['get_h1'] : FALSE;
+		$only_google = isset( $_GET['only_google'] ) ? (bool) $_GET['only_google'] : TRUE;
 		$all_fonts = us_get_all_fonts( $only_google, $get_h1 );
 
 		// Create a inline data array
@@ -406,8 +406,8 @@ if ( wp_doing_ajax() AND ! function_exists( 'usof_all_fonts_autocomplete' ) ) {
 		}
 		// Trim the array to the set size
 		if ( ! $is_params ) {
-			$font_limit = isset( $_GET['font_limit'] ) ? intval( $_GET['font_limit'] ) : 50; // Default 50 items
-			$offset = isset( $_GET['offset'] ) ? intval( $_GET['offset'] ) : 0;
+			$font_limit = isset( $_GET['font_limit'] ) ? (int) $_GET['font_limit'] : 50; // Default 50 items
+			$offset = isset( $_GET['offset'] ) ? (int) $_GET['offset'] : 0;
 			if( $offset === 1 ) {
 				$offset = 0;
 			}
@@ -430,63 +430,6 @@ if ( wp_doing_ajax() AND ! function_exists( 'usof_all_fonts_autocomplete' ) ) {
 
 		wp_send_json_success( array( 'items' => $result ) );
 	}
-}
-
-if ( wp_doing_ajax() AND ! function_exists( 'usof_dynamic_colors' ) ) {
-	/**
-	 * Get a list of dynamic colors
-	 * @return string
-	 */
-	function usof_dynamic_colors() {
-		if ( ! check_ajax_referer( 'us_ajax_color_dynamic_colors', '_nonce', FALSE ) ) {
-			wp_send_json_error(
-				array(
-					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
-				)
-			);
-			wp_die();
-		}
-
-		$group_name = NULL;
-		$list = array();
-
-		foreach ( us_config( 'theme-options.colors.fields', array() ) as $field_name => $field ) {
-			// Group Search
-			if (
-				isset( $field['type'] )
-				AND $field['type'] === 'heading'
-				AND ! empty( $field['title'] )
-			) {
-				$group_name = $field['title'];
-			}
-
-			// Skip all types except color
-			if ( isset( $field['type'] ) AND $field['type'] !== 'color' ) {
-				continue;
-			}
-
-			// Remove "color" prefix for better UI
-			if ( strpos( $field_name, 'color' ) === 0 ) {
-				$field_name = substr( $field_name, strlen( 'color' ) );
-			}
-
-			// Color options
-			$item = array(
-				'name' => $field_name,
-				'title' => us_arr_path( $field, 'text', '' ),
-				'value' => us_get_color( $field_name, /* Gradient */ TRUE ),
-			);
-
-			if ( ! is_null( $group_name ) ) {
-				$list[ $group_name ][] = $item;
-			} else {
-				$list[] = $item;
-			}
-		}
-
-		wp_send_json_success( array( 'list' => $list ) );
-	}
-	add_action( 'wp_ajax_usof_dynamic_colors', 'usof_dynamic_colors', 1 );
 }
 
 if ( wp_doing_ajax() AND ! function_exists( 'usof_ajax_used_icons_info' ) ) {

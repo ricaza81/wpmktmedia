@@ -62,6 +62,11 @@ function uscore_after_setup_theme() {
 	// Regenerate Thumbnails
 	require_once US_CORE_DIR . 'admin/functions/regenerate_thumbnails.php';
 
+	// US Live Builder
+	if ( us_get_option( 'live_builder' ) ) {
+		require US_CORE_DIR . 'builder/builder.php';
+	}
+
 	if ( is_admin() ) {
 
 		// Admin Enqueue

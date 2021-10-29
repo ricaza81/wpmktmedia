@@ -51,7 +51,7 @@ $input_atts = array(
 );
 
 // Getting color based on dynamic variables and parameters
-$background = us_get_color( $value, /* Gradient */ TRUE );
+$background = us_get_color( $value, /* Gradient */ TRUE, /* CSS var */ FALSE );
 
 // Add the color of the dynamic variable to the attribute
 if ( strpos( $value, '_' ) === 0 ) {
@@ -59,9 +59,9 @@ if ( strpos( $value, '_' ) === 0 ) {
 }
 
 // Output color input setting
-$output = '<div '. us_implode_atts( $atts ) .'>';
+$output = '<div'. us_implode_atts( $atts ) .'>';
 $output .= '<div class="usof-color-preview" style="background: ' . $background . '"></div>';
-$output .= '<input '. us_implode_atts( $input_atts ) .' />';
+$output .= '<input'. us_implode_atts( $input_atts ) .' />';
 
 // Output list of dynamic variables
 if ( ! isset( $field['disable_dynamic_vars'] ) ) {
@@ -75,6 +75,21 @@ if ( isset( $field['clear_pos'] ) ) {
 }
 
 $output .= '</div>';
+
+// Global output of a group of colors from for a color picker
+// NOTE: The current output should be carried out once since
+// all settings will be available globally.
+global $_is_output_dynamic_colors;
+if ( empty( $_is_output_dynamic_colors ) ) {
+	$output .= '<script>
+		if ( window.$usof === undefined ) {
+			window.$usof = {};
+		}
+		// Import dynamic colors
+		window.$usof.dynamicColors = \''. json_encode( (array) usof_get_dynamic_colors(), JSON_HEX_APOS ) .'\';
+	</script>';
+	$_is_output_dynamic_colors = TRUE;
+}
 
 if ( ! empty( $field['text'] ) ) {
 	$output .= '<div class="usof-color-text">' . $field['text'] . '</div>';

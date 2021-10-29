@@ -29,16 +29,17 @@ if ( ! empty( $design_css_class ) ) {
 	$design_css_class = '';
 }
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
+}
+// If we are in WPB front end editor mode, make sure the flipbox has an ID
+if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() AND empty( $_atts['id'] ) ) {
+	$_atts['id'] = us_uniqid();
 }
 
 // Link
@@ -57,24 +58,34 @@ if ( ! empty( $link_atts['href'] ) ) {
 		$tag = 'a';
 		$_atts = $_atts + $link_atts;
 	} elseif ( $link_type == 'btn' ) {
-		$link_atts['class'] = 'w-btn us-btn-style_' . $btn_style;
-		$btn_html .= '<a ' . us_implode_atts( $link_atts );
-		$btn_html .= us_prepare_inline_css( array( 'font-size' => $btn_size ) );
-		$btn_html .= '>';
-		$btn_html .= '<span>' . strip_tags( $btn_label ) . '</span>';
-		$btn_html .= '</a>';
+
+		// Apply filters to button label
+		$btn_label = us_replace_dynamic_value( $btn_label );
+		$btn_label = strip_tags( $btn_label, '<br>' );
+		$btn_label = wptexturize( $btn_label );
+
+		if ( $btn_label !== '' ) {
+			$link_atts['class'] = 'w-btn us-btn-style_' . $btn_style;
+			if ( ! empty( $btn_size ) ) {
+				$link_atts['style'] = 'font-size:' . $btn_style;
+			}
+
+			$btn_html .= '<a' . us_implode_atts( $link_atts ) . '>';
+			$btn_html .= '<span>' . $btn_label . '</span>';
+			$btn_html .= '</a>';
+		}
 	}
 }
 
 // Output the element
-$output = '<' . $tag . ' ' . us_implode_atts( $_atts ) . '>';
-$helper_classes = ' easing_' . $easing;
+$output = '<' . $tag . us_implode_atts( $_atts ) . '>';
+
 $helper_inline_css = us_prepare_inline_css(
 	array(
-		'transition-duration' => floatval( $duration ) . 's',
+		'transition-duration' => (float) $duration . 's',
 	)
 );
-$output .= '<div class="w-flipbox-h' . $helper_classes . '"' . $helper_inline_css . '>';
+$output .= '<div class="w-flipbox-h easing_' . $easing . '"' . $helper_inline_css . '>';
 $output .= '<div class="w-flipbox-hh">';
 
 if ( $animation == 'cubeflip' AND in_array( $direction, array( 'ne', 'se', 'sw', 'nw' ) ) ) {
@@ -82,16 +93,21 @@ if ( $animation == 'cubeflip' AND in_array( $direction, array( 'ne', 'se', 'sw',
 }
 
 // Front Side
-$front_inline_css = array(
-	'background' => us_get_color( $front_bgcolor, /* Gradient */ TRUE ),
-	'color' => us_get_color( $front_textcolor ),
+$front_atts = array(
+	'class' => 'w-flipbox-front ' . $design_css_class,
+	'style' => '',
 );
-
-if ( $front_bgimage_src = wp_get_attachment_image_url( $front_bgimage, $front_bgimage_size ) ) {
-	$front_inline_css['background-image'] = $front_bgimage_src;
+if ( us_get_color( $front_bgcolor, /* Gradient */ TRUE ) ) {
+	$front_atts['style'] .= 'background:' . us_get_color( $front_bgcolor, /* Gradient */ TRUE ) . ';';
+}
+if ( us_get_color( $front_textcolor ) ) {
+	$front_atts['style'] .= 'color:'. us_get_color( $front_textcolor ) . ';';
+}
+if ( $front_bgimage_url = wp_get_attachment_image_url( $front_bgimage, $front_bgimage_size ) ) {
+	$front_atts['style'] .= 'background-image:url(' . $front_bgimage_url . ');';
 }
 
-$output .= '<div class="w-flipbox-front ' . $design_css_class . '"' . us_prepare_inline_css( $front_inline_css ) . '>';
+$output .= '<div' . us_implode_atts( $front_atts ) . '>';
 $output .= '<div class="w-flipbox-front-h">';
 $output_front_icon = '';
 if ( $front_icon_type == 'font' ) {
@@ -118,17 +134,23 @@ if ( $front_icon_type == 'font' ) {
 }
 $output_front_title = '';
 if ( ! empty( $front_title ) ) {
+
+	// Apply filters to title
+	$front_title = us_replace_dynamic_value( $front_title );
+	$front_title = strip_tags( $front_title, '<br>' );
+	$front_title = wptexturize( $front_title );
+
 	$output_front_title .= '<' . $front_title_tag . ' class="w-flipbox-front-title"';
 	$output_front_title .= us_prepare_inline_css(
 		array(
 			'font-size' => $front_title_size,
-			'color' => us_get_color( $front_textcolor ),
 		)
 	);
-	$output_front_title .= '>' . strip_tags( $front_title ) . '</' . $front_title_tag . '>';
+	$output_front_title .= '>' . $front_title . '</' . $front_title_tag . '>';
 }
 $output_front_desc = '';
 if ( ! empty( $front_desc ) ) {
+	$front_desc = us_replace_dynamic_value( $front_desc );
 	$output_front_desc .= '<div class="w-flipbox-front-desc">' . wpautop( $front_desc ) . '</div>';
 }
 if ( $front_icon_pos == 'below_title' ) {
@@ -142,30 +164,41 @@ $output .= '</div></div>';
 
 // Don't output backside and animation on AMP
 if ( ! us_amp() ) {
-	// Back Side
-	$back_inline_css = array(
-		'display' => 'none',
-		'background' => us_get_color( $back_bgcolor, /* Gradient */ TRUE ),
-		'color' => us_get_color( $back_textcolor ),
-	);
 
-	if ( $back_bgimage_src = wp_get_attachment_image_url( $back_bgimage, $back_bgimage_size ) ) {
-		$back_inline_css['background-image'] = $back_bgimage_src;
+	// Back Side
+	$back_atts = array(
+		'class' => 'w-flipbox-back ' . $design_css_class,
+		'style' => 'display:none;',
+	);
+	if ( us_get_color( $back_bgcolor, /* Gradient */ TRUE ) ) {
+		$back_atts['style'] .= 'background:' . us_get_color( $back_bgcolor, /* Gradient */ TRUE ) . ';';
+	}
+	if ( us_get_color( $back_textcolor ) ) {
+		$back_atts['style'] .= 'color:'. us_get_color( $back_textcolor ) . ';';
+	}
+	if ( $back_bgimage_url = wp_get_attachment_image_url( $back_bgimage, $back_bgimage_size ) ) {
+		$back_atts['style'] .= 'background-image:url(' . $back_bgimage_url . ');';
 	}
 
-	$output .= '<div class="w-flipbox-back ' . $design_css_class . '"' . us_prepare_inline_css( $back_inline_css ) . '>';
+	$output .= '<div' . us_implode_atts( $back_atts ) . '>';
 	$output .= '<div class="w-flipbox-back-h">';
 	if ( ! empty( $back_title ) ) {
+
+		// Apply filters to title
+		$back_title = us_replace_dynamic_value( $back_title );
+		$back_title = strip_tags( $back_title, '<br>' );
+		$back_title = wptexturize( $back_title );
+
 		$output .= '<' . $back_title_tag . ' class="w-flipbox-back-title"';
 		$output .= us_prepare_inline_css(
 			array(
 				'font-size' => $back_title_size,
-				'color' => us_get_color( $back_textcolor ),
 			)
 		);
-		$output .= '>' . strip_tags( $back_title ) . '</' . $back_title_tag . '>';
+		$output .= '>' . $back_title . '</' . $back_title_tag . '>';
 	}
 	if ( ! empty( $back_desc ) ) {
+		$back_desc = us_replace_dynamic_value( $back_desc );
 		$output .= '<div class="w-flipbox-back-desc">' . wpautop( $back_desc ) . '</div>';
 	}
 	$output .= $btn_html;
@@ -175,12 +208,12 @@ if ( ! us_amp() ) {
 	if ( $animation == 'cubeflip' ) {
 
 		$front_bgcolor = ( ! empty( $front_bgcolor ) )
-			? us_get_color( $front_bgcolor, /* Gradient */ TRUE )
-			: us_get_color( 'color_content_bg_alt', TRUE );
+			? us_get_color( $front_bgcolor, /* Gradient */ FALSE, FALSE )
+			: us_get_color( '_content_bg_alt', /* Gradient */ FALSE, FALSE );
 
 		// Top & bottom flank with shaded color
 		if ( in_array( $direction, array( 'ne', 'e', 'se', 'sw', 'w', 'nw' ) ) ) {
-			$shaded_color = us_shade_color( us_get_color( $front_bgcolor, /* Gradient */ TRUE ) );
+			$shaded_color = us_shade_color( $front_bgcolor );
 			$output .= '<div class="w-flipbox-yflank"' . us_prepare_inline_css(
 					array(
 						'display' => 'none',
@@ -191,7 +224,7 @@ if ( ! us_amp() ) {
 
 		// Left & right flank with shaded color
 		if ( in_array( $direction, array( 'n', 'ne', 'se', 's', 'sw', 'nw' ) ) ) {
-			$shaded_color = us_shade_color( us_get_color( $front_bgcolor, /* Gradient */ TRUE ), 0.1 );
+			$shaded_color = us_shade_color( $front_bgcolor, 0.1 );
 			$output .= '<div class="w-flipbox-xflank"' . us_prepare_inline_css(
 					array(
 						'display' => 'none',
@@ -208,5 +241,19 @@ if ( ! us_amp() ) {
 
 $output .= '</div></div>';
 $output .= '</' . $tag . '>';
+
+// If we are in WPB front end editor mode, apply JS to the flipbox
+if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() ) {
+	$output .= '<script>
+	jQuery( function( $ ) {
+		if ( typeof $us !== "undefined" && typeof $.fn.wFlipBox === "function" ) {
+			var $elm = jQuery( "#' . $_atts['id'] . '" );
+			if ( $elm.data( "wFlipBox" ) === undefined ) {
+				$elm.wFlipBox();
+			}
+		}
+	} );
+	</script>';
+}
 
 echo $output;

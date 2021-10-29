@@ -61,12 +61,13 @@ if ( us_get_option( 'back_to_top', 1 ) ) {
 		'class' => 'w-toplink pos_' . us_get_option( 'back_to_top_pos', 'right' ),
 		'href' => '#',
 		'title' => __( 'Back to top', 'us' ),
+		'aria-label' => __( 'Back to top', 'us' ),
 	);
 	if ( $back_to_top_style = us_get_option( 'back_to_top_style', '' ) ) {
 		$back_to_top_atts['class'] .= ' w-btn us-btn-style_' . $back_to_top_style;
 	}
 
-	echo '<a ' . us_implode_atts( $back_to_top_atts ) . '><span></span></a>';
+	echo '<a' . us_implode_atts( $back_to_top_atts ) . '><span></span></a>';
 }
 
 if ( $us_layout->header_show != 'never' ) {
@@ -78,12 +79,13 @@ if ( $us_layout->header_show != 'never' ) {
 		$_header_show_atts['href'] = 'javascript:void(0);';
 	}
 	?>
-	<a <?php echo us_implode_atts( $_header_show_atts ) ?>><span><?php echo us_translate( 'Menu' ) ?></span></a>
-	<div class="w-header-overlay"<?php echo us_amp() ? ( 'on="' . $_header_show_atts['on'] . '"' ) : '' ?>></div>
+	<a<?= us_implode_atts( $_header_show_atts ) ?>><span><?= us_translate( 'Menu' ) ?></span></a>
+	<div class="w-header-overlay"<?= us_amp() ? ( 'on="' . $_header_show_atts['on'] . '"' ) : '' ?>></div>
 	<?php
 }
 
 if ( ! us_amp() ) {
+	ob_start();
 	?>
 	<script>
 		// Store some global theme options used in JS
@@ -91,10 +93,10 @@ if ( ! us_amp() ) {
 			window.$us = {};
 		}
 		$us.canvasOptions = ( $us.canvasOptions || {} );
-		$us.canvasOptions.disableEffectsWidth = <?php echo intval( us_get_option( 'disable_effects_width', 900 ) ) ?>;
-		$us.canvasOptions.columnsStackingWidth = <?php echo intval( us_get_option( 'columns_stacking_width', 768 ) ) ?>;
-		$us.canvasOptions.backToTopDisplay = <?php echo intval( us_get_option( 'back_to_top_display', 100 ) ) ?>;
-		$us.canvasOptions.scrollDuration = <?php echo intval( us_get_option( 'smooth_scroll_duration', 1000 ) ) ?>;
+		$us.canvasOptions.disableEffectsWidth = <?php echo (int) us_get_option( 'disable_effects_width', 900 ) ?>;
+		$us.canvasOptions.columnsStackingWidth = <?php echo (int) us_get_option( 'columns_stacking_width', 768 ) ?>;
+		$us.canvasOptions.backToTopDisplay = <?php echo (int) us_get_option( 'back_to_top_display', 100 ) ?>;
+		$us.canvasOptions.scrollDuration = <?php echo (int) us_get_option( 'smooth_scroll_duration', 1000 ) ?>;
 
 		$us.langOptions = ( $us.langOptions || {} );
 		$us.langOptions.magnificPopup = ( $us.langOptions.magnificPopup || {} );
@@ -103,12 +105,16 @@ if ( ! us_amp() ) {
 		$us.langOptions.magnificPopup.tCounter = '<?php _ex( '%curr% of %total%', 'Example: 3 of 12', 'us' ); ?>';
 
 		$us.navOptions = ( $us.navOptions || {} );
-		$us.navOptions.mobileWidth = <?php echo intval( us_get_option( 'menu_mobile_width', 900 ) ) ?>;
+		$us.navOptions.mobileWidth = <?php echo (int) us_get_option( 'menu_mobile_width', 900 ) ?>;
 		$us.navOptions.togglable = <?php echo us_get_option( 'menu_togglable_type', TRUE ) ? 'true' : 'false' ?>;
 		$us.ajaxLoadJs = <?php echo us_get_option( 'ajax_load_js', 0 ) ? 'true' : 'false' ?>;
 		$us.templateDirectoryUri = '<?php global $us_template_directory_uri; echo $us_template_directory_uri; ?>';
 	</script>
 	<?php
+	/**
+	 * Global Theme Options JS variables output filter
+	 */
+	echo apply_filters( 'us_global_theme_options_js', ob_get_clean() );
 }
 wp_footer();
 ?>

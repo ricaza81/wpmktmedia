@@ -1,6 +1,5 @@
 !function( $, undefined ) {
 	"use strict";
-
 	/**
 	 * Processing radio buttons from the preview
 	 */

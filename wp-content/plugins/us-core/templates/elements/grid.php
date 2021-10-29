@@ -10,10 +10,10 @@ if ( apply_filters( 'us_stop_grid_execution', FALSE ) ) {
 	return;
 }
 
-global $us_grid_loop_running, $us_grid_no_items_message;
+global $us_grid_loop_running, $us_grid_no_items_message, $us_grid_no_items_action, $us_grid_no_items_page_block;
 
 // If we are running US Grid loop already, return nothing
-if ( isset( $us_grid_loop_running ) AND $us_grid_loop_running ) {
+if ( ! empty( $us_grid_loop_running ) ) {
 	return;
 }
 // DEV NOTE: always change $us_grid_loop_running to FALSE if you interrupt this file execution via return
@@ -22,17 +22,11 @@ $us_grid_loop_running = TRUE;
 // Set it outside the condition to take a corresponding message
 $us_grid_no_items_message = $no_items_message;
 
-if ( ! function_exists( 'us_grid_stop_loop' ) ) {
-	function us_grid_stop_loop( $show_message = TRUE ) {
-		global $us_grid_loop_running, $us_grid_no_items_message;
-		$us_grid_loop_running = FALSE;
-		if ( $show_message AND ! empty( $us_grid_no_items_message ) ) {
-			echo '<h4 class="w-grid-none">' . strip_tags( $us_grid_no_items_message, '<br><strong>' ) . '</h4>';
-		}
-	}
-}
+$us_grid_no_items_action = $no_items_action;
+
+$us_grid_no_items_page_block = $no_items_page_block;
+
 $classes = isset( $classes ) ? $classes : '';
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
 
 global $us_context_layout, $us_grid_applied_params;
 if ( ! $us_grid_applied_params ) {
@@ -85,13 +79,50 @@ if ( us_amp() AND $shortcode_base == 'us_carousel' ) {
 /*
  * THINGS TO OUTPUT
  */
+
+// Substituting specific post types instead of query depended for US Builder preview of content templates
+if (
+	apply_filters( 'usb_is_preview_page_for_template', NULL )
+	AND in_array(
+		$post_type,
+		array(
+			'related',
+			'current_query',
+			'current_child_pages',
+			'current_child_terms',
+			'product_upsells',
+			'product_crosssell',
+		)
+	)
+) {
+	// First check if there are products present, since they have most of custom fields
+	if (
+		class_exists( 'woocommerce' )
+		AND $count_posts = wp_count_posts( 'product' )
+		AND $count_posts->publish > 1
+	) {
+		$post_type = 'product';
+
+		// then check if there are products present
+	} elseif (
+		$count_posts = wp_count_posts( 'post' )
+		AND $count_posts->publish > 1
+	) {
+		$post_type = 'post';
+
+		// otherwise using pages
+	} else {
+		$post_type = 'page';
+	}
+}
+
 // Singulars
 if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) ) {
 	$query_args['post_type'] = explode( ',', $post_type );
 
 	$atts = ! empty( $atts ) ? $atts : array();
-	if ( empty( $atts[ 'post_type' ] ) ) {
-		$atts[ 'post_type' ] = $post_type;
+	if ( empty( $atts['post_type'] ) ) {
+		$atts['post_type'] = $post_type;
 	}
 
 	// Get selected taxonomies for $query_args
@@ -115,10 +146,13 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 		}
 		$query_args['post_status'] = 'inherit';
 		$query_args['post_mime_type'] = 'image';
+
 	} else {
+
 		// Proper post statuses
 		$query_args['post_status'] = array( 'publish' => 'publish' );
 		$query_args['post_status'] += (array) get_post_stati( array( 'public' => TRUE ) );
+
 		// Add private states if user is capable to view them
 		if ( is_user_logged_in() AND current_user_can( 'read_private_posts' ) ) {
 			$query_args['post_status'] += (array) get_post_stati( array( 'private' => TRUE ) );
@@ -138,8 +172,9 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 		// When choosing taxonomies in the settings, we display only the selected
 		if ( ! empty( $atts[ 'taxonomy_' . $filter_taxonomy_name ] ) ) {
 			$terms_args['slug'] = explode( ',', $atts[ 'taxonomy_' . $filter_taxonomy_name ] );
+
+			// For logged in users, need to show private posts
 			if ( is_user_logged_in() ) {
-				// for logged in users, need to show private posts
 				$terms_args['hide_empty'] = FALSE;
 			}
 			$filter_default_taxonomies = $atts[ 'taxonomy_' . $filter_taxonomy_name ];
@@ -147,7 +182,8 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 
 		$filter_taxonomies = get_terms( $terms_args );
 		if ( is_user_logged_in() ) {
-			// show private posts, but exclude empty posts
+
+			// Show private posts, but exclude empty posts
 			foreach ( $filter_taxonomies as $key => $filter_term ) {
 				if ( is_object( $filter_term ) AND $filter_term->count == 0 ) {
 					$the_query = new WP_Query(
@@ -161,8 +197,9 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 							),
 						)
 					);
+
+					// Unset empty terms
 					if ( ! ( $the_query->have_posts() ) ) {
-						// unset empty terms
 						unset ( $filter_taxonomies[ $key ] );
 					}
 				}
@@ -223,8 +260,9 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 	}
 
 	$upsell_ids = get_post_meta( $current_post_id, '_upsell_ids', TRUE );
+
+	// Pass a negative number to reject random goods
 	if ( empty( $upsell_ids ) ) {
-		// We will pass a negative number to reject random goods
 		$upsell_ids = array( - 1 );
 	}
 	$query_args['post_type'] = array( 'product', 'product_variation' );
@@ -239,8 +277,9 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 	}
 
 	$crosssell_ids = get_post_meta( $current_post_id, '_crosssell_ids', TRUE );
+
+	// Pass a negative number to reject random goods
 	if ( empty( $crosssell_ids ) ) {
-		// We will pass a negative number to reject random goods
 		$crosssell_ids = array( - 1 );
 	}
 	$query_args['post_type'] = array( 'product', 'product_variation' );
@@ -326,7 +365,7 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 			$terms_query_where .= ' AND tt.count > 0';
 		}
 		if ( $parent !== '' ) {
-			$terms_query_where .= ' AND tt.parent = ' . intval( $parent );
+			$terms_query_where .= ' AND tt.parent = ' . (int) $parent;
 		}
 		$terms_query = "
 			SELECT
@@ -374,20 +413,23 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 	}
 
 	// Generate query for "Gallery" and "Post Object" types from ACF PRO plugin
-} elseif ( strpos( $post_type, 'acf_' ) !== FALSE ) {
+} elseif ( strpos( $post_type, 'acf_' ) === 0 ) {
 	if ( ! is_singular() ) {
-		us_grid_stop_loop( FALSE );
-
-		return;
+		$current_post_id = get_queried_object_id();
 	}
 
 	// ACF Galleries
-	if ( strpos( $post_type, 'acf_gallery_' ) !== FALSE ) {
+	if ( strpos( $post_type, 'acf_gallery_' ) === 0 ) {
 		$key = str_replace( 'acf_gallery_', '', $post_type );
 
 		$query_args['post_type'] = 'attachment';
 		$query_args['post_status'] = 'inherit';
-		$query_args['post__in'] = get_post_meta( $current_post_id, $key, TRUE );
+
+		if ( is_singular() ) {
+			$query_args['post__in'] = get_post_meta( $current_post_id, $key, TRUE );
+		} else {
+			$query_args['post__in'] = get_term_meta( $current_post_id, $key, TRUE );
+		}
 
 		// Don't show the Grid, if ACF Gallery has no images
 		if ( empty( $query_args['post__in'] ) ) {
@@ -398,7 +440,13 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 	}
 
 	// ACF Post objects
-	if ( strpos( $post_type, 'acf_posts_' ) !== FALSE ) {
+	if ( strpos( $post_type, 'acf_posts_' ) === 0 ) {
+		if ( ! is_singular() ) {
+			us_grid_stop_loop( FALSE );
+
+			return;
+		}
+
 		$key = str_replace( 'acf_posts_', '', $post_type );
 		$ids = get_post_meta( $current_post_id, $key, TRUE );
 
@@ -407,6 +455,68 @@ if ( in_array( $post_type, array_keys( us_grid_available_post_types( TRUE ) ) ) 
 		$query_args['post__in'] = is_array( $ids ) ? $ids : array( $ids );
 	}
 
+	// Values from predefined custom fields
+} elseif ( strpos( $post_type, 'cf|' ) === 0 ) {
+	$key = str_replace( 'cf|', '', $post_type );
+
+	// Get images from metabox "Custom appearance in Grid"
+	if ( $key === 'us_tile_additional_image' ) {
+
+		// Include Featured image
+		if ( $include_post_thumbnail AND $post_thumbnail_id = get_post_thumbnail_id() ) {
+			$ids = array( $post_thumbnail_id );
+		} else {
+			$ids = array();
+		}
+
+		if ( $custom_images = get_post_meta( $current_post_id, $key, TRUE ) ) {
+			$ids = array_merge( $ids, explode( ',', $custom_images ) );
+		}
+
+		if ( $ids ) {
+			$query_args['post__in'] = $ids;
+			$query_args['post_status'] = 'inherit';
+			$query_args['post_mime_type'] = 'image';
+			$query_args['post_type'] = 'attachment';
+		} else {
+			us_grid_stop_loop();
+
+			return;
+		}
+	}
+
+	// Product gallery images
+} elseif ( $post_type == 'product_gallery' ) {
+	if ( ! is_singular( 'product' ) ) {
+		us_grid_stop_loop( FALSE );
+
+		return;
+	}
+
+	// Include Featured image
+	if ( $include_post_thumbnail AND $post_thumbnail_id = get_post_thumbnail_id() ) {
+		$ids = array( $post_thumbnail_id );
+	} else {
+		$ids = array();
+	}
+
+	if ( $product_images = get_post_meta( $current_post_id, '_product_image_gallery', TRUE ) ) {
+		$ids = array_merge( $ids, explode( ',', $product_images ) );
+	}
+
+	// Remove empty ids to avoid duplications in output
+	$ids = array_diff( $ids, array( '' ) );
+
+	if ( $ids ) {
+		$query_args['post__in'] = $ids;
+		$query_args['post_status'] = 'inherit';
+		$query_args['post_mime_type'] = 'image';
+		$query_args['post_type'] = 'attachment';
+	} else {
+		us_grid_stop_loop();
+
+		return;
+	}
 }
 
 // Always exclude the current post from the query
@@ -419,7 +529,7 @@ if ( ! empty( $ignore_sticky ) ) {
 	$query_args['ignore_sticky_posts'] = 1;
 }
 
-// Fallback for Impreza 7.11
+// Fallback (after version 7.11)
 if ( $orderby == 'alpha' ) {
 	$orderby = 'title';
 }
@@ -442,12 +552,14 @@ if (
 	AND $shortcode_base != 'us_carousel'
 	AND empty( $filter_post )
 	AND empty( $us_grid_applied_params['grid_order'] )
-	AND ! us_post_type_is_available( $post_type, array(
-		'ids',
-		'ids_terms',
-		'taxonomy_terms',
-		'current_child_terms',
-	) )
+	AND ! us_post_type_is_available(
+		$post_type, array(
+			'ids',
+			'ids_terms',
+			'taxonomy_terms',
+			'current_child_terms',
+		)
+	)
 ) {
 	$us_grid_applied_params['grid_order'] = TRUE;
 	$orderby_params = array_merge(
@@ -482,11 +594,13 @@ if (
 	class_exists( 'woocommerce' )
 	AND (
 		us_is_grid_products_defined_by_query_args( $query_args )
-		OR us_post_type_is_available( $post_type, array(
-			'product',
-			'product_upsells',
-			'product_crosssell',
-		) )
+		OR us_post_type_is_available(
+			$post_type, array(
+				'product',
+				'product_upsells',
+				'product_crosssell',
+			)
+		)
 	)
 ) {
 
@@ -506,7 +620,7 @@ if (
 
 	// Show Sale products
 	if ( strpos( $products_include, 'sale' ) !== FALSE ) {
-		if ( ! empty( wc_get_product_ids_on_sale() ) ) {
+		if ( function_exists( 'wc_get_product_ids_on_sale' ) AND ! empty( wc_get_product_ids_on_sale() ) ) {
 			$query_args['post__in'] = wc_get_product_ids_on_sale();
 		} else {
 			us_grid_stop_loop();
@@ -530,13 +644,15 @@ if (
 // Exclude "Hidden" products
 if (
 	class_exists( 'woocommerce' )
-	AND us_post_type_is_available( $post_type, array(
-		'ids',
-		'related',
-		'product',
-		'product_upsells',
-		'product_crosssell',
-	) )
+	AND us_post_type_is_available(
+		$post_type, array(
+			'ids',
+			'related',
+			'product',
+			'product_upsells',
+			'product_crosssell',
+		)
+	)
 ) {
 	$query_args['tax_query'][] = array(
 		'taxonomy' => 'product_visibility',
@@ -558,7 +674,6 @@ if ( $exclude_items == 'prev' ) {
 }
 
 $query_args['posts_per_page'] = $items_quantity;
-
 
 // Reset query for using on archives
 if ( us_post_type_is_available( $post_type, array( 'current_query' ) ) ) {
@@ -618,6 +733,20 @@ if (
 	// Use for all but archive pages
 	$us_grid_applied_params['grid_filters'] = TRUE;
 	us_apply_grid_filters( $post_id, $query_args );
+}
+
+// Apply Grid Filter params to Search page
+if ( is_search() ) {
+	$search_query_args = $query_args;
+	us_apply_grid_filters( $post_id, $search_query_args );
+
+	// Check for Grid Filter attributes
+	if ( ! empty( $search_query_args['tax_query'] ) ) {
+		$us_grid_applied_params['grid_filters'] = TRUE;
+		$query_args['tax_query'] = $search_query_args['tax_query'];
+		$query_args['s'] = get_search_query();
+		$query_args['paged'] = get_query_var('paged');
+	}
 }
 
 $template_vars['query_args'] = $query_args;

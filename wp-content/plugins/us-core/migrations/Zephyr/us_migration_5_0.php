@@ -3499,7 +3499,7 @@ class us_migration_5_0 extends US_Migration_Translator {
 		}
 		$icon = trim( $icon );
 
-		if ( substr( $icon, 0, 3 ) == 'fa-' || substr( $icon, 0, 6 ) == 'fa fa-' ) {
+		if ( substr( $icon, 0, 3 ) == 'fa-' OR substr( $icon, 0, 6 ) == 'fa fa-' ) {
 			$fa_match_found = FALSE;
 			if ( substr( $icon, 0, 3 ) == 'fa-' ) {
 				$icon = substr( $icon, 3 );

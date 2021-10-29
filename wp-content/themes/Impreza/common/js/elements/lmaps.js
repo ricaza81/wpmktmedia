@@ -178,6 +178,14 @@
 		} );
 	};
 
+	$.fn.WLmapsWithPreload = function( options ) {
+		$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/leaflet.js', function() {
+			return this.each( function() {
+				$( this ).data( 'wLmaps', new $us.WLmaps( this, options ) );
+			} );
+		}.bind( this ) );
+	};
+
 	$( function() {
 		var $wLmap = $( '.w-map.provider_osm' );
 		if ( $wLmap.length ) {

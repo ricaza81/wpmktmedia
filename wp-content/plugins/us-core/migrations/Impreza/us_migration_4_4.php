@@ -234,7 +234,7 @@ class us_migration_4_4 extends US_Migration_Translator {
 			}
 		}
 
-		foreach ( array( 'default', 'tablets', 'mobiles' ) as $state ) {
+		foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
 			if ( ! empty( $options['header'][$state]['options']['bg_img_attachment'] ) ) {
 				if ( $options['header'][$state]['options']['bg_img_attachment'] == 'fixed' ) {
 					$options['header'][$state]['options']['bg_img_attachment'] = 0;

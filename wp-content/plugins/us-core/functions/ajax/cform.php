@@ -6,7 +6,7 @@
 add_action( 'wp_ajax_nopriv_us_ajax_cform', 'us_ajax_cform' );
 add_action( 'wp_ajax_us_ajax_cform', 'us_ajax_cform' );
 function us_ajax_cform() {
-	$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
+	$post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
 	if ( $post_id <= 0 ) {
 		wp_send_json_error();
 	}
@@ -15,7 +15,7 @@ function us_ajax_cform() {
 		wp_send_json_error();
 	}
 
-	$form_index = isset( $_POST['form_index'] ) ? intval( $_POST['form_index'] ) : 1;
+	$form_index = isset( $_POST['form_index'] ) ? (int) $_POST['form_index'] : 1;
 
 	// Retrieving the relevant shortcode from the page to get options
 	$post_content = $post->post_content;
@@ -105,28 +105,39 @@ function us_ajax_cform() {
 		foreach ( $sorted_field as $field ) {
 			$name = isset( $field['name'] ) ? $field['name'] : '';
 			$field_type = isset( $field['type'] ) ? $field['type'] : '';
-			if ( $field_type == 'email' AND ! empty( $field['is_used_as_from_email'] ) AND ! empty( $_POST[ $name ] ) AND is_email( $_POST[ $name ] ) AND empty( $from_email ) ) {
+
+			// Use email field value inside "FROM: email"
+			if (
+				$field_type === 'email'
+				AND ! empty( $field['is_used_as_from_email'] )
+				AND ! empty( $_POST[ $name ] )
+				AND is_email( $_POST[ $name ] )
+				AND empty( $from_email )
+			) {
 				$from_email = sanitize_email( $_POST[ $name ] );
 			}
 
-			if ( $field_type == 'text' AND ! empty( $field['is_used_as_from_name'] ) AND ! empty( $_POST[ $name ] ) AND empty( $from_name ) ) {
+			// Use text field value inside "FROM: name"
+			if (
+				$field_type === 'text'
+				AND ! empty( $field['is_used_as_from_name'] )
+				AND ! empty( $_POST[ $name ] )
+				AND empty( $from_name )
+			) {
 				$from_name = sanitize_text_field( $_POST[ $name ] );
 			}
 
 			// Validate fields
-			if ( isset( $field['required'] ) ) {
-				// Validate Captcha
-				if ( $field_type == 'captcha' ) {
+			if ( isset( $field['required'] ) AND ! empty( $name ) ) {
+				if ( $field_type === 'captcha' ) {
 					$captcha = isset( $_POST[ $name ] ) ? esc_attr( $_POST[ $name ] ) : NULL;
+
 					if ( ! us_cform_is_valid_captcha( $captcha ) ) {
-						if ( ! empty( $name ) ) {
-							$errors[ $field['type'] ]['name'][] = $name;
-						}
-					}
-				} elseif ( ! isset( $_POST[ $name ] ) OR ( isset( $_POST[ $name ] ) AND empty( $_POST[ $name ] ) ) ) {
-					if ( ! empty( $name ) ) {
 						$errors[ $field['type'] ]['name'][] = $name;
 					}
+
+				} elseif ( ! isset( $_POST[ $name ] ) OR $_POST[ $name ] === '' ) {
+					$errors[ $field['type'] ]['name'][] = $name;
 				}
 			}
 
@@ -158,7 +169,7 @@ function us_ajax_cform() {
 					$values_length = count( $email_content );
 					$counter = 0;
 					foreach ( $email_content as $value ) {
-						$body_content .= '<strong>' . sanitize_text_field( stripslashes( $value ) ) . '</strong>';
+						$body_content .= '<strong>' . wp_strip_all_tags( stripslashes( $value ) ) . '</strong>';
 						$counter ++;
 						if ( $counter < $values_length ) {
 							$body_content .= '<br>';
@@ -168,7 +179,10 @@ function us_ajax_cform() {
 					$body_content .= '<strong>' . sanitize_email( stripslashes( $email_content ) ) . '</strong>';
 					$headers[] = 'Reply-To: ' . sanitize_email( stripslashes( $email_content ) );
 				} else {
-					$body_content .= '<strong>' . sanitize_text_field( stripslashes( $email_content ) ) . '</strong>';
+					$email_content = wp_strip_all_tags( stripslashes( $email_content ) );
+
+					// Replace line breaks with <br> for correct appearance in HTML
+					$body_content .= '<strong>' . nl2br( $email_content, FALSE ) . '</strong>';
 				}
 				$body_content .= '</p>';
 			}

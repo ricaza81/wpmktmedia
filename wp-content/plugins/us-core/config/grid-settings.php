@@ -19,6 +19,7 @@ $elements = array(
 	'hwrapper',
 	'vwrapper',
 	'text',
+	'image',
 );
 if ( class_exists( 'Post_Views_Counter' ) ) {
 	$elements[] = 'post_views';
@@ -33,7 +34,7 @@ $bg_img_sources = array(
 	'none' => us_translate( 'None' ),
 	'media' => __( 'Custom', 'us' ),
 	'featured' => us_translate( 'Featured Image' ),
-	'us_tile_additional_image' => __( 'Custom appearance in Grid', 'us' ) . ': ' . __( 'Additional Image', 'us' ),
+	'us_tile_additional_image' => __( 'Custom appearance in Grid', 'us' ) . ': ' . us_translate( 'Images' ),
 );
 
 // Add image types from ACF
@@ -147,16 +148,17 @@ return array(
 			'bg_img_position' => array(
 				'title' => __( 'Background Image Position', 'us' ),
 				'type' => 'radio',
+				'labels_as_icons' => 'fas fa-arrow-up',
 				'options' => array(
-					'top left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-					'top center' => '<span class="dashicons dashicons-arrow-up-alt"></span>',
-					'top right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-					'center left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-					'center' => '<span class="dashicons dashicons-marker"></span>',
-					'center right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-					'bottom left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-					'bottom center' => '<span class="dashicons dashicons-arrow-down-alt"></span>',
-					'bottom right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
+					'top left' => us_translate( 'Top Left' ),
+					'top center' => us_translate( 'Top' ),
+					'top right' => us_translate( 'Top Right' ),
+					'center left' => us_translate( 'Left' ),
+					'center center' => us_translate( 'Center' ),
+					'center right' => us_translate( 'Right' ),
+					'bottom left' => us_translate( 'Bottom Left' ),
+					'bottom center' => us_translate( 'Bottom' ),
+					'bottom right' => us_translate( 'Bottom Right' ),
 				),
 				'std' => 'center',
 				'classes' => 'bgpos',

@@ -26,6 +26,9 @@
 			top: 56%;
 			transform: translateY(-50%);
 			right: 0;
+			font-size: var( --inputs-font-size );
+			margin: 0 var( --inputs-padding );
+			color: var( --inputs-text-color );
 			pointer-events: none;
 			border: 0.4em solid;
 			border-left-color: transparent;

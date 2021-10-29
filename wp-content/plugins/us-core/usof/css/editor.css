@@ -1,0 +1,11 @@
+
+/* TYPE WP Editor */
+.usof-editor .wp-editor-tabs:first-child {
+	margin-top: -29px;
+	}
+.usof-editor .wp-switch-editor {
+	min-height: 29px;
+	}
+.usof-editor .quicktags-toolbar > * {
+	width: auto;
+	}

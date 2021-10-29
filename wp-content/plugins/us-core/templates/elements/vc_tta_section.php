@@ -14,20 +14,20 @@
  * @var $design_css_class  string Custom design css class
  *
  * @var $title             string Section title
- * @var $tab_id            string Section slug
  * @var $icon              string Icon
  * @var $i_position        string Icon position: 'left' / 'right'
  * @var $active            bool Tab is opened when page loads
  * @var $indents           string Indents type: '' / 'none'
  * @var $bg_color          string Background color
  * @var $text_color        string Text color
- * @var $c_position        string Control position (inherited from wrapping vc_tta_tabs shortcode): 'left' / 'right'
  * @var $title_tag         string Title HTML tag (inherited from wrapping vc_tta_tabs shortcode): 'div' / 'h2'/ 'h3'/ 'h4'/ 'h5'/ 'h6'/ 'p'
- * @var $title_size        string Title Size
  * @var $el_class          string Extra class name
+ * @var $el_id             string ID
  */
 
-// General global space for storing tab options, this is necessary if tabs are nested
+/*
+ * Global variable for storing the tabs container options along with its child tabs options
+ */
 global $us_tabs_options;
 if ( is_array( $us_tabs_options ) ) {
 	// Get last index
@@ -47,7 +47,7 @@ if ( is_array( $us_tabs_options ) ) {
 
 $us_tab_index = isset( $us_tab_index ) ? $us_tab_index : 1;
 
-// We could overload some of the atts at vc_tabs implementation, so apply them here as well
+// We could overload some atts at vc_tabs implementation, so apply them here as well
 if ( isset( $us_tabs_atts[ $us_tab_index - 1 ] ) ) {
 	foreach ( $us_tabs_atts[ $us_tab_index - 1 ] as $_key => $_value ) {
 		${$_key} = $_value;
@@ -59,35 +59,33 @@ $content_html = do_shortcode( $content );
 $_atts['class'] = 'w-tabs-section';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 
-if ( $icon ) {
-	$_atts['class'] .= ' with_icon';
-}
-if ( $indents == 'none' ) {
+if ( $indents ) {
 	$_atts['class'] .= ' no_indents';
 }
 if ( $active ) {
 	$_atts['class'] .= ' active';
 }
-if ( ! empty( $text_color ) ) {
+if ( $text_color ) {
 	$_atts['class'] .= ' has_text_color';
 }
 
-// Hide the section with empty content
-if ( $content_html == '' ) {
+// Hide the section with empty content, if it is not USBuilder page
+if ( $content_html == '' AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
 	$_atts['class'] .= ' content-empty';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
-if ( empty( $tab_id ) ) {
-	$tab_id = uniqid();
+
+// Generate reqiured ID
+if ( ! empty( $atts['tab_id'] ) ) {
+	$_atts['id'] = $atts['tab_id']; // for old $tab_id value (after version 8.0)
+} elseif ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
+} else {
+	$_atts['id'] = us_uniqid();
 }
 
 if ( empty( $tab_link ) ) {
 	$tab_link = 'javascript:void(0)';
 }
-
-$_atts['id'] = $tab_id;
 
 $inline_css = us_prepare_inline_css(
 	array(
@@ -101,7 +99,7 @@ $title_atts = array(
 );
 $content_atts = array(
 	'class' => 'w-tabs-section-content',
-	'id' => 'content-' . $tab_id,
+	'id' => 'content-' . $_atts['id'],
 	'aria-expanded' => $active ? 'true' : 'false',
 );
 $content_h_atts = array(
@@ -115,7 +113,7 @@ if ( ! empty( $design_css_class ) ) {
 }
 
 // Add atts for FAQs page
-if ( $us_faq_markup ) {
+if ( ! empty( $us_faq_markup ) ) {
 	$_atts['itemscope'] = '';
 	$_atts['itemprop'] = 'mainEntity';
 	$_atts['itemtype'] = 'https://schema.org/Question';
@@ -127,50 +125,47 @@ if ( $us_faq_markup ) {
 }
 
 // Apply filters to title text
-$title = us_replace_dynamic_value( $title, 'any' );
+$title = us_replace_dynamic_value( $title );
 $title = wptexturize( $title );
 
 $btn_atts = array(
-	'aria-controls' => 'content-' . $tab_id,
+	'aria-controls' => 'content-' . $_atts['id'],
 	'class' => 'w-tabs-section-header' . ( $active ? ' active' : '' ),
 );
-if ( ! empty( $title_size ) ) {
-	$btn_atts['style'] = 'font-size:' . $title_size;
+
+// If icon is set
+if ( $icon ) {
+	$btn_atts['class'] .= ' with_icon';
 }
 
 // Add specific attributes for opening sections on AMP without JS
 if ( us_amp() ) {
-	$btn_atts['id'] = 'btn-' . $tab_id;
-	$btn_atts['on'] = 'tap:' . $tab_id . '.toggleClass(class="active",force=true)';
+	$btn_atts['id'] = 'btn-' . $_atts['id'];
+	$btn_atts['on'] = 'tap:' . $_atts['id'] . '.toggleClass(class="active",force=true)';
 
 	foreach ( $us_tabs_atts as $amp_id ) {
-		if ( $amp_id['tab_id'] == $tab_id ) {
+		if ( $amp_id['el_id'] == $_atts['id'] ) {
 			continue;
 		}
-		$btn_atts['on'] .= ',' . $amp_id['tab_id'] . '.toggleClass(class="active",force=false)';
+		$btn_atts['on'] .= ',' . $amp_id['el_id'] . '.toggleClass(class="active",force=false)';
 	}
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . $inline_css . '>';
-$output .= '<button ' . us_implode_atts( $btn_atts ) . '>';
-$output .= '<div class="w-tabs-section-header-h">';
-if ( $c_position == 'left' ) {
-	$output .= '<div class="w-tabs-section-control"></div>';
-}
+$output = '<div' . us_implode_atts( $_atts ) . $inline_css . '>';
+$output .= '<button' . us_implode_atts( $btn_atts ) . '>';
 if ( $icon AND $i_position == 'left' ) {
 	$output .= us_prepare_icon_tag( $icon );
 }
-$output .= '<' . $title_tag . ' ' . us_implode_atts( $title_atts ) . '>' . $title . '</' . $title_tag . '>';
+$output .= '<' . $title_tag . us_implode_atts( $title_atts ) . '>' . $title . '</' . $title_tag . '>';
 if ( $icon AND $i_position == 'right' ) {
 	$output .= us_prepare_icon_tag( $icon );
 }
-if ( $c_position == 'right' ) {
-	$output .= '<div class="w-tabs-section-control"></div>';
-}
-$output .= '</div></button>';
-$output .= '<div ' . us_implode_atts( $content_atts ) . '>';
-$output .= '<div ' . us_implode_atts( $content_h_atts ) . '>' . $content_html . '</div>';
-$output .= '</div></div>';
+$output .= '<div class="w-tabs-section-control"></div>';
+$output .= '</button>';
+$output .= '<div' . us_implode_atts( $content_atts ) . '>';
+$output .= '<div' . us_implode_atts( $content_h_atts ) . '>' . $content_html . '</div>';
+$output .= '</div>';
+$output .= '</div>';
 
 echo $output;

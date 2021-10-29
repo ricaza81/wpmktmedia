@@ -86,18 +86,12 @@
 
 /* STYLE: outlined */
 .w-image.style_outlined img {
-	border-width: 5px;
-	border-style: solid;
-	border-color: inherit;
-	}
-.l-section.color_primary .w-image,
-.l-section.color_secondary .w-image {
-	border-color: rgba(255,255,255,0.33);
+	border: 5px solid var(--color-content-border);
 	}
 
 /* STYLE: shadow-1 */
 .w-image.style_shadow-1 img {
-	box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+	box-shadow: var(--box-shadow);
 	}
 
 /* STYLE: shadow-2 */
@@ -136,9 +130,6 @@
 .w-image.meta_simple .w-image-meta {
     padding-top: 0.6rem;
 	}
-	.w-image.meta_simple .w-image-description {
-		margin-top: 0;
-		}
 .w-image.meta_simple[class*="style_phone6"] .w-image-meta {
 	padding-top: 32%;
 	}
@@ -192,3 +183,65 @@
 		line-height: 1.6;
 		margin: 0.5rem 0 0;
 		}
+
+/* Stylize as iPhone 12 */
+.w-image.style_phone12 {
+	position: relative;
+	padding-bottom: 205%;
+	border-radius: 16% / 7.6%;
+	background: var(--color-content-primary-grad);
+	color: #000;
+	}
+	.w-image.style_phone12 > * {
+		position: absolute;
+		top: .68%;
+		bottom: .68%;
+		left: 1.4%;
+		right: 1.4%;
+		padding: 3.4%;
+		background-color: currentColor;
+		border-radius: 15% / 7%;
+		}
+		.w-image.style_phone12 > * > img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 12.6% / 5.6%;
+			}
+		.w-image.style_phone12 > *:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 25%;
+			width: 50%;
+			height: 5.3%;
+			border-radius: 0 0 11% 11% / 0 0 50% 50%;
+			background-color: inherit;
+			}
+.w-image.style_phone12.align_left,
+.w-image.style_phone12.align_right {
+	float: none;
+	margin: 0;
+	}
+	.w-image.style_phone12 .w-image-meta {
+		position: static;
+		padding: 8% 0 0;
+		background: none;
+		color: var(--color-content-text);
+		}
+
+/* Colors
+   ========================================================================== */
+.color_primary .w-image.style_outlined img,
+.color_secondary .w-image.style_outlined img {
+	border-color: rgba(255,255,255,0.33);
+	}
+.color_alternate .w-image.style_outlined img {
+	border-color: var(--color-alt-content-border);
+	}
+.color_footer-top .w-image.style_outlined img {
+	border-color: var(--color-subfooter-border);
+	}
+.color_footer-bottom .w-image.style_outlined img {
+	border-color: var(--color-footer-border);
+	}

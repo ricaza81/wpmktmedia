@@ -30,7 +30,7 @@
 	.header_hor .l-subheader-cell.at_right > * {
 		margin-left: 1.4rem;
 		}
-.l-subheader:not(.with_centering) .l-subheader-cell:empty {
+.l-subheader-cell:empty {
 	display: none;
 	}
 

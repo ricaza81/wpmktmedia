@@ -5,8 +5,7 @@
 	"use strict";
 	/**
 	 * @class WGridOrder
-	 * @param {string} container The container
-	 * @return void
+	 * @param {string} container The container.
 	 */
 	$us.WGridOrder = function ( container ) {
 		this.init( container );
@@ -27,7 +26,7 @@
 			this.$container
 				.on( 'change', 'select', this._events.changeSelect.bind( this ) );
 
-			// Set class to define the grid is used by Grid Order
+			// Set class to define the grid is used by Grid Order.
 			this.$grid.addClass( 'used_by_grid_order' );
 		},
 		/**
@@ -36,35 +35,34 @@
 		 */
 		_events: {
 			/**
-			 * Changes to the select field
+			 * Changes to the select field.
 			 *
-			 * @param EventObject e
-			 * @return void
+			 * @param {Event} e
 			 */
 			changeSelect: function() {
-				var value = this.$select.val() || '';
+				var value = this.$select.val() || '',
+					matches = ( location.href.match( /page(=|\/)(\d+)(\/?)/ ) || [] ),
+					page = parseInt( matches[2] || 1 /* Default first page */ );
+
 				this.URLSearchValue( value );
 				// Send an event and force to update the grid with new params
-				this.triggerGrid( 'us_grid.updateOrderBy', [ value, 1 /* page */, this ] );
+				this.triggerGrid( 'us_grid.updateOrderBy', [ value, page, this ] );
 			}
 		},
 		/**
-		 * Raises a private event in the grid
+		 * Raises a private event in the grid.
 		 *
 		 * @param {string} eventType
 		 * @param mixed extraParameters
-		 * @return void
 		 */
 		triggerGrid: function ( eventType, extraParameters ) {
 			$us.debounce( function() { $us.$body.trigger( eventType, extraParameters ) }, 10 )();
 		},
 		/**
-		 * Set search value in the url
+		 * Set search value in the url.
 		 *
-		 * @param {string} value The query value
-		 * @return void
-		 *
-		 * TODO: Write functions for working from URL parameters, as this is used in many places
+		 * @param {string} value The query value.
+		 * TODO: Write functions for working from URL parameters, as this is used in many places.
 		 */
 		URLSearchValue: function( value ) {
 			var orderby_search = '',

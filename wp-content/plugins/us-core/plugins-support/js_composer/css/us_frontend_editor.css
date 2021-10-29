@@ -51,13 +51,6 @@
 	display: none !important;
 	}
 
-.compose-mode div:not(.vc_empty-placeholder) + .vc_vc_row > .l-section {
-	padding-top: 0 !important;
-	padding-bottom: 0 !important;
-	}
-.compose-mode div:not(.vc_empty-placeholder) + .vc_vc_row > .l-section .l-section-h {
-	top: auto !important;
-	}
 .compose-mode .vc_column_container {
 	height: 100%;
 	}

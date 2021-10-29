@@ -117,10 +117,10 @@
 	box-shadow: -1px 0 0 rgba(0,0,0,0.08);
 	}
 .l-header.shadow_wide {
-	box-shadow: 3px 0 5px -1px rgba(0,0,0,0.1), 2px 0 1px -1px rgba(0,0,0,0.05);
+	box-shadow: 5px 0 15px rgba(0,0,0,.15);
 	}
 .rtl .l-header.shadow_wide {
-	box-shadow: -3px 0 5px -1px rgba(0,0,0,0.1), -2px 0 1px -1px rgba(0,0,0,0.05);
+	box-shadow: -5px 0 15px rgba(0,0,0,.15);
 	}
 
 /* Header elements */

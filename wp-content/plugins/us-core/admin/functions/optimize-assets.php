@@ -175,12 +175,6 @@ if ( ! class_exists( 'US_Auto_Optimize_Assets' ) ) {
 				$this->available_shortcodes[] = 'us_' . $shortcode;
 			}
 
-			// Modified shortcodes that also need to be verified
-			$this->available_shortcodes = array_merge(
-				$this->available_shortcodes,
-				array_keys( us_config( 'shortcodes.modified', array() ) )
-			);
-
 			// Shortcodes with extended design options
 			$this->available_shortcodes = array_merge(
 				$this->available_shortcodes,
@@ -591,8 +585,6 @@ if (
 if ( wp_doing_ajax() AND ! function_exists( 'us_ajax_auto_optimize_assets' ) ) {
 	/**
 	 * AJAX request handler for asset optimization
-	 *
-	 * @return void
 	 */
 	function us_ajax_auto_optimize_assets() {
 		if ( ! check_ajax_referer( 'us_ajax_auto_optimize_assets', '_nonce', FALSE ) ) {

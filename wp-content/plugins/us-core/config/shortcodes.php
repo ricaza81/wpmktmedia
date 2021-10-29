@@ -6,75 +6,92 @@
  * @filter us_config_shortcodes
  */
 
-$elements = array(
-	'page_block',
-	'image',
-	'image_slider',
-	'separator',
-	'btn',
-	'iconbox',
-	'cta',
-	'counter',
-	'sharing',
-	'socials',
-	'grid',
-	'grid_filter',
-	'grid_order',
-	'carousel',
-	'popup',
-	'flipbox',
-	'itext',
-	'ibanner',
-	'login',
-	'text',
-	'gmaps',
-	'person',
-	'pricing',
-	'progbar',
-	'cform',
-	'contacts',
-	'message',
-	'scroller',
-	'additional_menu',
-	'search',
-	'breadcrumbs',
-
-	// Post Elements
-	'post_content',
-	'post_title',
-	'post_image',
-	'post_date',
-	'post_author',
-	'post_taxonomy',
-	'post_comments',
-	'post_navigation',
-	'post_custom_field',
-	'post_views'
-);
-
-if ( class_exists( 'woocommerce' ) ) {
-	$elements[] = 'product_gallery';
-	$elements[] = 'product_field';
-	$elements[] = 'add_to_cart';
-	$elements[] = 'product_ordering';
-}
-$elements[] = 'hwrapper';
-$elements[] = 'vwrapper';
-
 return array(
 
-	// Theme elements, which are available for WPB as shortcodes. Used with "us_" prefix. The order affects on "Add New Element" window
-	'theme_elements' => $elements,
+	// Main theme elements. The order affects on position in the "Add Element" list in USBuilder
+	'theme_elements' => array(
 
-	// Shortcodes, which are changed by similar theme elements
+		// Containers
+		'vc_row',
+		'vc_row_inner',
+		'vc_column',
+		'vc_column_inner',
+		'hwrapper',
+		'vwrapper',
+		'vc_tta_accordion',
+		'vc_tta_tabs',
+		'vc_tta_tour',
+		'vc_tta_section',
+
+		// Basic
+		'vc_column_text',
+		'text',
+		'btn',
+		'iconbox',
+		'image',
+		'separator',
+
+		// Grid
+		'grid',
+		'grid_filter',
+		'grid_order',
+		'carousel',
+
+		// Interactive
+		'counter',
+		'flipbox',
+		'image_slider',
+		'ibanner',
+		'itext',
+		'message',
+		'popup',
+		'progbar',
+		'scroller',
+
+		// Other
+		'page_block',
+		'cform',
+		'contacts',
+		'cta',
+		'dropdown',
+		'gmaps',
+		'login',
+		'person',
+		'pricing',
+		'additional_menu',
+		'search',
+		'sharing',
+		'socials',
+		'vc_video',
+		'html',
+
+		// Post Elements
+		'post_content',
+		'post_image',
+		'post_title',
+		'post_custom_field',
+		'post_date',
+		'post_taxonomy',
+		'post_author',
+		'post_comments',
+		'post_navigation',
+		'post_views',
+		'breadcrumbs',
+		'add_to_cart',
+		'product_field',
+		'product_gallery',
+		'product_ordering',
+	),
+
+	// Shortcodes, that use template file of other shortcodes
 	'alias' => array(
-		'vc_column_inner' => 'vc_column',
+		'vc_column_inner' => 'vc_column', // for example, vc_column_inner uses vc_column template file
 		'vc_tta_accordion' => 'vc_tta_tabs',
 		'vc_tta_tour' => 'vc_tta_tabs',
 		'us_carousel' => 'us_grid',
 	),
 
-	// WPB shortcodes, which are disabled by default
+	// VC shortcodes, which are disabled by default
 	'disabled' => array(
 		'vc_btn',
 		'vc_cta',
@@ -125,7 +142,7 @@ return array(
 		'sale_products',
 	),
 
-	// WPB shortcodes, which are modified via theme custom options
+	// WordPress gallery shortcode, which is modified via theme custom template
 	'modified' => array(
 		'gallery' => array(
 			'atts' => array(
@@ -139,222 +156,13 @@ return array(
 				'size' => 'thumbnail',
 			),
 		),
-		'vc_column' => array(
-			'atts' => array(
-				'animate' => '',
-				'animate_delay' => '',
-				'css' => '',
-				'el_class' => '',
-				'el_id' => '',
-				'link' => '',
-				'offset' => '',
-				'sticky' => FALSE,
-				'sticky_pos_top' => '',
-				'stretch' => FALSE,
-				'text_color' => '',
-				'us_bg_overlay_color' => '',
-				'width' => '1/1',
-			),
-		),
-		'vc_column_inner' => array(
-			'atts' => array(
-				'link' => '',
-				'text_color' => '',
-				'animate' => '',
-				'animate_delay' => '',
-				'width' => '1/1',
-				'offset' => '',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-			),
-		),
-		'vc_column_text' => array(
-			'atts' => array(
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-				'show_more_toggle' => FALSE,
-				'show_more_toggle_height' => '200px',
-				'show_more_toggle_text_more' => __( 'Show More', 'us' ),
-				'show_more_toggle_text_less' => __( 'Show Less', 'us' ),
-				'show_more_toggle_alignment' => 'default',
-			),
-		),
-		'vc_custom_heading' => array(
-			'overload' => FALSE,
-		),
-		'vc_row' => array(
-			'atts' => array(
-				'content_placement' => 'top',
-				'gap' => '',
-				'columns_type' => FALSE,
-				'columns_reverse' => FALSE,
-				'height' => 'default',
-				'valign' => 'top',
-				'width' => '',
-				'color_scheme' => '',
-				'us_bg_image_source' => 'none',
-				'us_bg_image' => '',
-				'us_bg_size' => 'cover',
-				'us_bg_repeat' => 'repeat',
-				'us_bg_pos' => 'center center',
-				'us_bg_parallax' => '',
-				'us_bg_parallax_width' => '130',
-				'us_bg_parallax_reverse' => FALSE,
-				'us_bg_show' => '',
-				'us_bg_video' => '',
-				'us_bg_slider_ids' => '',
-				'us_bg_slider_transition' => 'slide',
-				'us_bg_slider_speed' => '1000',
-				'us_bg_slider_interval' => '3',
-				'us_bg_rev_slider' => '',
-				'us_bg_overlay_color' => '',
-				'sticky' => FALSE,
-				'us_bg_video_disable_width' => '600px',
-				'disable_element' => '',
-				'us_shape_show_top' => FALSE,
-				'us_shape_show_bottom' => FALSE,
-				'us_shape_top' => 'tilt',
-				'us_shape_bottom' => 'tilt',
-				'us_shape_custom_top' => '',
-				'us_shape_custom_bottom' => '',
-				'us_shape_height_top' => '15vh',
-				'us_shape_height_bottom' => '15vh',
-				'us_shape_color_top' => '_content_bg',
-				'us_shape_color_bottom' => '_content_bg',
-				'us_shape_overlap_top' => FALSE,
-				'us_shape_overlap_bottom' => FALSE,
-				'us_shape_flip_top' => FALSE,
-				'us_shape_flip_bottom' => FALSE,
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-				// Deprecated params but they need for compatibility with new one
-				'us_shape' => 'none',
-				'us_shape_height' => '15vh',
-				'us_shape_position' => 'bottom',
-				'us_shape_color' => '#ffffff',
-				'us_shape_overlap' => FALSE,
-				'us_shape_flip' => FALSE,
-			),
-		),
-		'vc_row_inner' => array(
-			'atts' => array(
-				'content_placement' => 'top',
-				'gap' => '',
-				'columns_type' => FALSE,
-				'columns_reverse' => FALSE,
-				'disable_element' => '',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-			),
-		),
-		'vc_tta_accordion' => array(
-			'atts' => array(
-				'toggle' => FALSE,
-				'scrolling' => '1',
-				'remove_indents' => FALSE,
-				'faq_markup' => FALSE,
-				'c_align' => 'left',
-				'c_icon' => 'chevron',
-				'c_position' => 'right',
-				'title_tag' => 'div',
-				'title_size' => '',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-			),
-		),
-		'vc_tta_section' => array(
-			'atts' => array(
-				'title' => '',
-				'tab_id' => '',
-				'tab_link' => '',
-				'icon' => '',
-				'i_position' => 'left',
-				'active' => FALSE,
-				'indents' => '',
-				'bg_color' => '',
-				'text_color' => '',
-				'c_position' => 'right',
-				'title_tag' => 'div',
-				'title_size' => '',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-			),
-		),
-		'vc_tta_tabs' => array(
-			'atts' => array(
-				'switch_sections' => 'click',
-				'title_tag' => 'div',
-				'layout' => 'default',
-				'stretch' => FALSE,
-				'title_font' => 'heading',
-				'title_weight' => '',
-				'title_transform' => '',
-				'title_size' => '',
-				'title_lineheight' => '',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-				// Default values for aliased shortcodes
-				'toggle' => FALSE,
-				'remove_indents' => FALSE,
-				'faq_markup' => FALSE,
-				'c_align' => 'left',
-				'c_icon' => 'chevron',
-				'c_position' => 'right',
-				'tab_position' => 'left',
-				'controls_size' => 'auto',
-			),
-		),
-		'vc_tta_tour' => array(
-			'atts' => array(
-				'switch_sections' => 'click',
-				'title_tag' => 'div',
-				'layout' => 'default',
-				'c_align' => 'left',
-				'tab_position' => 'left',
-				'controls_size' => 'auto',
-				'title_font' => 'heading',
-				'title_weight' => '',
-				'title_transform' => '',
-				'title_size' => '',
-				'title_lineheight' => '',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-			),
-		),
-		'vc_video' => array(
-			'atts' => array(
-				'source' => 'custom',
-				'link' => 'https://youtu.be/XuWr9gJa6P0',
-				'hide_video_title' => FALSE,
-				'hide_controls' => FALSE,
-				'ratio' => '16x9',
-				'max_width' => '',
-				'align' => 'left',
-				'overlay_image' => '',
-				'overlay_icon' => '1',
-				'overlay_icon_size' => '1.5rem',
-				'overlay_icon_bg_color' => 'rgba(0,0,0,0.5)',
-				'overlay_icon_text_color' => '#fff',
-				'el_id' => '',
-				'el_class' => '',
-				'css' => '',
-			),
-		),
 	),
 
+		// VC shortcodes, which don't have theme configs, but needed theme Design options
 	'added_design_options' => array(
 		'vc_custom_heading',
 		'vc_line_chart',
 		'vc_raw_html',
 		'vc_round_chart',
 	),
-
 );

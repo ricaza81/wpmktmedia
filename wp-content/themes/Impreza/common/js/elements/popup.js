@@ -22,7 +22,18 @@
 			scroll: function() {
 				// Trigger an event for check lazyLoadXT
 				$us.$document.trigger( 'scroll' );
-			}
+			},
+			touchmove: function( e ) {
+				// Prevent underlying content scroll
+				if (
+					( this.popupSizes.boxHeight < this.popupSizes.wrapHeight )
+					|| ( ! $( e.target ).closest( '.w-popup-box' ).length )
+				) {
+					e.preventDefault();
+				}
+
+
+			}.bind( this ),
 		};
 
 		// Event name for triggering CSS transition finish
@@ -55,6 +66,14 @@
 		this.$media = $( 'video,audio', this.$box );
 
 		this.timer = null;
+
+		// Save sizes to prevent scroll on iPhones, iPads
+		this.popupSizes = {
+			boxHeight: 0,
+			wrapHeight: 0,
+			initialWindowHeight: window.innerHeight,
+			openedWindowHeight: 0,
+		}
 	};
 	$us.WPopup.prototype = {
 		_hasScrollbar: function() {
@@ -70,7 +89,11 @@
 			}
 			return $us.scrollbarSize;
 		},
-		show: function() {
+		show: function( e ) {
+			if ( e !== undefined ) {
+				e.preventDefault();
+			}
+			this.saveWindowSizes();
 			clearTimeout( this.timer );
 			this.$overlay.appendTo( $us.$body ).show();
 			this.$wrap.appendTo( $us.$body ).css( 'display', 'flex' );
@@ -82,11 +105,22 @@
 					$us.$html.css( 'margin-right', this._getScrollbarSize() );
 				}
 			} else {
-				this.$overlay.css( {
-					height: $us.$document.height()
-				} );
 				this.$wrap.css( 'top', $us.$window.scrollTop() );
+				$us.$body.addClass( 'popup-active' );
+
+				this.savePopupSizes();
+				// iOS UI-bar shown
+				if (
+					( this.popupSizes.initialWindowHeight === this.popupSizes.openedWindowHeight )
+					&& ( this.popupSizes.boxHeight >= this.popupSizes.wrapHeight )
+				) {
+					this.$wrap.addClass( 'popup-ios-height' );
+				}
+
+				this.$wrap.on( 'touchmove', this._events.touchmove );
+				$us.$document.on( 'touchmove', this._events.touchmove );
 			}
+
 			$us.$body.on( 'keyup', this._events.keyup );
 			this.$wrap.on( 'scroll', this._events.scroll );
 			this.timer = setTimeout( this._events.afterShow, 25 );
@@ -109,6 +143,7 @@
 			this.$overlay.removeClass( 'active' );
 			this.$box.removeClass( 'active' );
 			this.$wrap.off( 'scroll', this._events.scroll );
+			$us.$document.off( 'touchmove', this._events.touchmove );
 			// Closing it anyway
 			this.timer = setTimeout( this._events.afterHide, 1000 );
 		},
@@ -125,12 +160,22 @@
 				$us.$window
 					.trigger( 'resize', true ) // Pass true not to trigger this event in Page Scroller
 					.trigger( 'us.wpopup.afterHide', this );
+			} else {
+				$us.$body.removeClass( 'popup-active' );
+				this.$wrap.removeClass('popup-ios-height');
 			}
 			// If the content contains media elements, then we will pase after closing the window
 			if ( this.$media.length ) {
 				this.$media.trigger( 'pause' );
 			}
 		},
+		savePopupSizes: function() {
+			this.popupSizes.boxHeight = this.$box.height();
+			this.popupSizes.wrapHeight = this.$wrap.height();
+		},
+		saveWindowSizes: function() {
+			this.popupSizes.openedWindowHeight = window.innerHeight;
+		}
 	};
 	$.fn.wPopup = function( options ) {
 		return this.each( function() {

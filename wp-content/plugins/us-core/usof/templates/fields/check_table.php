@@ -19,7 +19,8 @@
 if ( ! is_array( $value ) ) {
 	$value = array();
 }
-if ( isset( $is_metabox ) AND $is_metabox ) {
+
+if ( $context === 'metabox' ) {
 	$name .= '[]';
 }
 

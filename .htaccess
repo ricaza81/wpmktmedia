@@ -1,4 +1,12 @@
 
+
+# BEGIN rlrssslReallySimpleSSL rsssl_version[5.1.2]
+<IfModule mod_rewrite.c>
+RewriteEngine on
+RewriteCond %{HTTP:CF-Visitor} '"scheme":"http"'
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
+# END rlrssslReallySimpleSSL
 # BEGIN WordPress
 # Las directivas (líneas) entre «BEGIN WordPress» y «END WordPress» son
 # generadas dinámicamente y solo deberían ser modificadas mediante filtros de WordPress.
@@ -6,11 +14,10 @@
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /mktmedia/
+RewriteBase /
 RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /mktmedia/index.php [L]
+RewriteRule . /index.php [L]
 </IfModule>
-
 # END WordPress

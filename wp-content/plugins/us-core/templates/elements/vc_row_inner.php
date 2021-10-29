@@ -12,77 +12,103 @@
  * @var $content           string Shortcode's inner content
  *
  * @var $content_placement string Columns Content Position: 'top' / 'middle' / 'bottom'
- * @var $gap               string gap class for columns
+ * @var $columns_gap       string
  * @var $el_id             string
  * @var $el_class          string
- * @var $disable_element   string
  * @var $css               string
  * @var $classes           string Extend class names
  */
 
-$atts = us_shortcode_atts( $atts, $shortcode_base );
-$class_name = isset( $classes ) ? $classes : '';
+// Disable Row if set in WPBakery builder
+if ( ! empty( $atts['disable_element'] ) ) {
+	return '';
+}
 
-if ( $disable_element === 'yes' ) {
-	if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() ) {
-		$class_name .= ' vc_hidden-lg vc_hidden-xs vc_hidden-sm vc_hidden-md';
-	} else {
-		return '';
+$_atts = array(
+	'class' => 'g-cols',
+	'style' => '',
+);
+
+$_atts['class'] .= ' wpb_row'; // for correct output the html of some plugins, like Ultimate Addons
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+
+// New Columns Layout after version 8.0
+if ( us_get_option( 'live_builder' ) AND us_get_option( 'grid_columns_layout' ) ) {
+
+	// Fallback for old columns layout (after version 8.0)
+	$columns_fallback_result = us_vc_row_columns_fallback_helper( $shortcode_base, $content );
+	if ( $columns === '1' AND ! empty( $columns_fallback_result['columns'] ) ) {
+		$columns = $columns_fallback_result['columns'];
 	}
-}
+	if ( ! empty( $columns_fallback_result['columns_layout'] ) ) {
+		$columns_layout = $columns_fallback_result['columns_layout'];
+	}
 
-$class_name .= ( $columns_type ) ? ' type_boxes' : ' type_default';
-
-if ( ! empty( $content_placement ) ) {
-	$class_name .= ' valign_' . $content_placement;
-}
-
-// Prepare extra styles for columns gap
-$cols_gap_styles = '';
-$gap = trim( $gap );
-if ( ! empty( $gap ) ) {
-	$gap = trim( strip_tags( $gap ) );
-	$gap_class = 'gap-' . str_replace( array( '.', ',', ' ' ), '-', $gap );
-	$class_name .= ' ' . $gap_class;
-
-	$cols_gap_styles = '<style>';
+	// Fallback for $gap param (after version 8.0)
 	if ( $columns_type ) {
-		$cols_gap_styles .= '.g-cols.' . $gap_class . '{margin:0 -' . $gap . '}';
-	} else {
-		$cols_gap_styles .= '.g-cols.' . $gap_class . '{margin:0 calc(-1.5rem - ' . $gap . ')}';
+
+		// If the "Additional gap" was set, get its value and double it as new columns gap
+		// Example: 5px becomes 10px
+		// Example: 0.7rem becomes 1.4rem
+		if ( ! empty( $gap ) AND preg_match( '~^(\d*\.?\d*)(.*)$~', $gap, $matches ) ) {
+			$columns_gap = ( $matches[1] * 2 ) . $matches[2];
+		} else {
+			$columns_gap = '0rem';
+		}
+	} elseif ( ! empty( $gap ) ) {
+		$columns_gap = 'calc(3rem + ' . $gap . ')';
 	}
-	$cols_gap_styles .= '.' . $gap_class . ' > .vc_column_container {padding:' . $gap . '}';
-	$cols_gap_styles .= '</style>';
+
+	$_atts['class'] .= ' via_grid';
+	$_atts['class'] .= ' cols_' . $columns;
+	$_atts['class'] .= ' laptops-cols_' . $laptops_columns;
+	$_atts['class'] .= ' tablets-cols_' . $tablets_columns;
+	$_atts['class'] .= ' mobiles-cols_' . $mobiles_columns;
+
+	// Add columns gap when it is not default
+	if ( $columns_gap !== '3rem' ) {
+
+		// Use zero for empty value
+		if ( $columns_gap === '' ) {
+			$columns_gap = '0';
+		}
+		$_atts['style'] .= 'grid-gap:' . esc_attr( $columns_gap ) . ';';
+	}
+
+	// Add custom columns layout via inline style
+	if ( $columns === 'custom' AND ! empty( $columns_layout ) ) {
+		$_atts['style'] .= '--custom-columns:' . esc_attr( $columns_layout );
+	}
+
+} else {
+	$_atts['class'] .= ' via_flex';
+	if ( ! empty( $gap ) ) {
+		$_atts['style'] .= '--additional-gap:' . esc_attr( $gap ) . ';';
+	}
 }
 
+$_atts['class'] .= ' valign_' . $content_placement;
+
+if ( ! empty( $columns_type ) ) {
+	$_atts['class'] .= ' type_boxes';
+} else {
+	$_atts['class'] .= ' type_default';
+}
 if ( ! empty( $columns_reverse ) ) {
-	$class_name .= ' reversed';
+	$_atts['class'] .= ' reversed';
 }
 
-// Preserving additional class for inner VC rows
-if ( $shortcode_base == 'vc_row_inner' ) {
-	$class_name .= ' vc_inner';
-}
-
-// Additional class set by a user in a shortcode attributes
-if ( ! empty( $el_class ) ) {
-	$class_name .= ' ' . $el_class;
-}
-
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
-	$class_name .= ' has_text_color';
+	$_atts['class'] .= ' has_text_color';
 }
 
-$class_name = apply_filters( 'vc_shortcodes_css_class', $class_name, $shortcode_base, $atts );
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
+}
 
 // Output the element
-$output = '<div class="g-cols wpb_row ' . $class_name . '"';
-if ( ! empty( $el_id ) ) {
-	$output .= ' id="' . $el_id . '"';
-}
-$output .= '>';
-$output .= $cols_gap_styles;
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= do_shortcode( $content );
 $output .= '</div>';
 

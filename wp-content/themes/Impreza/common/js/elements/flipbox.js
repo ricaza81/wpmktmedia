@@ -46,9 +46,7 @@
 		$.extend( this._events, {
 			resize: this.resize.bind( this )
 		} );
-		if ( this.centerContent || this.autoSize ) {
-			this.padding = parseInt( this.$front.css( 'padding-top' ) );
-		}
+
 		if ( this.centerContent || this.forceSquare || this.autoSize ) {
 			$us.$window.bind( 'resize load', this._events.resize );
 			this.resize();
@@ -63,11 +61,16 @@
 			this.$xFlank.css( 'display', '' );
 			this.resize();
 		}.bind( this ), 250 );
+
+		$us.$canvas.on( 'contentChange', this._events.resize );
 	};
 	$us.WFlipBox.prototype = {
 		resize: function() {
 			var width = this.$container.width(),
 				height;
+			if ( this.centerContent || this.autoSize || this.forceSquare ) {
+				this.padding = parseInt( this.$front.css( 'padding-top' ) );
+			}
 			if ( this.autoSize || this.centerContent ) {
 				var frontContentHeight = this.$frontH.height(),
 					backContentHeight = this.$backH.height();

@@ -109,8 +109,8 @@ function us_demo_import() {
 				importRunning: false,
 				/**
 				 * Event initialization for import demo
+				 *
 				 * @param object $items jQuery collections
-				 * @return void
 				 */
 				init: function( $items ) {
 					$items.click( this._events.toggleSelected.bind( this ) );
@@ -123,9 +123,9 @@ function us_demo_import() {
 				 */
 				_events: {
 					/**
-					 * Choosing a demo for import
-					 * @param object e jQueryEvent
-					 * @return void
+					 * Choosing a demo for import.
+					 *
+					 * @param {Event} e
 					 */
 					toggleSelected: function( e ) {
 						var $this = $( e.currentTarget );
@@ -136,8 +136,7 @@ function us_demo_import() {
 						$this.addClass( 'selected' );
 					},
 					/**
-					 * @param object e jQueryEvent
-					 * @return void
+					 * @param {Event} e
 					 */
 					groupCheckboxes: function( e ) {
 						var $target = $( e.currentTarget ),
@@ -147,8 +146,7 @@ function us_demo_import() {
 							.prop( 'checked', $( 'input[type="checkbox"]', $target ).is( ':checked' ) );
 					},
 					/**
-					 * @param object e jQueryEvent
-					 * @return void
+					 * @param {Event} e
 					 */
 					groupCheckboxControl: function( e ) {
 						var $target = $( e.currentTarget ),
@@ -165,9 +163,9 @@ function us_demo_import() {
 					}
 				},
 				/**
-				 * Demo import
-				 * @param object e jQueryEvent
-				 * @return void
+				 * Demo import.
+				 *
+				 * @param {Event}
 				 */
 				importDemo: function( e ) {
 					e.preventDefault();
@@ -258,7 +256,7 @@ if ( ! function_exists( 'us_render_for_importer' ) ) {
 		global $help_portal_preview_url;
 		ob_start();
 		foreach ( $demos as $name => $import ) { ?>
-			<div class="w-importer-item" data-demo-id="<?php echo $name; ?>" data-with-force-options="<?php echo intval( isset( $import[ 'force_theme_options' ] ) ); ?>">
+			<div class="w-importer-item" data-demo-id="<?php echo $name; ?>" data-with-force-options="<?php echo (int) isset( $import[ 'force_theme_options' ] ); ?>">
 				<input class="w-importer-item-radio" id="demo_<?php echo $name; ?>" type="radio" value="<?php echo $name; ?>" name="demo">
 				<label class="w-importer-item-preview" for="demo_<?php echo $name; ?>" title="<?php _e( 'Click to choose', 'us' ) ?>">
 					<h2 class="w-importer-item-title"><?php echo $import['title']; ?>
@@ -464,7 +462,6 @@ if ( ! function_exists( 'us_upload_demo_import_file' ) ) {
 if ( ! function_exists( 'us_demo_import_content' ) ) {
 	/**
 	 * @param string $file_path The file path
-	 * @return void
 	 */
 	function us_demo_import_content( $file_path ) {
 		global $wp_import;
@@ -597,7 +594,7 @@ function us_demo_import_content_all() {
 							$us_demo_import_mega_menu_data = array();
 						}
 
-						$us_demo_import_mega_menu_data[ intval( $post['post_id'] ) ] = $postmeta['value'];
+						$us_demo_import_mega_menu_data[ (int) $post['post_id'] ] = $postmeta['value'];
 					}
 				}
 
@@ -613,7 +610,7 @@ function us_demo_import_content_all() {
 			if ( is_array( $us_demo_import_mega_menu_data ) ) {
 				foreach ( $us_demo_import_mega_menu_data as $menu_import_id => $mega_menu_data ) {
 					if ( ! empty( $wp_import->processed_menu_items[ $menu_import_id ] ) ) {
-						update_post_meta( intval( $wp_import->processed_menu_items[ $menu_import_id ] ), 'us_mega_menu_settings', maybe_unserialize( $mega_menu_data ) );
+						update_post_meta( (int) $wp_import->processed_menu_items[ $menu_import_id ], 'us_mega_menu_settings', maybe_unserialize( $mega_menu_data ) );
 					}
 				}
 			}

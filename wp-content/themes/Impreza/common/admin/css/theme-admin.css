@@ -1,3 +1,36 @@
+/* Colors
+   ========================================================================== */
+:root {
+	--usof-color-white: #fff;
+	--usof-color-gray-2: #f0f0f1;
+	--usof-color-gray-5: #dcdcde;
+	--usof-color-gray-10: #c3c4c7;
+	--usof-color-gray-20: #a7aaad;
+	--usof-color-gray-30: #8c8f94;
+	--usof-color-gray-50: #646970;
+	--usof-color-gray-60: #50575e;
+	--usof-color-gray-70: #3c434a;
+	--usof-color-gray-80: #2c3338;
+	--usof-color-gray-90: #1d2327;
+
+	--usof-color-blue-5: #f0f6fc;
+	--usof-color-blue-10: #9ec2e6;
+	--usof-color-blue-20: #72aee6;
+	--usof-color-blue-50: #2271b1;
+	--usof-color-blue-60: #135e96;
+
+	--usof-color-green-5: #b8e6bf;
+	--usof-color-green-20: #1ed14b;
+	--usof-color-green-40: #00a32a;
+	--usof-color-red-5: #facfd2;
+	--usof-color-red-30: #f86368;
+	--usof-color-yellow-5: #f5e6ab;
+	--usof-color-yellow-20: #f0c33c;
+
+	--usof-box-shadow-inset: 0 1px 0 rgba(0,0,0,0.1) inset;
+	--usof-box-shadow-small: 0 2px 6px rgba(0,0,0,.15);
+	--usof-box-shadow: 0 5px 15px rgba(0,0,0,.15);
+	}
 
 /* Define Font Awesome & Material icon fonts
    ========================================================================== */
@@ -183,7 +216,7 @@
 				line-height: inherit;
 				vertical-align: top;
 				margin-right: 12px;
-				color: #0073aa;
+				color: var(--usof-color-blue-50);
 				}
 		.us-home.about-wrap .us-features .button {
 			font-size: 16px;
@@ -206,15 +239,15 @@
 		font-weight: 600;
 		line-height: 1.4;
 		margin-bottom: 20px;
-		color: #999;
+		color: var(--usof-color-gray-30);
 		}
 	.us-activation-status.yes {
 		margin-bottom: 10px;
-		color: #0c0;
+		color: var(--usof-color-green-20);
 		}
 	.us-activation-status.dev {
 		margin-bottom: 10px;
-		color: #f90;
+		color: var(--usof-color-yellow-20);
 		}
 	.us-activation input[type="submit"] {
 		font-size: 20px;
@@ -223,90 +256,78 @@
 	.us-activation p {
 		margin: 0;
 		}
-	.us-activation-desc {
+	.us-activation-tooltip {
 		display: inline-block;
 		vertical-align: top;
 		position: relative;
+		border: none;
 		}
-		.us-activation-desc-sign {
+		.us-activation-tooltip-sign {
 			display: inline-block;
 			vertical-align: top;
 			font: 24px/1 dashicons;
 			margin-top: 6px;
-			color: #ccc;
 			}
-			.us-activation-desc-sign:before {
+			.us-activation-tooltip-sign:before {
 				content: '\f223';
 				}
-		.us-activation-desc-text {
+		.us-activation-tooltip-text {
 			position: absolute;
+			top: 36px;
+			left: -6px;
 			z-index: 111;
-			left: -140px;
-			top: 42px;
-			text-align: left;
+			text-align: start;
 			font-weight: normal;
-			padding: 20px 25px;
 			width: 250px;
-			background-color: #32373c;
-			color: #fff;
-			visibility: hidden;
+			line-height: 18px;
+			padding: 15px 20px 10px;
+			background-color: var(--usof-color-gray-90);
+			color: var(--usof-color-white);
 			opacity: 0;
-			transition: opacity 0.3s;
+			visibility: hidden;
+			transition: opacity .2s ease .2s;
 			}
-		.us-activation-desc:hover .us-activation-desc-text {
-			visibility: visible;
+		.us-activation-tooltip:hover .us-activation-tooltip-text {
 			opacity: 1;
+			visibility: visible;
 			}
-			.us-activation-desc-text:after {
+			.us-activation-tooltip-text:before {
 				content: '';
 				position: absolute;
-				left: 142px;
-				top: -10px;
-				height: 20px;
-				width: 20px;
-				background-color: #32373c;
+				left: 12px;
+				top: -6px;
+				height: 12px;
+				width: 12px;
+				background-color: var(--usof-color-gray-90);
 				transform: rotate(45deg);
 				}
-			.us-activation-desc-text:before {
+			.us-activation-tooltip-text:after {
 				content: '';
 				position: absolute;
 				left: 0;
 				right: 0;
-				top: -20px;
+				top: -12px;
 				height: 20px;
 				}
-			.us-activation-desc-text p {
+			.us-activation-tooltip-text a {
+				color: var(--usof-color-blue-20);
+				}
+			.us-activation-tooltip-text a:hover {
+				color: #fff;
+				}
+			.us-activation-tooltip-text p {
 				font-size: 13px;
 				margin: 0 0 10px;
 				}
-			.us-activation-desc-text ul {
+			.us-activation-tooltip-text ul {
 				font-size: 13px;
-				margin: 0 0 4px;
-				}
-				.us-activation-desc-text li {
-					position: relative;
-					line-height: inherit;
-					padding-left: 18px;
-					}
-					.us-activation-desc-text li:before {
-						position: absolute;
-						top: -3px;
-						left: -4px;
-						content: '\f147';
-						font-family: dashicons;
-						vertical-align: top;
-						font-size: 20px;
-						}
-			.us-activation-desc-text a {
-				color: #00a0d2;
-				}
-			.us-activation-desc-text a:hover {
-				color: #47bfe4;
+				margin: 0 0 10px 20px;
+				list-style: disc;
 				}
 
 .usof-container.for_white_label {
 	padding: 0 0 40px;
-	border-top: 1px solid #e5e5e5;
+	border-top: 1px solid var(--usof-color-gray-5);
 	background-color: #fff;
 	}
 	.usof-container.for_white_label .usof-section {
@@ -334,16 +355,8 @@
 	margin-left: 12px;
 	margin-right: 0;
 	}
-.rtl .us-activation-desc-text {
-	text-align: right;
-	}
-.rtl .us-activation-desc-text li {
-	padding-left: 0;
-	padding-right: 18px;
-	}
-.rtl .us-activation-desc-text li:before {
-	left: auto;
-	right: -4px;
+.rtl .us-activation-tooltip-text ul {
+	margin: 0 20px 10px 0;
 	}
 
 @media (max-width: 782px) {
@@ -396,13 +409,13 @@
 		white-space: nowrap;
 		width: 0;
 		transition: width 0.3s;
-		background-color: #01a300;
+		background-color: var(--usof-color-green-20);
 		background-image: linear-gradient(135deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.2) 75%, transparent 75%, transparent);
 		background-size: 1rem 1rem;
 		color: #fff;
 		}
 	.us-progress-bar.animated {
-		background-color: #0073aa;
+		background-color: var(--usof-color-blue-50);
 		animation: us-progress-stripes 0.5s linear infinite;
 		}
 @keyframes us-progress-stripes {
@@ -441,30 +454,18 @@ body[class*="us-addons"] {
 	margin-bottom: 30px;
 	}
 .us-addons-list {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 	position: relative;
 	}
 .us-addon {
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
-	border: 1px solid #e5e5e5;
+	border: 1px solid var(--usof-color-gray-5);
 	margin: 0 -1px -1px 0;
 	padding: 30px;
-	width: 25%;
 	}
-@media (max-width: 1400px) {
-.us-addon {
-	width: 50%;
-	}
-}
-@media (max-width: 782px) {
-.us-addon {
-	width: 100%;
-	padding: 20px;
-	}
-}
 	.us-addon-content {
 		flex: 1 1 auto;
 		position: relative;
@@ -486,7 +487,7 @@ body[class*="us-addons"] {
 			margin: -6px 0 8px;
 			}
 		.us-addon a:hover .us-addon-title {
-			color: #0073aa;
+			color: var(--usof-color-blue-50);
 			}
 		.us-addon-desc {
 			font-size: 15px;
@@ -501,37 +502,24 @@ body[class*="us-addons"] {
 			line-height: 20px;
 			padding: 8px 0;
 			}
-		.us-addon-status,
-		.us-addon .usof-button {
+		.us-addon .button,
+		.us-addon-status {
 			display: inline-block;
 			vertical-align: top;
-			font-size: 14px;
 			font-weight: 600;
-			line-height: 20px !important;
-			padding: 8px 20px;
-			border-radius: 40px;
-			}
-		.us-addon .usof-button {
-			cursor: pointer;
-			border: none;
-			text-decoration: none;
-			transition: background 0.3s, color 0.3s, opacity 0.3s;
-			box-shadow: 0 -1px 0 rgba(0,0,0,0.08) inset;
-			background-color: #f1f1f1;
-			color: inherit;
-			}
-		.us-addon .usof-button:hover {
-			background-color: #ddd;
+			line-height: 2.8em !important;
+			padding: 0 1.5em;
+			border-radius: 2em;
 			}
 			.us-addon .g-preloader {
 				display: none;
 				vertical-align: top;
 				height: 16px;
 				width: 16px;
-				margin: 2px 8px 2px 0;
+				margin: 10px 8px 0 0;
 				}
 			.rtl .us-addon .g-preloader {
-				margin: 2px 0 2px 8px;
+				margin: 10px 0 0 8px;
 				}
 				.us-addon .g-preloader.type_1:before,
 				.us-addon .g-preloader.type_1:after {
@@ -541,33 +529,23 @@ body[class*="us-addons"] {
 			.us-addon.status_installing .g-preloader {
 				display: inline-block;
 				}
-		.us-addon.status_notactive .usof-button {
-			background-color: #0073aa;
-			color: #fff;
-			}
-		.us-addon.status_activating .usof-button,
-		.us-addon.status_notactive .usof-button:hover {
-			background-color: #0071a1;
-			color: #fff;
-			}
 	.us-addon.status_active {
-		background-color: #dfffdb;
+		background-color: var(--usof-color-green-5);
 		}
 		.us-addon.status_active .us-addon-status {
 			background-color: #fff;
-			color: #29ad1d;
+			color: var(--usof-color-green-20);
 			}
 	.us-addon.status_error {
-		background-color: #ffe3e3;
+		background-color: var(--usof-color-red-5);
 		}
 		.us-addon.status_error .us-addon-status {
 			background-color: #fff;
-			color: #dd3d36;
+			color: var(--usof-color-red-30);
 			}
 	.us-addon.status_notactive,
 	.us-addon.status_activating,
 	.us-addon.status_installing {
-		background-color: #ffd;
 		}
 		.us-addon.status_locked .usof-button,
 		.us-addon.status_locked .us-addon-status,

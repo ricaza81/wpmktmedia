@@ -1,7 +1,7 @@
-/* 
+/*
  * Video
  */
-   
+
 .w-video {
 	background: #111;
 	}
@@ -23,6 +23,9 @@
 .w-video.align_center {
 	margin: 0 auto;
 	}
+.w-video.align_left {
+	margin-right: auto;
+	}
 .w-video.align_right {
 	margin-left: auto;
 	}
@@ -37,6 +40,11 @@
 	}
 .w-video.ratio_1x1 .w-video-h {
 	padding-bottom: 100%;
+	}
+
+.w-hwrapper > .w-video,
+.w-vwrapper > .w-video {
+	width: 100%;
 	}
 
 .w-video.has_border_radius {

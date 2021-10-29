@@ -2,7 +2,7 @@
  * Ultimate Addons for WPBakery Page Builder
  */
 
-.l-section.height_full > .upb_row_bg {
+.l-section.full_height > .upb_row_bg {
 	min-height: inherit;
 	}
 .g-cols > .upb_row_bg,

@@ -4,7 +4,7 @@
 	position: relative;
 	padding: 24px 20px;
 	margin: 0 40px;
-	border: 1px solid #e5e5e5;
+	box-shadow: var(--usof-box-shadow-small);
 	width: 100%;
 	}
 .usof-form-wrapper.force_right {
@@ -25,7 +25,7 @@
 	width: 50%;
 	padding-top: 0;
 	margin: 0;
-	border: none;
+	box-shadow: none;
 	}
 	.usof-form-wrapper.for_colors .usof-form-wrapper-content {
 		display: block;
@@ -38,40 +38,18 @@
 		.usof-form-wrapper.for_colors .usof-form-row.type_color {
 			padding: 0 !important;
 			}
-			.usof-form-wrapper.for_colors .usof-form-row.type_color .usof-form-row-field {
-				float: none;
-				width: auto;
-				}
-
-/* Change Wrapper layout like regular field */
-.usof-form-wrapper.title_left {
-	border: none;
-	padding: 15px 0 0;
-	}
-	.usof-form-wrapper.title_left .usof-form-wrapper-title {
-		float: left;
-		font-weight: 600;
-		padding: 8px 20px 8px 0;
-		width: 30%;
-		}
-	.usof-form-wrapper.title_left .usof-form-row.inline {
-		padding-right: 10px;
-		}
-		.usof-form-wrapper.title_left .usof-form-row.inline.type_select .usof-form-row-control {
-			min-width: 150px;
-			}
 
 /* Improvements for Colors tab */
 .usof-form-wrapper.change_colors_start {
 	margin: 0;
 	padding-top: 0;
 	padding-bottom: 0;
-	border: none;
+	box-shadow: none;
 	}
 
 /* Improvements for Typography tab */
 .usof-form-wrapper.for_font {
-	border: none;
+	box-shadow: none;
 	margin: 0;
 	padding: 10px 0;
 	width: 50%;
@@ -104,7 +82,7 @@
 
 /* Improvements for Shadow options */
 .usof-form-wrapper.for_shadow {
-	border: none;
+	box-shadow: none;
 	margin: 0;
 	padding-top: 15px;
 	padding-bottom: 15px;

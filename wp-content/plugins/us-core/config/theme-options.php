@@ -20,8 +20,18 @@ if ( ! empty( $usof_options['portfolio_rename'] ) ) {
 
 global $pagenow;
 $posts_titles = array();
-if ( ! wp_doing_ajax() AND $pagenow == 'admin.php' AND $_GET['page'] == 'us-theme-options' ) {
-	$posts_titles = ( array ) us_get_all_posts_titles_for( array( 'page', 'us_header', 'us_page_block', 'us_content_template' ) );
+if (
+	! wp_doing_ajax()
+	AND $pagenow == 'admin.php'
+	AND isset( $_GET['page'] )
+	AND $_GET['page'] == 'us-theme-options'
+) {
+	$posts_titles = ( array ) us_get_all_posts_titles_for( array(
+		'page',
+		'us_header',
+		'us_page_block',
+		'us_content_template',
+	) );
 }
 
 // Get Pages and order alphabetically
@@ -67,14 +77,19 @@ foreach ( $assets_config as $component => $component_atts ) {
 		$usof_assets[ $component ]['apply_if'] = $component_atts['apply_if'];
 	}
 	$usof_assets_std[ $component ] = 1;
+
 	// Count files sizes for admin area only
 	if ( is_admin() ) {
 		if ( isset( $component_atts['css'] ) ) {
-			$usof_assets[ $component ]['css_size'] = file_exists( $us_template_directory . $component_atts['css'] ) ? number_format( ( filesize( $us_template_directory . $component_atts['css'] ) / 1024 ) * 0.8, 1 ) : NULL;
+			$usof_assets[ $component ]['css_size'] = file_exists( $us_template_directory . $component_atts['css'] )
+				? number_format_i18n( filesize( $us_template_directory . $component_atts['css'] ) / 1024 * 0.8, 1 )
+				: NULL;
 		}
 		if ( isset( $component_atts['js'] ) ) {
 			$js_filename = str_replace( '.js', '.min.js', $us_template_directory . $component_atts['js'] );
-			$usof_assets[ $component ]['js_size'] = file_exists( $js_filename ) ? number_format( filesize( $js_filename ) / 1024, 1 ) : NULL;
+			$usof_assets[ $component ]['js_size'] = file_exists( $js_filename )
+				? number_format_i18n( filesize( $js_filename ) / 1024, 1 )
+				: NULL;
 		}
 	}
 
@@ -103,6 +118,7 @@ foreach ( us_get_public_post_types( array( 'page', 'product' ) ) as $type => $ti
 			// Header
 			'header_' . $type . '_id' => array(
 				'title' => _x( 'Header', 'site top area', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_header',
 				'options' => us_array_merge(
@@ -116,6 +132,7 @@ foreach ( us_get_public_post_types( array( 'page', 'product' ) ) as $type => $ti
 			// Titlebar
 			'titlebar_' . $type . '_id' => array(
 				'title' => __( 'Titlebar', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_page_block',
 				'options' => us_array_merge(
@@ -130,6 +147,7 @@ foreach ( us_get_public_post_types( array( 'page', 'product' ) ) as $type => $ti
 			// Content
 			'content_' . $type . '_id' => array(
 				'title' => __( 'Content template', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_content_template',
 				'options' => us_array_merge(
@@ -143,6 +161,7 @@ foreach ( us_get_public_post_types( array( 'page', 'product' ) ) as $type => $ti
 			// Sidebar
 			'sidebar_' . $type . '_id' => array(
 				'title' => __( 'Sidebar', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'options' => us_array_merge(
 					array(
@@ -156,6 +175,7 @@ foreach ( us_get_public_post_types( array( 'page', 'product' ) ) as $type => $ti
 			),
 			// Sidebar Position
 			'sidebar_' . $type . '_pos' => array(
+				'title_pos' => 'side',
 				'type' => 'radio',
 				'options' => array(
 					'left' => us_translate( 'Left' ),
@@ -169,6 +189,7 @@ foreach ( us_get_public_post_types( array( 'page', 'product' ) ) as $type => $ti
 			// Footer
 			'footer_' . $type . '_id' => array(
 				'title' => __( 'Footer', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_page_block',
 				'options' => us_array_merge(
@@ -198,6 +219,7 @@ foreach ( $public_taxonomies as $type => $title ) {
 			// Header
 			'header_tax_' . $type . '_id' => array(
 				'title' => _x( 'Header', 'site top area', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_header',
 				'options' => us_array_merge(
@@ -211,6 +233,7 @@ foreach ( $public_taxonomies as $type => $title ) {
 			// Titlebar
 			'titlebar_tax_' . $type . '_id' => array(
 				'title' => __( 'Titlebar', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_page_block',
 				'options' => us_array_merge(
@@ -225,6 +248,7 @@ foreach ( $public_taxonomies as $type => $title ) {
 			// Content
 			'content_tax_' . $type . '_id' => array(
 				'title' => __( 'Content template', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_content_template',
 				'options' => us_array_merge(
@@ -237,6 +261,7 @@ foreach ( $public_taxonomies as $type => $title ) {
 			// Sidebar
 			'sidebar_tax_' . $type . '_id' => array(
 				'title' => __( 'Sidebar', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'options' => us_array_merge(
 					array(
@@ -250,6 +275,7 @@ foreach ( $public_taxonomies as $type => $title ) {
 			),
 			// Sidebar Position
 			'sidebar_tax_' . $type . '_pos' => array(
+				'title_pos' => 'side',
 				'type' => 'radio',
 				'options' => array(
 					'left' => us_translate( 'Left' ),
@@ -263,6 +289,7 @@ foreach ( $public_taxonomies as $type => $title ) {
 			// Footer
 			'footer_tax_' . $type . '_id' => array(
 				'title' => __( 'Footer', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'hints_for' => 'us_page_block',
 				'options' => us_array_merge(
@@ -294,6 +321,7 @@ if ( class_exists( 'woocommerce' ) ) {
 				// Header
 				'header_tax_' . $type . '_id' => array(
 					'title' => _x( 'Header', 'site top area', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_header',
 					'options' => us_array_merge(
@@ -307,6 +335,7 @@ if ( class_exists( 'woocommerce' ) ) {
 				// Titlebar
 				'titlebar_tax_' . $type . '_id' => array(
 					'title' => __( 'Titlebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -321,6 +350,7 @@ if ( class_exists( 'woocommerce' ) ) {
 				// Content
 				'content_tax_' . $type . '_id' => array(
 					'title' => __( 'Content template', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_content_template',
 					'options' => us_array_merge(
@@ -333,6 +363,7 @@ if ( class_exists( 'woocommerce' ) ) {
 				// Sidebar
 				'sidebar_tax_' . $type . '_id' => array(
 					'title' => __( 'Sidebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'options' => us_array_merge(
 						array(
@@ -346,6 +377,7 @@ if ( class_exists( 'woocommerce' ) ) {
 				),
 				// Sidebar Position
 				'sidebar_tax_' . $type . '_pos' => array(
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'left' => us_translate( 'Left' ),
@@ -359,6 +391,7 @@ if ( class_exists( 'woocommerce' ) ) {
 				// Footer
 				'footer_tax_' . $type . '_id' => array(
 					'title' => __( 'Footer', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -407,19 +440,6 @@ if ( ! wp_doing_ajax() AND $pagenow == 'admin.php' ) {
 	}
 }
 
-// Specify "Background Position" control values
-$usof_bg_pos_values = array(
-	'top left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-	'top center' => '<span class="dashicons dashicons-arrow-up-alt"></span>',
-	'top right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-	'center left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-	'center center' => '<span class="dashicons dashicons-marker"></span>',
-	'center right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-	'bottom left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-	'bottom center' => '<span class="dashicons dashicons-arrow-down-alt"></span>',
-	'bottom right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-);
-
 // Generate Icon Sets settings
 $icon_sets_config = array();
 $icon_sets = us_config( 'icon-sets', array() );
@@ -429,6 +449,7 @@ foreach ( $icon_sets as $icon_set_slug => $icon_set ) {
 		$icon_sets_config, array(
 			'icons_' . $icon_set_slug => array(
 				'title' => $icon_set['set_name'],
+				'title_pos' => 'side',
 				'type' => 'radio',
 				'options' => array(
 					'default' => us_translate( 'Default' ),
@@ -438,6 +459,7 @@ foreach ( $icon_sets as $icon_set_slug => $icon_set ) {
 				'std' => 'default',
 			),
 			'icons_' . $icon_set_slug . '_custom_font' => array(
+				'title_pos' => 'side',
 				'description' => __( 'Link to "woff2" font file.', 'us' ),
 				'type' => 'text',
 				'std' => '',
@@ -453,8 +475,9 @@ foreach ( $icon_sets as $icon_set_slug => $icon_set ) {
 $headings_typography_config = array();
 for ( $i = 1; $i <= 6; $i ++ ) {
 
-	$default_fontsize = 1 + 2 / $i;
-	$default_fontsize = number_format( $default_fontsize, 1 );
+	// Generate default value based on heading number
+	$k = round( 0.6 + 2.4 / $i, 1 );
+	$default_fontsize = sprintf( 'max( %srem, %svw )', $k, $k );
 
 	$headings_typography_config = array_merge(
 		$headings_typography_config, array(
@@ -472,34 +495,22 @@ for ( $i = 1; $i <= 6; $i ++ ) {
 				),
 				'std' => ( $i == 1 ) ? 'none|' : 'get_h1|',
 			),
-			'h' . $i . '_left_start' => array(
-				'type' => 'wrapper_start',
-				'classes' => 'for_font col_first',
-			),
 			'h' . $i . '_fontsize' => array(
-				'description' => __( 'Font Size', 'us' ),
-				'type' => 'slider',
-				'std' => $default_fontsize . 'rem',
-				'options' => array(
-					'px' => array(
-						'min' => 10,
-						'max' => 60,
-					),
-					'em' => array(
-						'min' => 1.0,
-						'max' => 5.0,
-						'step' => 0.1,
-					),
-					'rem' => array(
-						'min' => 1.0,
-						'max' => 5.0,
-						'step' => 0.1,
-					),
-				),
-				'classes' => 'inline slider_below',
+				'title' => __( 'Font Size', 'us' ),
+				'description' => __( 'Examples:', 'us' ) . ' <span class="usof-example">36px</span>, <span class="usof-example">2.8rem</span>, <span class="usof-example">max( 2rem, 2vw )</span>, <span class="usof-example">calc( 15px + 1.5vmax )</span>',
+				'type' => 'text',
+				'std' => $default_fontsize,
+				'cols' => 2,
+			),
+			'h' . $i . '_fontsize_mobile' => array(
+				'title' => __( 'Font Size on Mobiles', 'us' ),
+				'description' => __( 'Leave blank to use the main Font Size value', 'us' ),
+				'type' => 'text',
+				'std' => '',
+				'cols' => 2,
 			),
 			'h' . $i . '_lineheight' => array(
-				'description' => __( 'Line height', 'us' ),
+				'title' => __( 'Line height', 'us' ),
 				'type' => 'slider',
 				'std' => '1.2',
 				'options' => array(
@@ -513,23 +524,11 @@ for ( $i = 1; $i <= 6; $i ++ ) {
 						'max' => 100,
 					),
 				),
-				'classes' => 'inline slider_below',
-			),
-			'h' . $i . '_fontweight' => array(
-				'description' => __( 'Font Weight', 'us' ),
-				'type' => 'slider',
-				'std' => '400',
-				'options' => array(
-					'' => array(
-						'min' => 100,
-						'max' => 900,
-						'step' => 100,
-					),
-				),
-				'classes' => 'inline slider_below',
+				'classes' => 'for_above',
+				'cols' => 2,
 			),
 			'h' . $i . '_letterspacing' => array(
-				'description' => __( 'Letter Spacing', 'us' ),
+				'title' => __( 'Letter Spacing', 'us' ),
 				'type' => 'slider',
 				'std' => '0',
 				'options' => array(
@@ -539,39 +538,25 @@ for ( $i = 1; $i <= 6; $i ++ ) {
 						'step' => 0.01,
 					),
 				),
-				'classes' => 'inline slider_below',
+				'classes' => 'for_above',
+				'cols' => 2,
 			),
-			'h' . $i . '_left_end' => array(
-				'type' => 'wrapper_end',
-			),
-			'h' . $i . '_right_start' => array(
-				'type' => 'wrapper_start',
-				'classes' => 'for_font',
-			),
-			'h' . $i . '_fontsize_mobile' => array(
-				'description' => __( 'Font Size on Mobiles', 'us' ),
+			'h' . $i . '_fontweight' => array(
+				'title' => __( 'Font Weight', 'us' ),
 				'type' => 'slider',
-				'std' => $default_fontsize . 'rem',
+				'std' => '400',
 				'options' => array(
-					'px' => array(
-						'min' => 10,
-						'max' => 60,
-					),
-					'em' => array(
-						'min' => 1.0,
-						'max' => 5.0,
-						'step' => 0.1,
-					),
-					'rem' => array(
-						'min' => 1.0,
-						'max' => 5.0,
-						'step' => 0.1,
+					'' => array(
+						'min' => 100,
+						'max' => 900,
+						'step' => 100,
 					),
 				),
-				'classes' => 'inline slider_below',
+				'classes' => 'for_above',
+				'cols' => 2,
 			),
 			'h' . $i . '_bottom_indent' => array(
-				'description' => __( 'Bottom indent', 'us' ),
+				'title' => __( 'Bottom indent', 'us' ),
 				'type' => 'slider',
 				'std' => '1.5rem',
 				'options' => array(
@@ -590,35 +575,38 @@ for ( $i = 1; $i <= 6; $i ++ ) {
 						'step' => 0.1,
 					),
 				),
-				'classes' => 'inline slider_below',
+				'classes' => 'for_above',
+				'cols' => 2,
+			),
+			'h' . $i . '_color' => array(
+				'title' => us_translate( 'Color' ),
+				'type' => 'color',
+				'with_gradient' => TRUE,
+				'clear_pos' => 'right',
+				'std' => '',
+				'classes' => 'for_above',
+				'cols' => 2,
 			),
 			'h' . $i . '_transform' => array(
+				'title' => __( 'Text Styles', 'us' ),
 				'type' => 'checkboxes',
 				'options' => array(
 					'uppercase' => __( 'Uppercase', 'us' ),
 					'italic' => __( 'Italic', 'us' ),
 				),
-				'std' => array(),
-				'classes' => 'inline',
-			),
-			'h' . $i . '_color' => array(
-				'type' => 'color',
-				'clear_pos' => 'left',
-				'text' => us_translate( 'Color' ),
 				'std' => '',
-				'classes' => 'inline',
+				'classes' => 'for_above',
+				'cols' => 2,
 			),
 			'h' . $i . '_color_override' => array(
 				'type' => 'checkboxes',
 				'options' => array(
 					'1' => __( 'Override color globally', 'us' ),
 				),
-				'std' => array(),
-				'classes' => 'inline',
+				'std' => '',
+				'classes' => 'for_above',
 				'show_if' => array( 'h' . $i . '_color', '!=', '' ),
-			),
-			'h' . $i . '_right_end' => array(
-				'type' => 'wrapper_end',
+				'cols' => 2,
 			),
 		)
 	);
@@ -634,21 +622,24 @@ return array(
 
 			'maintenance_mode' => array(
 				'title' => __( 'Maintenance Mode', 'us' ),
-				'description' => __( 'When this option is ON, all not logged in users will see only specific page selected by you. This is useful when your site is under construction.', 'us' ),
+				'title_pos' => 'side',
+				'description' => __( 'When this option is ON, all non-logged in users will see only the selected page. This is useful when your site is under construction.', 'us' ),
 				'type' => 'switch',
-				'switch_text' => __( 'Show for site visitors only specific page', 'us' ),
+				'switch_text' => __( 'Show site visitors only one specific page', 'us' ),
 				'std' => 0,
 				'classes' => 'color_yellow desc_3',
 				// show the setting, but disable it, if true
 				'disabled' => get_option( 'us_license_dev_activated', 0 ),
 			),
 			'maintenance_mode_alert' => array(
+				'title_pos' => 'side',
 				'description' => sprintf( __( 'It\'s not possible to switch off this setting, while %s is activated for development.', 'us' ), US_THEMENAME ) . ' ' . sprintf( __( 'You can deactivate it on your %sLicenses%s page.', 'us' ), '<a href="' . $help_portal_url . '/user/licenses/" target="_blank" rel="noopener">', '</a>' ),
 				'type' => 'message',
 				'classes' => 'string',
 				'place_if' => get_option( 'us_license_dev_activated', 0 ),
 			),
 			'maintenance_page' => array(
+				'title_pos' => 'side',
 				'type' => 'select',
 				'options' => $us_page_list,
 				'std' => '',
@@ -657,6 +648,7 @@ return array(
 				'show_if' => array( 'maintenance_mode', '=', TRUE ),
 			),
 			'maintenance_503' => array(
+				'title_pos' => 'side',
 				'description' => __( 'When this option is ON, your site will send HTTP 503 response to search engines. Use this option only for short period of time.', 'us' ),
 				'type' => 'switch',
 				'switch_text' => __( 'Enable "503 Service Unavailable" status', 'us' ),
@@ -666,15 +658,31 @@ return array(
 			),
 			'site_icon' => array(
 				'title' => us_translate( 'Site Icon' ),
+				'title_pos' => 'side',
 				'description' => us_translate( 'Site Icons are what you see in browser tabs, bookmark bars, and within the WordPress mobile apps. Upload one here!' ) . '<br>' . sprintf( us_translate( 'Site Icons should be square and at least %s pixels.' ), '<strong>512</strong>' ),
 				'type' => 'upload',
 				'classes' => 'desc_3',
 			),
+			'dark_theme' => array(
+				'title' => __( 'Dark Theme', 'us' ),
+				'title_pos' => 'side',
+				'description' => __( 'The selected color scheme will be automatically applied when the device is switched to a dark theme.', 'us' ),
+				'type' => 'select',
+				'options' => array_merge(
+					array(
+						'none' => '&ndash; ' . us_translate( 'None' ) . ' &ndash;',
+					),
+					us_get_color_schemes( TRUE )
+				),
+				'std' => 'none',
+				'classes' => 'desc_3',
+			),
 			'preloader' => array(
 				'title' => __( 'Preloader Screen', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'options' => array(
-					'disabled' => us_translate( 'None' ),
+					'disabled' => '&ndash; ' . us_translate( 'None' ) . ' &ndash;',
 					'1' => sprintf( __( 'Shows Preloader %d', 'us' ), 1 ),
 					'2' => sprintf( __( 'Shows Preloader %d', 'us' ), 2 ),
 					'3' => sprintf( __( 'Shows Preloader %d', 'us' ), 3 ),
@@ -686,36 +694,41 @@ return array(
 			),
 			'preloader_image' => array(
 				'title' => '',
+				'title_pos' => 'side',
 				'type' => 'upload',
 				'classes' => 'for_above',
 				'show_if' => array( 'preloader', '=', 'custom' ),
 			),
 			'img_placeholder' => array(
 				'title' => __( 'Images Placeholder', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'upload',
-				'has_default' => TRUE,
 				'std' => sprintf( '%s/assets/images/placeholder.svg', US_CORE_URI ),
 			),
 			'ripple_effect' => array(
 				'title' => __( 'Ripple Effect', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'switch',
-				'switch_text' => __( 'Show the ripple effect when clicking on theme elements', 'us' ),
+				'switch_text' => __( 'Show the ripple effect when theme elements are clicked', 'us' ),
 				'std' => 0,
 			),
 			'rounded_corners' => array(
 				'title' => __( 'Rounded Corners', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'switch',
-				'switch_text' => __( 'Enable rounded corners of theme elements', 'us' ),
+				'switch_text' => __( 'Round corners of theme elements', 'us' ),
 				'std' => 1,
 			),
 			'links_underline' => array(
-				'title' => __( 'Links Underline', 'us' ),
+				'title' => __( 'Underlining Links', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'switch',
 				'switch_text' => __( 'Underline text links on hover', 'us' ),
 				'std' => 0,
 			),
 			'keyboard_accessibility' => array(
 				'title' => __( 'Keyboard Accessibility', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'switch',
 				'switch_text' => __( 'Highlight theme elements on focus', 'us' ),
 				'std' => 0,
@@ -723,9 +736,10 @@ return array(
 
 			// Back to Top
 			'back_to_top' => array(
-				'title' => sprintf( __( '"%s" button', 'us' ), __( 'Back to top', 'us' ) ),
+				'title' => sprintf( __( '"%s" Button', 'us' ), __( 'Back to Top', 'us' ) ),
+				'title_pos' => 'side',
 				'type' => 'switch',
-				'switch_text' => __( 'Enable button which scrolls a page back to the top', 'us' ),
+				'switch_text' => __( 'Show the button that helps users navigate to the top of long pages', 'us' ),
 				'std' => 1,
 			),
 			'wrapper_back_to_top_start' => array(
@@ -743,7 +757,6 @@ return array(
 					), us_get_btn_styles()
 				),
 				'std' => '',
-				'classes' => 'width_full',
 			),
 			'back_to_top_pos' => array(
 				'title' => __( 'Button Position', 'us' ),
@@ -753,17 +766,18 @@ return array(
 					'right' => us_translate( 'Right' ),
 				),
 				'std' => 'right',
-				'classes' => 'width_full cols_2',
+				'classes' => 'cols_2',
 			),
 			'back_to_top_color' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'title' => __( 'Button Color', 'us' ),
 				'std' => 'rgba(0,0,0,0.3)',
-				'classes' => 'width_full cols_2',
+				'classes' => 'cols_2',
 				'show_if' => array( 'back_to_top_style', '=', '' ),
 			),
 			'back_to_top_display' => array(
-				'title' => __( 'Show Button after page is scrolled to', 'us' ),
+				'title' => __( 'Page Scroll Amount to Show the Button', 'us' ),
 				'type' => 'slider',
 				'std' => '100vh',
 				'options' => array(
@@ -773,7 +787,7 @@ return array(
 						'step' => 10,
 					),
 				),
-				'classes' => 'width_full desc_3',
+				'classes' => 'desc_3',
 			),
 			'wrapper_back_to_top_end' => array(
 				'type' => 'wrapper_end',
@@ -782,8 +796,9 @@ return array(
 			// Cookie Notice
 			'cookie_notice' => array(
 				'title' => __( 'Cookie Notice', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'switch',
-				'switch_text' => __( 'Show notice that will be shown to new site visitors', 'us' ),
+				'switch_text' => __( 'Show floating notice for new site visitors', 'us' ),
 				'std' => 0,
 			),
 			'wrapper_cookie_start' => array(
@@ -795,15 +810,15 @@ return array(
 				'title' => us_translate( 'Message' ),
 				'type' => 'textarea',
 				'std' => 'This website uses cookies to improve your experience. If you continue to use this site, you agree with it.',
-				'classes' => 'width_full desc_3',
+				'classes' => 'desc_3',
 			),
 			'cookie_privacy' => array(
 				'type' => 'checkboxes',
 				'options' => array(
-					'page_link' => sprintf( __( 'Show link to the %s page', 'us' ), '<a href="' . admin_url( 'privacy.php' ) . '" target="_blank">' . us_translate( 'Privacy Policy' ) . '</a>' ),
+					'page_link' => sprintf( __( 'Show link to the %s page', 'us' ), '<a href="' . admin_url( 'options-privacy.php' ) . '" target="_blank">' . us_translate( 'Privacy Policy' ) . '</a>' ),
 				),
-				'std' => array(),
-				'classes' => 'width_full for_above',
+				'std' => '',
+				'classes' => 'for_above',
 			),
 			'cookie_message_pos' => array(
 				'title' => us_translate( 'Position' ),
@@ -813,13 +828,12 @@ return array(
 					'bottom' => us_translate( 'Bottom' ),
 				),
 				'std' => 'bottom',
-				'classes' => 'width_full',
 			),
 			'cookie_btn_label' => array(
 				'title' => __( 'Button Label', 'us' ),
 				'type' => 'text',
 				'std' => 'Ok',
-				'classes' => 'width_full cols_2',
+				'classes' => 'cols_2',
 			),
 			'cookie_btn_style' => array(
 				'title' => __( 'Button Style', 'us' ),
@@ -827,7 +841,7 @@ return array(
 				'type' => 'select',
 				'options' => us_get_btn_styles(),
 				'std' => '1',
-				'classes' => 'width_full cols_2',
+				'classes' => 'cols_2',
 			),
 			'wrapper_cookie_end' => array(
 				'type' => 'wrapper_end',
@@ -835,6 +849,7 @@ return array(
 
 			'smooth_scroll_duration' => array(
 				'title' => __( 'Smooth Scroll Duration', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '1000ms',
 				'options' => array(
@@ -853,21 +868,26 @@ return array(
 		'fields' => array(
 			'canvas_layout' => array(
 				'title' => __( 'Site Canvas Layout', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'imgradio',
+				'preview_path' => '/admin/img/%s.png',
 				'options' => array(
-					'wide' => US_CORE_URI . '/admin/img/canvas-wide',
-					'boxed' => US_CORE_URI . '/admin/img/canvas-boxed',
+					'wide' => '',
+					'boxed' => '',
 				),
 				'std' => 'wide',
 			),
 			'color_body_bg' => array(
+				'title_pos' => 'side',
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'title' => __( 'Body Background Color', 'us' ),
 				'std' => '_content_bg_alt',
 				'show_if' => array( 'canvas_layout', '=', 'boxed' ),
 			),
 			'body_bg_image' => array(
 				'title' => __( 'Body Background Image', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'upload',
 				'show_if' => array( 'canvas_layout', '=', 'boxed' ),
 			),
@@ -889,7 +909,6 @@ return array(
 					'initial' => __( 'Initial', 'us' ),
 				),
 				'std' => 'cover',
-				'classes' => 'width_full',
 			),
 			'body_bg_image_repeat' => array(
 				'title' => __( 'Background Image Repeat', 'us' ),
@@ -901,26 +920,36 @@ return array(
 					'no-repeat' => us_translate( 'None' ),
 				),
 				'std' => 'repeat',
-				'classes' => 'width_full',
 			),
 			'body_bg_image_position' => array(
 				'title' => __( 'Background Image Position', 'us' ),
 				'type' => 'radio',
-				'options' => $usof_bg_pos_values,
+				'labels_as_icons' => 'fas fa-arrow-up',
+				'options' => array(
+					'top left' => us_translate( 'Top Left' ),
+					'top center' => us_translate( 'Top' ),
+					'top right' => us_translate( 'Top Right' ),
+					'center left' => us_translate( 'Left' ),
+					'center center' => us_translate( 'Center' ),
+					'center right' => us_translate( 'Right' ),
+					'bottom left' => us_translate( 'Bottom Left' ),
+					'bottom center' => us_translate( 'Bottom' ),
+					'bottom right' => us_translate( 'Bottom Right' ),
+				),
 				'std' => 'top left',
-				'classes' => 'bgpos width_full',
+				'classes' => 'bgpos',
 			),
 			'body_bg_image_attachment' => array(
 				'type' => 'switch',
 				'switch_text' => us_translate( 'Scroll with Page' ),
 				'std' => 1,
-				'classes' => 'width_full',
 			),
 			'wrapper_body_bg_end' => array(
 				'type' => 'wrapper_end',
 			),
 			'site_canvas_width' => array(
 				'title' => __( 'Site Canvas Width', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '1300px',
 				'options' => array(
@@ -934,6 +963,7 @@ return array(
 			),
 			'site_content_width' => array(
 				'title' => __( 'Site Content Width', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '1140px',
 				'options' => array(
@@ -946,6 +976,7 @@ return array(
 			),
 			'sidebar_width' => array(
 				'title' => __( 'Sidebar Width', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '25%',
 				'options' => array(
@@ -958,19 +989,21 @@ return array(
 				'place_if' => $usof_sidebar_titlebar,
 			),
 			'row_height' => array(
-				'title' => __( 'Row Height by default', 'us' ),
+				'title' => __( 'Default Vertical Row Indents', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'options' => array(
-					'auto' => __( 'Equals the content height', 'us' ),
-					'small' => __( 'Small', 'us' ),
-					'medium' => __( 'Medium', 'us' ),
-					'large' => __( 'Large', 'us' ),
-					'huge' => __( 'Huge', 'us' ),
+					'auto' => us_translate( 'None' ),
+					'small' => 'S',
+					'medium' => 'M',
+					'large' => 'L',
+					'huge' => 'XL',
 					'custom' => __( 'Custom', 'us' ),
 				),
 				'std' => 'medium',
 			),
 			'row_height_custom' => array(
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '5vmax',
 				'classes' => 'for_above',
@@ -992,7 +1025,8 @@ return array(
 				'show_if' => array( 'row_height', '=', 'custom' ),
 			),
 			'text_bottom_indent' => array(
-				'title' => __( 'Text Blocks bottom indent', 'us' ),
+				'title' => __( 'Bottom Indent of Text Blocks', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '1.5rem',
 				'options' => array(
@@ -1009,13 +1043,15 @@ return array(
 			),
 			'footer_reveal' => array(
 				'title' => __( 'Footer', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'switch',
 				'switch_text' => __( 'Enable Footer Reveal Effect', 'us' ),
 				'std' => FALSE,
 			),
 			'disable_effects_width' => array(
-				'title' => __( 'Effects Disabling Width', 'us' ),
-				'description' => __( 'When screen width is less than this value, vertical parallax and animation of elements appearance will be disabled.', 'us' ),
+				'title' => __( 'Animations Disable Width', 'us' ),
+				'title_pos' => 'side',
+				'description' => __( 'When the screen width is less than this value, vertical parallax and appearance animations are disabled.', 'us' ),
 				'type' => 'slider',
 				'std' => '900px',
 				'options' => array(
@@ -1028,7 +1064,8 @@ return array(
 			),
 			'columns_stacking_width' => array(
 				'title' => __( 'Columns Stacking Width', 'us' ),
-				'description' => __( 'When screen width is less than this value, all columns within a row will become a single column.', 'us' ),
+				'title_pos' => 'side',
+				'description' => __( 'When screen width is less than this value, all columns within a row become a single column.', 'us' ),
 				'type' => 'slider',
 				'std' => '768px',
 				'options' => array(
@@ -1039,22 +1076,35 @@ return array(
 				),
 				'classes' => 'desc_3',
 			),
+			'laptops_breakpoint' => array(
+				'title' => __( 'Laptops Screen Width', 'us' ),
+				'title_pos' => 'side',
+				'type' => 'slider',
+				'std' => '1280px',
+				'options' => array(
+					'px' => array(
+						'min' => 1024,
+						'max' => 1400,
+					),
+				),
+				'classes' => 'desc_3',
+			),
 			'tablets_breakpoint' => array(
 				'title' => __( 'Tablets Screen Width', 'us' ),
-				'description' => __( 'Used in Design settings of theme elements.', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '1024px',
 				'options' => array(
 					'px' => array(
 						'min' => 768,
-						'max' => 1366,
+						'max' => 1280,
 					),
 				),
 				'classes' => 'desc_3',
 			),
 			'mobiles_breakpoint' => array(
 				'title' => __( 'Mobiles Screen Width', 'us' ),
-				'description' => __( 'Used in Design settings of theme elements.', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'slider',
 				'std' => '600px',
 				'options' => array(
@@ -1076,8 +1126,9 @@ return array(
 
 				// Search Results
 				'search_page' => array(
-					'title' => us_translate( 'Search Results' ),
-					'description' => __( 'Selected page must contain Grid element showing items of the current query.', 'us' ),
+					'title' => __( 'Search Results', 'us' ),
+					'title_pos' => 'side',
+					'description' => __( 'The selected page must contain a Grid element showing items of the current query.', 'us' ),
 					'type' => 'select',
 					'options' => us_array_merge(
 						array( 'default' => '&ndash; ' . __( 'Show results via Grid element with defaults', 'us' ) . ' &ndash;' ), $us_page_list
@@ -1088,15 +1139,17 @@ return array(
 				),
 				'exclude_post_types_in_search' => array(
 					'title' => __( 'Exclude from Search Results', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'checkboxes',
 					'options' => us_get_public_post_types(),
-					'std' => array(),
+					'std' => '',
 				),
 
 				// Posts page is set in Settings > Reading
 				'posts_page' => array(
 					'title' => us_translate( 'Posts page' ),
-					'description' => __( 'Selected page must contain Grid element showing items of the current query.', 'us' ),
+					'title_pos' => 'side',
+					'description' => __( 'The selected page must contain a Grid element showing items of the current query.', 'us' ),
 					'type' => 'select',
 					'options' => us_array_merge(
 						array( 'default' => '&ndash; ' . __( 'Show results via Grid element with defaults', 'us' ) . ' &ndash;' ), $us_page_list
@@ -1109,7 +1162,8 @@ return array(
 				// 404 page
 				'page_404' => array(
 					'title' => __( 'Page "404 Not Found"', 'us' ),
-					'description' => __( 'Selected page will be shown instead of the "Page not found" message.', 'us' ),
+					'title_pos' => 'side',
+					'description' => __( 'The selected page will be shown instead of the "Page not found" message.', 'us' ),
 					'type' => 'select',
 					'options' => us_array_merge(
 						array( 'default' => '&ndash; ' . us_translate( 'Default' ) . ' &ndash;' ), $us_page_list
@@ -1127,6 +1181,7 @@ return array(
 				),
 				'header_id' => array(
 					'title' => _x( 'Header', 'site top area', 'us' ),
+					'title_pos' => 'side',
 					'description' => $misc['headers_description'],
 					'type' => 'select',
 					'hints_for' => 'us_header',
@@ -1138,6 +1193,7 @@ return array(
 				),
 				'titlebar_id' => array(
 					'title' => __( 'Titlebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -1150,6 +1206,7 @@ return array(
 				),
 				'content_id' => array(
 					'title' => __( 'Content template', 'us' ),
+					'title_pos' => 'side',
 					'description' => $usof_sidebar_titlebar ? '' : $misc['content_description'],
 					'type' => 'select',
 					'hints_for' => 'us_content_template',
@@ -1161,6 +1218,7 @@ return array(
 				),
 				'sidebar_id' => array(
 					'title' => __( 'Sidebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'options' => us_array_merge(
 						array(
@@ -1172,6 +1230,7 @@ return array(
 					'place_if' => $usof_sidebar_titlebar,
 				),
 				'sidebar_pos' => array(
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'left' => us_translate( 'Left' ),
@@ -1184,6 +1243,7 @@ return array(
 				),
 				'footer_id' => array(
 					'title' => __( 'Footer', 'us' ),
+					'title_pos' => 'side',
 					'description' => $misc['footers_description'],
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
@@ -1212,6 +1272,7 @@ return array(
 				),
 				'header_archive_id' => array(
 					'title' => _x( 'Header', 'site top area', 'us' ),
+					'title_pos' => 'side',
 					'description' => $misc['headers_description'],
 					'type' => 'select',
 					'hints_for' => 'us_header',
@@ -1223,6 +1284,7 @@ return array(
 				),
 				'titlebar_archive_id' => array(
 					'title' => __( 'Titlebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -1235,6 +1297,7 @@ return array(
 				),
 				'content_archive_id' => array(
 					'title' => __( 'Content template', 'us' ),
+					'title_pos' => 'side',
 					'description' => $usof_sidebar_titlebar ? '' : $misc['content_description'],
 					'type' => 'select',
 					'hints_for' => 'us_content_template',
@@ -1246,6 +1309,7 @@ return array(
 				),
 				'sidebar_archive_id' => array(
 					'title' => __( 'Sidebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'options' => us_array_merge(
 						array(
@@ -1257,6 +1321,7 @@ return array(
 					'place_if' => $usof_sidebar_titlebar,
 				),
 				'sidebar_archive_pos' => array(
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'left' => us_translate( 'Left' ),
@@ -1269,6 +1334,7 @@ return array(
 				),
 				'footer_archive_id' => array(
 					'title' => __( 'Footer', 'us' ),
+					'title_pos' => 'side',
 					'description' => $misc['footers_description'],
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
@@ -1289,6 +1355,7 @@ return array(
 				),
 				'header_author_id' => array(
 					'title' => _x( 'Header', 'site top area', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_header',
 					'options' => us_array_merge(
@@ -1301,6 +1368,7 @@ return array(
 				),
 				'titlebar_author_id' => array(
 					'title' => __( 'Titlebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -1314,6 +1382,7 @@ return array(
 				),
 				'content_author_id' => array(
 					'title' => __( 'Content template', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -1325,6 +1394,7 @@ return array(
 				),
 				'sidebar_author_id' => array(
 					'title' => __( 'Sidebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'options' => us_array_merge(
 						array(
@@ -1337,6 +1407,7 @@ return array(
 					'place_if' => $usof_sidebar_titlebar,
 				),
 				'sidebar_author_pos' => array(
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'left' => us_translate( 'Left' ),
@@ -1349,6 +1420,7 @@ return array(
 				),
 				'footer_author_id' => array(
 					'title' => __( 'Footer', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -1371,7 +1443,7 @@ return array(
 		'fields' => array(
 
 			// Color Schemes
-			'color_style' => array(
+			'style_scheme' => array(
 				'type' => 'style_scheme',
 			),
 
@@ -1387,6 +1459,7 @@ return array(
 			),
 			'color_header_middle_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1404,6 +1477,7 @@ return array(
 			),
 			'color_header_transparent_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'std' => 'transparent',
 				'text' => __( 'Transparent Header', 'us' ) . ': ' . us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
@@ -1422,6 +1496,7 @@ return array(
 			),
 			'color_chrome_toolbar' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Toolbar in Chrome for Android', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1441,6 +1516,7 @@ return array(
 			),
 			'color_header_top_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1458,6 +1534,7 @@ return array(
 			),
 			'color_header_top_transparent_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'std' => 'rgba(0,0,0,0.2)',
 				'text' => __( 'Transparent Header', 'us' ) . ': ' . us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
@@ -1492,11 +1569,13 @@ return array(
 			),
 			'color_content_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => us_translate( 'Background' ),
-				'disable_dynamic_vars' => TRUE
+				'disable_dynamic_vars' => TRUE,
 			),
 			'color_content_bg_alt' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Alternate Background', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1508,6 +1587,7 @@ return array(
 			),
 			'color_content_heading' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Headings', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1531,11 +1611,13 @@ return array(
 			),
 			'color_content_primary' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Primary Color', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_content_secondary' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Secondary Color', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1547,6 +1629,7 @@ return array(
 			),
 			'color_content_overlay' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'std' => 'rgba(0,0,0,0.75)',
 				'text' => __( 'Background Overlay', 'us' ),
 				'disable_dynamic_vars' => TRUE,
@@ -1567,11 +1650,13 @@ return array(
 			),
 			'color_alt_content_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_alt_content_bg_alt' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Alternate Background', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1583,6 +1668,7 @@ return array(
 			),
 			'color_alt_content_heading' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Headings', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1606,11 +1692,13 @@ return array(
 			),
 			'color_alt_content_primary' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Primary Color', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_alt_content_secondary' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Secondary Color', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1622,6 +1710,7 @@ return array(
 			),
 			'color_alt_content_overlay' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'std' => 'rgba(0,0,0,0.75)',
 				'text' => __( 'Background Overlay', 'us' ),
 				'disable_dynamic_vars' => TRUE,
@@ -1642,11 +1731,13 @@ return array(
 			),
 			'color_footer_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_footer_bg_alt' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Alternate Background', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1654,6 +1745,12 @@ return array(
 				'type' => 'color',
 				'with_gradient' => FALSE,
 				'text' => us_translate( 'Border' ),
+				'disable_dynamic_vars' => TRUE,
+			),
+			'color_footer_heading' => array(
+				'type' => 'color',
+				'with_gradient' => TRUE,
+				'text' => __( 'Headings', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_footer_text' => array(
@@ -1690,11 +1787,13 @@ return array(
 			),
 			'color_subfooter_bg' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => us_translate( 'Background' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_subfooter_bg_alt' => array(
 				'type' => 'color',
+				'with_gradient' => TRUE,
 				'text' => __( 'Alternate Background', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
@@ -1702,6 +1801,12 @@ return array(
 				'type' => 'color',
 				'with_gradient' => FALSE,
 				'text' => us_translate( 'Border' ),
+				'disable_dynamic_vars' => TRUE,
+			),
+			'color_subfooter_heading' => array(
+				'type' => 'color',
+				'with_gradient' => TRUE,
+				'text' => __( 'Headings', 'us' ),
 				'disable_dynamic_vars' => TRUE,
 			),
 			'color_subfooter_text' => array(
@@ -1739,73 +1844,61 @@ return array(
 				'body_font_family' => array(
 					'type' => 'font',
 					'preview' => array(
-						'text' => __( 'This is how your site will show the <strong>text by default</strong>, while you can change the typography settings for most elements separately. Note the font size will affect all elements in "rem" units, that is, almost all areas of your site.', 'us' ),
+						'text' => __( 'Here\'s a preview of what your website\'s text will look like <strong>by default</strong>. You can also adjust the typography of most elements separately. Note that the Font Size setting affects all the sizes defined in "rem" units, that is, almost all areas of your site.', 'us' ),
 						'size_field' => 'body_fontsize',
 						'lineheight_field' => 'body_lineheight',
 					),
 					'std' => 'Georgia, serif',
 				),
-				'body_text_start' => array(
-					'type' => 'wrapper_start',
-					'classes' => 'for_font col_first',
-				),
 				'body_fontsize' => array(
-					'description' => __( 'Font Size', 'us' ),
-					'type' => 'slider',
-					'std' => '16px',
-					'options' => array(
-						'px' => array(
-							'min' => 10,
-							'max' => 30,
-						),
-					),
-					'classes' => 'inline slider_below',
-				),
-				'body_lineheight' => array(
-					'description' => __( 'Line height', 'us' ),
-					'type' => 'slider',
-					'std' => '28px',
-					'options' => array(
-						'px' => array(
-							'min' => 15,
-							'max' => 35,
-						),
-					),
-					'classes' => 'inline slider_below',
-				),
-				'body_text_end' => array(
-					'type' => 'wrapper_end',
-				),
-				'body_text_mobiles_start' => array(
-					'type' => 'wrapper_start',
-					'classes' => 'for_font',
+					'title' => __( 'Font Size', 'us' ),
+					'description' => __( 'Examples:', 'us' ) . ' <span class="usof-example">18px</span>, <span class="usof-example">1.1rem</span>, <span class="usof-example">max( 16px, 1vw )</span>, <span class="usof-example">calc( 14px + 0.3vmax )</span>',
+					'type' => 'text',
+					'std' => '18px',
+					'cols' => 2,
 				),
 				'body_fontsize_mobile' => array(
-					'description' => __( 'Font Size on Mobiles', 'us' ),
-					'type' => 'slider',
+					'title' => __( 'Font Size on Mobiles', 'us' ),
+					'description' => __( 'Leave blank to use the main Font Size value', 'us' ),
+					'type' => 'text',
 					'std' => '16px',
-					'options' => array(
-						'px' => array(
-							'min' => 10,
-							'max' => 30,
-						),
-					),
-					'classes' => 'inline slider_below',
+					'cols' => 2,
 				),
-				'body_lineheight_mobile' => array(
-					'description' => __( 'Line height on Mobiles', 'us' ),
+				'body_lineheight' => array(
+					'title' => __( 'Line height', 'us' ),
 					'type' => 'slider',
 					'std' => '28px',
 					'options' => array(
+						'' => array(
+							'min' => 1.00,
+							'max' => 2.00,
+							'step' => 0.01,
+						),
 						'px' => array(
 							'min' => 15,
-							'max' => 35,
+							'max' => 50,
 						),
 					),
-					'classes' => 'inline slider_below',
+					'classes' => 'for_above',
+					'cols' => 2,
 				),
-				'body_text_mobiles_end' => array(
-					'type' => 'wrapper_end',
+				'body_lineheight_mobile' => array(
+					'title' => __( 'Line height on Mobiles', 'us' ),
+					'type' => 'slider',
+					'std' => '28px',
+					'options' => array(
+						'' => array(
+							'min' => 1.00,
+							'max' => 2.00,
+							'step' => 0.01,
+						),
+						'px' => array(
+							'min' => 15,
+							'max' => 50,
+						),
+					),
+					'classes' => 'for_above',
+					'cols' => 2,
 				),
 
 			), $headings_typography_config, array(
@@ -1818,6 +1911,7 @@ return array(
 				),
 				'custom_font' => array(
 					'type' => 'group',
+					'accordion_title' => 'font_family',
 					'is_accordion' => FALSE,
 					'is_duplicate' => FALSE,
 					'show_controls' => TRUE,
@@ -1837,11 +1931,12 @@ return array(
 				// Uploaded Fonts
 				'h_typography_4' => array(
 					'title' => __( 'Uploaded Fonts', 'us' ),
-					'description' => sprintf( __( 'Add custom fonts via uploading %s files.', 'us' ), '<strong>woff</strong>, <strong>woff2</strong>' ) . ' <a target="_blank" rel="noopener" href="' . $help_portal_url . '/' . strtolower( US_THEMENAME ) . '/options/typography/#uploaded-fonts">' . __( 'Read more about it', 'us' ) . '</a>.',
+					'description' => sprintf( __( 'Add custom fonts via uploading %s files.', 'us' ), '<strong>woff</strong>, <strong>woff2</strong>' ) . ' <a target="_blank" rel="noopener" href="' . $help_portal_url . '/' . strtolower( US_THEMENAME ) . '/options/typography/#uploaded-fonts">' . __( 'Learn more', 'us' ) . '</a>.',
 					'type' => 'heading',
 				),
 				'uploaded_fonts' => array(
 					'type' => 'group',
+					'accordion_title' => 'name',
 					'is_accordion' => FALSE,
 					'is_duplicate' => FALSE,
 					'show_controls' => TRUE,
@@ -1855,7 +1950,7 @@ return array(
 							'title' => __( 'Font Name', 'us' ),
 							'type' => 'text',
 							'std' => 'Uploaded Font',
-							'classes' => 'width_full cols_2',
+							'classes' => 'cols_2',
 						),
 						'weight' => array(
 							'title' => __( 'Font Weight', 'us' ),
@@ -1868,23 +1963,21 @@ return array(
 									'step' => 100,
 								),
 							),
-							'classes' => 'width_full cols_2',
+							'classes' => 'cols_2',
 						),
 						'italic' => array(
 							'type' => 'checkboxes',
 							'options' => array(
 								'italic' => __( 'Italic', 'us' ),
 							),
-							'std' => array(),
-							'classes' => 'width_full for_above',
+							'std' => '',
+							'classes' => 'for_above',
 						),
 						'files' => array(
 							'title' => __( 'Font Files', 'us' ),
 							'type' => 'upload',
 							'is_multiple' => TRUE,
 							'preview_type' => 'text',
-							'button_label' => us_translate( 'Select Files' ),
-							'classes' => 'width_full',
 						),
 						'uploaded_font_end' => array(
 							'type' => 'wrapper_end',
@@ -1907,7 +2000,7 @@ return array(
 						'optional' => 'optional',
 					),
 					'std' => 'swap',
-					'classes' => 'width_full for_above',
+					'classes' => 'for_above',
 				),
 
 			)
@@ -1923,10 +2016,9 @@ return array(
 				'is_accordion' => TRUE,
 				'is_duplicate' => TRUE,
 				'show_controls' => TRUE,
-				'title' => '{{name}}', // get value from the "name" param, works when "is_accordion" is TRUE only
+				'accordion_title' => 'name',
 				'classes' => 'compact',
 				'params' => array(
-
 					'id' => array(
 						'type' => 'text',
 						'std' => NULL,
@@ -2180,7 +2272,7 @@ return array(
 							'uppercase' => __( 'Uppercase', 'us' ),
 							'italic' => __( 'Italic', 'us' ),
 						),
-						'std' => array(),
+						'std' => '',
 						'cols' => 2,
 					),
 				),
@@ -2199,7 +2291,7 @@ return array(
 						'shadow' => 0,
 						'shadow_hover' => 0,
 						'font' => 'body',
-						'text_style' => array(),
+						'text_style' => '',
 						'font_size' => '16px',
 						'line_height' => 1.2,
 						'font_weight' => 700,
@@ -2223,7 +2315,7 @@ return array(
 						'shadow' => 0,
 						'shadow_hover' => 0,
 						'font' => 'body',
-						'text_style' => array(),
+						'text_style' => '',
 						'font_size' => '16px',
 						'line_height' => 1.2,
 						'font_weight' => 700,
@@ -2439,7 +2531,7 @@ return array(
 						'options' => array(
 							'1' => __( 'Inner shadow', 'us' ),
 						),
-						'std' => array( '1' ),
+						'std' => '1',
 						'cols' => 2,
 					),
 					'shadow_focus_inset' => array(
@@ -2447,7 +2539,7 @@ return array(
 						'options' => array(
 							'1' => __( 'Inner shadow', 'us' ),
 						),
-						'std' => array(),
+						'std' => '',
 						'cols' => 2,
 					),
 
@@ -2600,12 +2692,12 @@ return array(
 						'shadow_offset_v' => '1px',
 						'shadow_blur' => '0px',
 						'shadow_spread' => '0px',
-						'shadow_inset' => array( '1' ),
+						'shadow_inset' => '1',
 						'shadow_focus_offset_h' => '0px',
 						'shadow_focus_offset_v' => '0px',
 						'shadow_focus_blur' => '0px',
 						'shadow_focus_spread' => '2px',
-						'shadow_focus_inset' => array(),
+						'shadow_focus_inset' => '',
 						'font' => '',
 						'font_size' => '1rem',
 						'font_weight' => '400',
@@ -2628,6 +2720,7 @@ return array(
 
 			'portfolio_breadcrumbs_page' => array(
 				'title' => __( 'Intermediate Breadcrumbs Page', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'select',
 				'options' => us_array_merge(
 					array( '' => '&ndash; ' . us_translate( 'None' ) . ' &ndash;' ), $us_page_list
@@ -2638,17 +2731,20 @@ return array(
 			// Slugs
 			'portfolio_slug' => array(
 				'title' => __( 'Portfolio Page Slug', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'text',
 				'std' => 'portfolio',
 			),
 			'portfolio_category_slug' => array(
 				'title' => __( 'Portfolio Category Slug', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'text',
 				'std' => 'portfolio_category',
 				'classes' => 'for_above',
 			),
 			'portfolio_tag_slug' => array(
 				'title' => __( 'Portfolio Tag Slug', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'text',
 				'std' => 'portfolio_tag',
 				'classes' => 'for_above',
@@ -2659,10 +2755,10 @@ return array(
 				'switch_text' => sprintf( __( 'Rename "%s" labels', 'us' ), __( 'Portfolio', 'us' ) ),
 				'type' => 'switch',
 				'std' => 0,
-				'classes' => 'width_full',
 			),
 			'portfolio_label_name' => array(
 				'title' => __( 'Portfolio', 'us' ),
+				'title_pos' => 'side',
 				'std' => __( 'Portfolio', 'us' ),
 				'type' => 'text',
 				'classes' => 'for_above',
@@ -2670,6 +2766,7 @@ return array(
 			),
 			'portfolio_label_singular_name' => array(
 				'title' => __( 'Portfolio Page', 'us' ),
+				'title_pos' => 'side',
 				'std' => __( 'Portfolio Page', 'us' ),
 				'type' => 'text',
 				'classes' => 'for_above',
@@ -2677,6 +2774,7 @@ return array(
 			),
 			'portfolio_label_add_new' => array(
 				'title' => __( 'Add Portfolio Page', 'us' ),
+				'title_pos' => 'side',
 				'std' => __( 'Add Portfolio Page', 'us' ),
 				'type' => 'text',
 				'classes' => 'for_above',
@@ -2684,6 +2782,7 @@ return array(
 			),
 			'portfolio_label_edit_item' => array(
 				'title' => __( 'Edit Portfolio Page', 'us' ),
+				'title_pos' => 'side',
 				'std' => __( 'Edit Portfolio Page', 'us' ),
 				'type' => 'text',
 				'classes' => 'for_above',
@@ -2691,6 +2790,7 @@ return array(
 			),
 			'portfolio_label_category' => array(
 				'title' => __( 'Portfolio Categories', 'us' ),
+				'title_pos' => 'side',
 				'std' => __( 'Portfolio Categories', 'us' ),
 				'type' => 'text',
 				'classes' => 'for_above',
@@ -2698,6 +2798,7 @@ return array(
 			),
 			'portfolio_label_tag' => array(
 				'title' => __( 'Portfolio Tags', 'us' ),
+				'title_pos' => 'side',
 				'std' => __( 'Portfolio Tags', 'us' ),
 				'type' => 'text',
 				'classes' => 'for_above',
@@ -2721,12 +2822,14 @@ return array(
 				),
 				'shop_catalog' => array(
 					'title' => __( 'Catalog Mode', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'switch',
 					'switch_text' => sprintf( __( 'Remove "%s" buttons', 'us' ), us_translate( 'Add to cart', 'woocommerce' ) ),
 					'std' => 0,
 				),
 				'shop_primary_btn_style' => array(
 					'title' => __( 'Primary Buttons Style', 'us' ),
+					'title_pos' => 'side',
 					'description' => '<a href="' . admin_url() . 'admin.php?page=us-theme-options#buttons">' . __( 'Edit Button Styles', 'us' ) . '</a>',
 					'type' => 'select',
 					'options' => us_get_btn_styles(),
@@ -2734,6 +2837,7 @@ return array(
 				),
 				'shop_secondary_btn_style' => array(
 					'title' => __( 'Secondary Buttons Style', 'us' ),
+					'title_pos' => 'side',
 					'description' => '<a href="' . admin_url() . 'admin.php?page=us-theme-options#buttons">' . __( 'Edit Button Styles', 'us' ) . '</a>',
 					'type' => 'select',
 					'options' => us_get_btn_styles(),
@@ -2743,6 +2847,7 @@ return array(
 				// Product gallery
 				'product_gallery' => array(
 					'title' => us_translate( 'Product gallery', 'woocommerce' ),
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'slider' => __( 'Slider', 'us' ),
@@ -2762,7 +2867,6 @@ return array(
 						'left' => us_translate( 'Left' ),
 					),
 					'std' => 'bottom',
-					'classes' => 'width_full',
 					'show_if' => array( 'product_gallery', '=', 'slider' ),
 				),
 				'product_gallery_thumbs_cols' => array(
@@ -2777,7 +2881,6 @@ return array(
 						'8' => '8',
 					),
 					'std' => '4',
-					'classes' => 'width_full',
 					'show_if' => array(
 						array( 'product_gallery', '=', 'slider' ),
 						'and',
@@ -2799,7 +2902,6 @@ return array(
 						),
 					),
 					'std' => '6rem',
-					'classes' => 'width_full',
 					'show_if' => array(
 						array( 'product_gallery', '=', 'slider' ),
 						'and',
@@ -2816,7 +2918,6 @@ return array(
 						),
 					),
 					'std' => '4px',
-					'classes' => 'width_full',
 					'show_if' => array( 'product_gallery', '=', 'slider' ),
 				),
 				'product_gallery_options' => array(
@@ -2825,8 +2926,8 @@ return array(
 						'zoom' => __( 'Zoom images on hover', 'us' ),
 						'lightbox' => __( 'Allow Full Screen view', 'us' ),
 					),
-					'std' => array( 'zoom', 'lightbox' ),
-					'classes' => 'vertical width_full',
+					'std' => 'zoom,lightbox',
+					'classes' => 'vertical',
 				),
 				'wrapper_product_gallery_end' => array(
 					'type' => 'wrapper_end',
@@ -2840,6 +2941,7 @@ return array(
 				),
 				'header_product_id' => array(
 					'title' => _x( 'Header', 'site top area', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_header',
 					'options' => us_array_merge(
@@ -2852,6 +2954,7 @@ return array(
 				),
 				'titlebar_product_id' => array(
 					'title' => __( 'Titlebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -2865,6 +2968,7 @@ return array(
 				),
 				'content_product_id' => array(
 					'title' => __( 'Content template', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -2876,6 +2980,7 @@ return array(
 				),
 				'sidebar_product_id' => array(
 					'title' => __( 'Sidebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'options' => us_array_merge(
 						array(
@@ -2888,6 +2993,7 @@ return array(
 					'place_if' => $usof_sidebar_titlebar,
 				),
 				'sidebar_product_pos' => array(
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'left' => us_translate( 'Left' ),
@@ -2900,6 +3006,7 @@ return array(
 				),
 				'footer_product_id' => array(
 					'title' => __( 'Footer', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -2919,6 +3026,7 @@ return array(
 				),
 				'header_shop_id' => array(
 					'title' => _x( 'Header', 'site top area', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_header',
 					'options' => us_array_merge(
@@ -2931,6 +3039,7 @@ return array(
 				),
 				'titlebar_shop_id' => array(
 					'title' => __( 'Titlebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -2944,6 +3053,7 @@ return array(
 				),
 				'content_shop_id' => array(
 					'title' => __( 'Content template', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -2970,13 +3080,13 @@ return array(
 						'6' => '6',
 					),
 					'std' => '3',
-					'classes' => 'width_full',
 				),
 				'wrapper_shop_end' => array(
 					'type' => 'wrapper_end',
 				),
 				'sidebar_shop_id' => array(
 					'title' => __( 'Sidebar', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'options' => us_array_merge(
 						array(
@@ -2989,6 +3099,7 @@ return array(
 					'place_if' => $usof_sidebar_titlebar,
 				),
 				'sidebar_shop_pos' => array(
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'left' => us_translate( 'Left' ),
@@ -3001,6 +3112,7 @@ return array(
 				),
 				'footer_shop_id' => array(
 					'title' => __( 'Footer', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'select',
 					'hints_for' => 'us_page_block',
 					'options' => us_array_merge(
@@ -3022,6 +3134,7 @@ return array(
 				),
 				'shop_cart' => array(
 					'title' => __( 'Layout', 'us' ),
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'standard' => __( 'Standard', 'us' ),
@@ -3031,6 +3144,7 @@ return array(
 				),
 				'product_related_qty' => array(
 					'title' => us_translate( 'Cross-sells', 'woocommerce' ),
+					'title_pos' => 'side',
 					'type' => 'radio',
 					'options' => array(
 						'1' => '1',
@@ -3055,7 +3169,7 @@ return array(
 				'used_icons_info' => array(
 					'button_text' => __( 'Show used icons', 'us' ),
 					'type' => 'used_icons_info',
-					'classes' => 'width_full desc_4',
+					'classes' => 'desc_4',
 				),
 				'h_icons_2' => array(
 					'title' => __( 'Icon Sets', 'us' ),
@@ -3068,7 +3182,7 @@ return array(
 			array(
 				'fallback_icon_font' => array(
 					'title' => __( 'Fallback icon font', 'us' ),
-					'description' => '<a href="' . $help_portal_url . '/' . strtolower( US_THEMENAME ) . '/general/icons/#fallback-icon-font" target="_blank">' . __( 'Read more about it', 'us' ) . '</a>',
+					'description' => '<a href="' . $help_portal_url . '/' . strtolower( US_THEMENAME ) . '/general/icons/#fallback-icon-font" target="_blank">' . __( 'Learn more', 'us' ) . '</a>',
 					'type' => 'switch',
 					'switch_text' => __( 'Use fallback icon font for theme UI controls', 'us' ),
 					'std' => 1,
@@ -3094,7 +3208,7 @@ return array(
 			'img_size_info' => array(
 				'description' => $img_size_info,
 				'type' => 'message',
-				'classes' => 'width_full color_blue for_above',
+				'classes' => 'color_blue for_above',
 			),
 
 			'h_image_sizes' => array(
@@ -3138,7 +3252,7 @@ return array(
 						'options' => array(
 							'crop' => __( 'Crop to exact dimensions', 'us' ),
 						),
-						'std' => array(),
+						'std' => '',
 						'classes' => 'inline',
 					),
 				),
@@ -3152,7 +3266,8 @@ return array(
 			),
 			'big_image_size_threshold' => array(
 				'title' => __( 'Big Image Size Threshold', 'us' ),
-				'description' => sprintf( __( 'If an image height or width is above this threshold, it will be scaled down and used as the "%s".', 'us' ), us_translate( 'Full Size' ) ) . '<br><br><strong>' . __( 'Set "0px" to disable threshold.', 'us' ) . '</strong><br><br>' . sprintf( __( 'This is built-in WordPress feature, described in %sthe article%s.', 'us' ), '<a target="blank" href="https://make.wordpress.org/core/2019/10/09/introducing-handling-of-big-images-in-wordpress-5-3/">', '</a>' ),
+				'title_pos' => 'side',
+				'description' => sprintf( __( 'If an image height or width is above this threshold, it will be scaled down and used as the "%s".', 'us' ), us_translate( 'Full Size' ) ) . '<br><br><strong>' . __( 'Set "0px" to disable threshold.', 'us' ) . '</strong><br><br>' . sprintf( __( 'It is a built-in WordPress feature described in %sthe article%s.', 'us' ), '<a target="blank" href="https://make.wordpress.org/core/2019/10/09/introducing-handling-of-big-images-in-wordpress-5-3/">', '</a>' ),
 				'type' => 'slider',
 				'options' => array(
 					'px' => array(
@@ -3166,7 +3281,8 @@ return array(
 			),
 			'delete_unused_images' => array(
 				'title' => __( 'Unused Thumbnails', 'us' ),
-				'description' => __( 'When this option is ON, all image files that do not match the registered image sizes will be deleted.', 'us' ) . ' ' . __( 'This is helpful for increasing free space in your storage.', 'us' ),
+				'title_pos' => 'side',
+				'description' => __( 'When this option is ON, all the thumbnails of non-registered image sizes are deleted.', 'us' ) . ' ' . __( 'It helps keep free space in your storage.', 'us' ),
 				'type' => 'switch',
 				'switch_text' => __( 'Delete unused image thumbnails', 'us' ),
 				'std' => 0,
@@ -3184,53 +3300,73 @@ return array(
 				'type' => 'heading',
 				'classes' => 'with_separator',
 			),
+			'live_builder' => array(
+				'type' => 'switch',
+				'switch_text' => '"Live Builder"', // do not translate for a while
+				'description' => US_THEMENAME . ' 8 introduces a new live builder, which allows to edit pages on the front end. This should save you a lot of time. Try edit pages via green "Edit Live" button.',
+				'std' => 1,
+				'classes' => 'desc_2',
+			),
+			'grid_columns_layout' => array(
+				'type' => 'switch',
+				'switch_text' => __( 'Columns Layout via CSS grid', 'us' ),
+				'std' => 1,
+				'show_if' => array( 'live_builder', '=', '1' ),
+				'classes' => 'for_above',
+			),
+			'block_editor' => array(
+				'type' => 'switch',
+				'switch_text' => __( 'Gutenberg (block editor)', 'us' ),
+				'std' => 0,
+				'classes' => 'for_above',
+			),
 			'enable_sidebar_titlebar' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Titlebars & Sidebars', 'us' ),
 				'std' => 0,
-				'classes' => 'width_full',
+				'classes' => 'for_above',
 			),
 			'enable_page_blocks_for_sidebars' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Use Page Blocks for Sidebars', 'us' ),
 				'std' => 0,
-				'classes' => 'width_full for_above',
+				'classes' => 'for_above',
 				'show_if' => array( 'enable_sidebar_titlebar', '=', TRUE ),
 			),
 			'enable_portfolio' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Portfolio', 'us' ) . $renamed_portfolio_label,
 				'std' => 1,
-				'classes' => 'width_full for_above',
+				'classes' => 'for_above',
 			),
 			'enable_testimonials' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Testimonials', 'us' ),
 				'std' => 1,
-				'classes' => 'width_full for_above',
+				'classes' => 'for_above',
 			),
 			'media_category' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Media Categories', 'us' ),
 				'std' => 1,
-				'classes' => 'width_full for_above',
+				'classes' => 'for_above',
 			),
 			'og_enabled' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'SEO meta tags', 'us' ),
-				'description' => '<a href="' . $help_portal_url . '/' . strtolower( US_THEMENAME ) . '/general/seo/" target="_blank">' . __( 'Read more about it', 'us' ) . '</a>.<br>' . __( 'If you\'re using any SEO plugin, turn OFF this option to avoid conflicts.', 'us' ),
+				'description' => '<a href="' . $help_portal_url . '/' . strtolower( US_THEMENAME ) . '/general/seo/" target="_blank">' . __( 'Learn more', 'us' ) . '</a>.<br>' . __( 'If you\'re using any SEO plugin, turn OFF this option to avoid conflicts.', 'us' ),
 				'std' => 1,
-				'classes' => 'width_full desc_2 for_above',
+				'classes' => 'desc_2 for_above',
 			),
 			'schema_markup' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Schema.org markup', 'us' ),
 				'std' => 1,
-				'classes' => 'width_full for_above',
+				'classes' => 'for_above',
 			),
 			'schema_faqs_page' => array(
 				'title' => __( 'FAQs page', 'us' ),
-				'description' => sprintf( __( 'Selected page must contain "%s" element.', 'us' ), us_translate( 'Accordion', 'js_composer' ) ) . ' <a href="https://developers.google.com/search/docs/data-types/faqpage" target="_blank">' . __( 'Read more about it', 'us' ) . '</a>',
+				'description' => sprintf( __( 'The selected page must contain a "%s" element.', 'us' ), us_translate( 'Accordion', 'js_composer' ) ) . ' <a href="https://developers.google.com/search/docs/data-types/faqpage" target="_blank">' . __( 'Learn more', 'us' ) . '</a>',
 				'type' => 'select',
 				'options' => us_array_merge(
 					array( '' => sprintf( '&ndash; %s &ndash;', us_translate( 'None' ) ) ),
@@ -3239,7 +3375,7 @@ return array(
 				'std' => '',
 				'hints_for' => 'page',
 				'show_if' => array( 'schema_markup', '=', '1' ),
-				'classes' => 'width_full for_above desc_4',
+				'classes' => 'for_above desc_4',
 			),
 
 			// Global Values
@@ -3250,13 +3386,15 @@ return array(
 			),
 			'gmaps_api_key' => array(
 				'title' => __( 'Google Maps API Key', 'us' ),
-				'description' => __( 'The API key is required for the domains created after June 22, 2016.', 'us' ) . ' <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener">' . __( 'Get API key', 'us' ) . '</a>',
+				'title_pos' => 'side',
+				'description' => '<a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener">' . strip_tags( __( 'Get API key', 'us' ) ) . '</a>',
 				'type' => 'text',
 				'std' => '',
 				'classes' => 'desc_3',
 			),
 			'facebook_app_id' => array(
 				'title' => __( 'Facebook Application ID', 'us' ),
+				'title_pos' => 'side',
 				'description' => __( 'Required for Sharing Buttons on AMP version of website.', 'us' ) . ' <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com</a>',
 				'type' => 'text',
 				'std' => '',
@@ -3265,12 +3403,14 @@ return array(
 			),
 			'grid_filter_url_prefix' => array(
 				'title' => __( 'Grid Filter URL prefix', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'text',
 				'placeholder' => 'filter',
 				'std' => '',
 			),
 			'grid_order_url_prefix' => array(
 				'title' => __( 'Grid Order URL prefix', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'text',
 				'placeholder' => 'order',
 				'std' => '',
@@ -3287,57 +3427,50 @@ return array(
 				'switch_text' => __( 'Keep "http/https" in the paths to files', 'us' ),
 				'description' => __( 'If your site uses both "HTTP" and "HTTPS" and has some appearance issues, turn OFF this option.', 'us' ),
 				'std' => TRUE,
-				'classes' => 'width_full desc_2',
+				'classes' => 'desc_2 for_above',
 			),
 			'disable_jquery_migrate' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Disable jQuery migrate script', 'us' ),
-				'description' => __( 'When this option is ON, "jquery-migrate.min.js" file won\'t be loaded in front-end.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ),
+				'description' => __( 'When this option is ON, "jquery-migrate.min.js" file won\'t be loaded on the front end.', 'us' ) . ' ' . __( 'This will improve page loading speed.', 'us' ),
 				'std' => TRUE,
-				'classes' => 'width_full desc_2 for_above',
+				'classes' => 'desc_2 for_above',
 			),
 			'jquery_footer' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Move jQuery scripts to the footer', 'us' ),
-				'description' => __( 'When this option is ON, jQuery library files will be loaded after page content.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ),
+				'description' => __( 'When this option is ON, jQuery library files will be loaded after the page content.', 'us' ) . ' ' . __( 'This will improve page loading speed.', 'us' ),
 				'std' => TRUE,
-				'classes' => 'width_full desc_2 for_above',
+				'classes' => 'desc_2 for_above',
 			),
 			'ajax_load_js' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Dynamically load theme JS components', 'us' ),
-				'description' => __( 'When this option is ON, theme components JS files will be loaded dynamically without additional external requests.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ),
+				'description' => __( 'When this option is ON, theme components JS files will be loaded dynamically without additional external requests.', 'us' ) . ' ' . __( 'This will improve page loading speed.', 'us' ),
 				'std' => TRUE,
-				'classes' => 'width_full desc_2 for_above',
+				'classes' => 'desc_2 for_above',
 			),
 			'disable_extra_vc' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Disable extra features of WPBakery Page Builder', 'us' ),
-				'description' => __( 'When this option is ON, original CSS and JS files of WPBakery Page Builder won\'t be loaded in front-end.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ),
+				'description' => __( 'When this option is ON, the original CSS and JS files of WPBakery Page Builder won\'t be loaded on the front end.', 'us' ) . ' ' . __( 'This will improve page loading speed.', 'us' ),
 				'std' => TRUE,
 				'place_if' => class_exists( 'Vc_Manager' ),
-				'classes' => 'width_full desc_2 for_above',
-			),
-			'disable_block_editor_assets' => array(
-				'type' => 'switch',
-				'switch_text' => __( 'Disable Gutenberg (block editor) CSS files', 'us' ),
-				'description' => __( 'When this option is ON, original CSS files of Gutenberg won\'t be loaded in front-end.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ),
-				'std' => FALSE,
-				'classes' => 'width_full desc_2 for_above',
+				'classes' => 'desc_2 for_above',
 			),
 
 			'optimize_assets' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Optimize JS and CSS size', 'us' ),
-				'description' => __( 'When this option is ON, your site will load single JS file and single CSS file. You can disable unused components to reduce its sizes.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ),
+				'description' => __( 'When this option is ON, your site will compress scripts to a single JS file and compress styles to a single CSS file. You can disable unused components to reduce their sizes.', 'us' ) . ' ' . __( 'This will improve page loading speed.', 'us' ),
 				'std' => FALSE,
-				'classes' => 'width_full desc_2 for_above',
+				'classes' => 'desc_2 for_above',
 				'disabled' => $upload_dir_not_writable,
 			),
 			'optimize_assets_alert' => array(
 				'description' => __( 'Your uploads folder is not writable. Change your server permissions to use this option.', 'us' ),
 				'type' => 'message',
-				'classes' => 'width_full string',
+				'classes' => 'string',
 				'place_if' => $upload_dir_not_writable,
 			),
 			'optimize_assets_start' => array(
@@ -3349,7 +3482,7 @@ return array(
 				'show_auto_optimize_button' => TRUE,
 				'options' => $usof_assets,
 				'std' => $usof_assets_std,
-				'classes' => 'width_full desc_4',
+				'classes' => 'desc_4',
 			),
 			'optimize_assets_end' => array(
 				'type' => 'wrapper_end',
@@ -3357,9 +3490,9 @@ return array(
 			'include_gfonts_css' => array(
 				'type' => 'switch',
 				'switch_text' => __( 'Merge Google Fonts styles into single CSS file', 'us' ),
-				'description' => __( 'When this option is ON, Google Fonts CSS file won\'t be loaded separately.', 'us' ) . ' ' . __( 'This will improve pages loading speed.', 'us' ), // TODO: describe better
+				'description' => __( 'When this option is ON, Google Fonts CSS file won\'t be loaded separately.', 'us' ) . ' ' . __( 'This will improve page loading speed.', 'us' ), // TODO: describe better
 				'std' => FALSE,
-				'classes' => 'width_full desc_2',
+				'classes' => 'desc_2',
 				'show_if' => array( 'optimize_assets', '=', TRUE ),
 			),
 
@@ -3374,19 +3507,19 @@ return array(
 				'title' => __( 'Custom CSS', 'us' ),
 				'description' => sprintf( __( 'CSS code from this field will overwrite theme styles. It will be located inside the %s tags just before the %s tag of every site page.', 'us' ), '<code>&lt;style&gt;&lt;/style&gt;</code>', '<code>&lt;/head&gt;</code>' ),
 				'type' => 'css',
-				'classes' => 'width_full desc_4',
+				'classes' => 'desc_4',
 			),
 			'custom_html_head' => array(
 				'title' => sprintf( __( 'Code before %s', 'us' ), '&lt;/head&gt;' ),
 				'description' => sprintf( __( 'Use this field for Google Analytics code or other tracking code. If you paste custom JavaScript, use it inside the %s tags.', 'us' ), '<code>&lt;script&gt;&lt;/script&gt;</code>' ) . '<br><br>' . sprintf( __( 'Content from this field will be located just before the %s tag of every site page.', 'us' ), '<code>&lt;/head&gt;</code>' ),
 				'type' => 'html',
-				'classes' => 'width_full desc_4',
+				'classes' => 'desc_4',
 			),
 			'custom_html' => array(
 				'title' => sprintf( __( 'Code before %s', 'us' ), '&lt;/body&gt;' ),
 				'description' => sprintf( __( 'Use this field for Google Analytics code or other tracking code. If you paste custom JavaScript, use it inside the %s tags.', 'us' ), '<code>&lt;script&gt;&lt;/script&gt;</code>' ) . '<br><br>' . sprintf( __( 'Content from this field will be located just before the %s tag of every site page.', 'us' ), '<code>&lt;/body&gt;</code>' ),
 				'type' => 'html',
-				'classes' => 'width_full desc_4',
+				'classes' => 'desc_4',
 			),
 		),
 	),
@@ -3396,14 +3529,17 @@ return array(
 		'fields' => array(
 			'of_reset' => array(
 				'title' => __( 'Reset Theme Options', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'reset',
 			),
 			'of_backup' => array(
 				'title' => __( 'Backup Theme Options', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'backup',
 			),
 			'of_transfer' => array(
 				'title' => __( 'Transfer Theme Options', 'us' ),
+				'title_pos' => 'side',
 				'type' => 'transfer',
 				'description' => __( 'You can transfer the saved options data between different installations by copying the text inside the text box. To import data from another installation, replace the data in the text box with the one from another installation and click "Import Options".', 'us' ),
 				'classes' => 'desc_3',

@@ -26,26 +26,30 @@
  *
  */
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ' iconpos_' . $iconpos;
-$classes .= ' style_' . $style;
-$classes .= ' color_' . $color;
-$classes .= ' align_' . $alignment;
+$_atts['class'] = 'w-iconbox';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+$_atts['class'] .= ' iconpos_' . $iconpos;
+$_atts['class'] .= ' style_' . $style;
+$_atts['class'] .= ' color_' . $color;
+$_atts['class'] .= ' align_' . $alignment;
 if ( $title == '' ) {
-	$classes .= ' no_title';
+	$_atts['class'] .= ' no_title';
 }
 if ( $content == '' ) {
-	$classes .= ' no_text';
+	$_atts['class'] .= ' no_text';
 }
 
 // When text color is set in Design Options, add the specific class
 if ( us_design_options_has_property( $css, 'color' ) ) {
-	$classes .= ' has_text_color';
+	$_atts['class'] .= ' has_text_color';
 }
 
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
+}
 
+// Apply filters to title
+$title = us_replace_dynamic_value( $title );
 $title = wptexturize( $title );
 
 $icon_color = us_get_color( $icon_color, /* Gradient */ TRUE );
@@ -58,7 +62,7 @@ if ( strpos( $icon_color, 'gradient' ) !== FALSE ) {
 		array(
 			'background' => $icon_color,
 			'-webkit-background-clip' => 'text',
-			'-webkit-text-fill-color' => 'transparent',
+			'color' => 'transparent',
 		)
 	);
 }
@@ -66,7 +70,7 @@ if ( strpos( $icon_color, 'gradient' ) !== FALSE ) {
 // Use image instead icon, if set
 $icon_html = '';
 if ( $img != '' ) {
-	$classes .= ' icontype_img';
+	$_atts['class'] .= ' icontype_img';
 	if ( is_numeric( $img ) ) {
 
 		// Get file MIME type to handle SVGs separately
@@ -85,7 +89,7 @@ if ( $img != '' ) {
 
 			// In other case use file as image
 		} else {
-			$icon_html = wp_get_attachment_image( intval( $img ), 'full' );
+			$icon_html = wp_get_attachment_image( $img, 'full' );
 			if ( empty( $icon_html ) ) {
 				$icon_html = us_get_img_placeholder( 'full' );
 			}
@@ -108,21 +112,21 @@ if ( ! empty( $link_atts['href'] ) ) {
 	} else {
 		$link_atts['aria-label'] = $icon;
 	}
-	$link_opener = '<a ' . us_implode_atts( $link_atts ) . '>';
+	$link_opener = '<a' . us_implode_atts( $link_atts ) . '>';
 	$link_closer = '</a>';
 }
 
 $icon_inline_css = us_prepare_inline_css(
 	array(
 		'font-size' => ( $size == '36px' ) ? '' : $size,
-		'box-shadow' => empty( $circle_color ) ? '' : '0 0 0 2px ' . $circle_color . ' inset',
-		'background' => $circle_color,
+		'box-shadow' => ( $style == 'outlined' AND ! empty( $circle_color ) ) ? 'inset 0 0 0 2px ' . $circle_color : '',
+		'background' => ( $style == 'circle' AND ! empty( $circle_color ) ) ? $circle_color : '',
 		'color' => us_gradient2hex( $icon_color ),
 	)
 );
 
 // Output the element
-$output = '<div class="w-iconbox' . $classes . '"' . $el_id . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 if ( in_array( $iconpos, array( 'top', 'left' ) ) ) {
 	$output .= $link_opener;
 	$output .= '<div class="w-iconbox-icon"' . $icon_inline_css . '>' . $icon_html . '</div>';
@@ -141,7 +145,7 @@ if ( $title != '' ) {
 	$output .= '<' . $title_tag . ' class="w-iconbox-title"' . $title_inline_css . '>' . $title . '</' . $title_tag . '>';
 	$output .= $link_closer;
 }
-if ( $content != '' ) {
+if ( ! empty( $content ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
 	$output .= '<div class="w-iconbox-text">' . do_shortcode( wpautop( $content ) ) . '</div>';
 }
 if ( in_array( $iconpos, array( 'top', 'left' ) ) ) {

@@ -12,7 +12,7 @@ if ( us_amp() ) {
 }
 
 // Don't output the Grid Filter if there are no items for it
-if ( empty( $filter_items ) ) {
+if ( empty( $filter_items ) AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
 	return;
 }
 
@@ -21,7 +21,7 @@ $filter_items = json_decode( urldecode( $filter_items ), TRUE );
 $form_atts['class'] = 'w-filter state_desktop';
 $form_atts['class'] .= isset( $classes ) ? $classes : '';
 
-// Add the 'has_text_color' class to the filter form if a text color is set in Design Options
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$form_atts['class'] .= ' has_text_color';
 }
@@ -41,9 +41,6 @@ if ( $layout == 'hor' ) {
 if ( $hide_disabled_values ) {
 	$form_atts['class'] .= ' hide_disabled_values';
 }
-if ( ! empty( $el_class ) ) {
-	$form_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$form_atts['id'] = $el_id;
 }
@@ -60,6 +57,7 @@ $portfolio_slugs = us_get_portfolio_slugs_map();
 
 // Export settings to grid-filter.js
 $json_data = array(
+	'assignedGrid' => (string) isset( $assigned_grid ) ? $assigned_grid : '',
 	'filterPrefix' => (string) $filter_url_prefix,
 	'hideDisabledValues' => (bool) $hide_disabled_values,
 	'layout' => (string) $layout,
@@ -69,11 +67,11 @@ $json_data = array(
 // Message when Grid is not found
 $json_data['gridNotFoundMessage'] = 'Nothing to filter. Add a suitable Grid to this page.';
 
-$output = '<form ' . us_implode_atts( $form_atts ) . us_pass_data_to_js( $json_data ) . '>';
+$output = '<form' . us_implode_atts( $form_atts ) . us_pass_data_to_js( $json_data ) . '>';
 $output .= '<div class="w-filter-list">';
 
 if ( ! empty( $mobile_width ) ) {
-	$output .= '<h5 class="w-filter-list-title">' . strip_tags( $mobile_button_label ) . '</h5>';
+	$output .= '<div class="w-filter-list-title">' . strip_tags( $mobile_button_label ) . '</div>';
 	$output .= '<a class="w-filter-list-closer" href="javascript:void(0);" title="' . esc_attr( us_translate( 'Close' ) ) . '"></a>';
 }
 
@@ -84,12 +82,12 @@ if ( ! empty( $mobile_width ) ) {
  * @param int $parent
  * @return array
  */
-$func_sort_terms = function( &$terms, $parent = 0 ) use ( &$func_sort_terms ) {
+$func_sort_terms = function ( &$terms, $parent = 0 ) use ( &$func_sort_terms ) {
 	$result = array();
 	foreach ( $terms as $i => $term ) {
 		if ( $term->parent == $parent ) {
 			$result[] = $term;
-			unset( $terms[$i] );
+			unset( $terms[ $i ] );
 			foreach ( $terms as $item ) {
 				if ( $item->parent AND $item->parent === $term->term_id ) {
 					$result = array_merge( $result, $func_sort_terms( $terms, $term->term_id ) );
@@ -97,6 +95,7 @@ $func_sort_terms = function( &$terms, $parent = 0 ) use ( &$func_sort_terms ) {
 			}
 		}
 	}
+
 	return $result;
 };
 
@@ -107,9 +106,9 @@ $func_sort_terms = function( &$terms, $parent = 0 ) use ( &$func_sort_terms ) {
  * @param array $terms_parent The terms parent
  * @return int
  */
-$func_get_depth = function( $parent, $terms_parent ) {
+$func_get_depth = function ( $parent, $terms_parent ) {
 	$depth = 1;
-	while( $parent > 0 ) {
+	while ( $parent > 0 ) {
 		if ( $depth > 5 ) { // limit hierarchy by 5 levels
 			break;
 		}
@@ -120,6 +119,7 @@ $func_get_depth = function( $parent, $terms_parent ) {
 			$parent = 0;
 		}
 	}
+
 	return $depth;
 };
 
@@ -147,7 +147,7 @@ if ( ! is_archive() ) {
 	// If there are no parameters in the current object, then we will get all the indicators to check
 	if ( ! $selected_taxonomies = get_post_meta( $post_id, $meta_key, TRUE ) ) {
 		$post_ids = array();
-		us_get_recursive_parse_page_block( get_post( $post_id ), function( $post ) use ( &$post_ids ) {
+		us_get_recursive_parse_page_block( get_post( $post_id ), function ( $post ) use ( &$post_ids ) {
 			$post_ids[] = $post->ID;
 		} );
 	}
@@ -163,7 +163,40 @@ if ( ! is_archive() ) {
 	if ( $post_types = (array) get_post_meta( $post_id, '_us_first_grid_post_type', TRUE ) ) {
 		$query_args['post_type'] = (string) us_arr_path( $post_types, '0', 'post' );
 	}
-	unset( $post_id, $post_ids, $meta_key );
+	// Get products include of the first grid
+	if ( $products_include = (string) get_post_meta( $post_id, '_us_first_grid_products_include', TRUE ) ) {
+		// Show Sale products
+		if (
+			strpos( $products_include, 'sale' ) !== FALSE
+			AND function_exists( 'wc_get_product_ids_on_sale' )
+			AND ! empty( wc_get_product_ids_on_sale() )
+		) {
+			$query_args['post__in'] = wc_get_product_ids_on_sale();
+		}
+		// Show Featured products
+		if ( strpos( $products_include, 'featured' ) !== FALSE ) {
+			$query_args['tax_query'][] = array(
+				'taxonomy' => 'product_visibility',
+				'field' => 'name',
+				'terms' => 'featured',
+				'operator' => 'IN',
+			);
+		}
+	}
+	unset( $post_id, $post_ids, $meta_key, $products_include );
+}
+
+if ( is_archive() ) {
+	global $wp_query;
+	// Gets post type of the archive page from the first queried post
+	if ( isset( $wp_query->posts[0]->post_type ) AND in_array( $wp_query->posts[0]->post_type, $query_args['post_type'] ) ) {
+		$query_args['post_type'] = array( $wp_query->posts[0]->post_type );
+	}
+}
+
+// Fix for search query when Grid Filter goes after Grids
+if ( is_search() ) {
+	$query_args['post_type'] = array( '' );
 }
 
 /**
@@ -174,25 +207,24 @@ $data_query_args = $filters_args = array();
 // If we are on a post archive page, we will add it's conditions to the current request
 $queried_object = get_queried_object();
 if ( $queried_object instanceof WP_Term ) {
-	$query_args[ 'tax_query' ] = array(
+	$query_args['tax_query'] = array(
 		array(
 			'field' => 'slug',
 			'taxonomy' => $queried_object->taxonomy,
 			'terms' => $queried_object->slug,
-		)
+		),
 	);
 	// For author pages, add author id to request
 } elseif ( $queried_object instanceof WP_User ) {
-	$query_args[ 'author' ] = get_queried_object_id();
+	$query_args['author'] = get_queried_object_id();
 }
 
 /**
  * Adds search params to query_args
  *
  * @param array $query_args The query arguments
- * @return void
  */
-$func_add_search_params_to_query_args = function( &$query_args ) {
+$func_add_search_params_to_query_args = function ( &$query_args ) {
 	if ( $search_query = get_search_query() ) {
 		$query_args['s'] = trim( $search_query );
 	}
@@ -207,10 +239,12 @@ foreach ( $filter_items as $filter_item ) {
 
 	$source = $filter_item['source'];
 
-	extract( array_combine(
-		array( 'item_type', 'item_name' ),
-		explode( '|' , $source, 2 )
-	) );
+	extract(
+		array_combine(
+			array( 'item_type', 'item_name' ),
+			explode( '|', $source, 2 )
+		)
+	);
 
 	$ui_type = $filter_item['ui_type'];
 	$item_values = $terms_parent = array();
@@ -245,7 +279,7 @@ foreach ( $filter_items as $filter_item ) {
 		$terms_query_args = array(
 			'hide_empty' => FALSE,
 			'hierarchical' => TRUE,
-			'taxonomy' => $item_name
+			'taxonomy' => $item_name,
 		);
 
 		// Exclude current taxonomies from output if filter is set on a taxonomy page
@@ -256,10 +290,12 @@ foreach ( $filter_items as $filter_item ) {
 		// Populate values with terms of taxonomy
 		$item_values = get_terms( $terms_query_args );
 
+
 		// get_terms() might return an error or might be empty so skip further execution if it's the case
 		if ( ! is_array( $item_values ) OR empty( $item_values ) ) {
 			continue;
 		}
+
 
 		// Set 'inherit' post_type for attachments
 		if ( is_string( $taxonomy_obj->object_type ) ) {
@@ -326,6 +362,7 @@ foreach ( $filter_items as $filter_item ) {
 			}
 		}
 
+
 		// Sort the terms with parents regarding hierarchy
 		$start_parent = ! empty( $terms_query_args['child_of'] )
 			? $terms_query_args['child_of']
@@ -361,17 +398,17 @@ foreach ( $filter_items as $filter_item ) {
 					// Get the number of entries for a ACF
 					$item_query_args = $query_args;
 
-					$item_query_args[ 'meta_query' ][] = array(
+					$item_query_args['meta_query'][] = array(
 						'relation' => 'OR',
 						array(
 							'key' => us_arr_path( $acf_field, 'name', NULL ),
-							'value' => '"'. $option_key .'"',
+							'value' => '"' . $option_key . '"',
 							'compare' => 'LIKE',
 							'type' => 'CHAR',
 						),
 						array(
 							'key' => us_arr_path( $acf_field, 'name', NULL ),
-							'value' => '"'. $option_name .'"',
+							'value' => '"' . $option_name . '"',
 							'compare' => 'LIKE',
 							'type' => 'CHAR',
 						),
@@ -380,7 +417,7 @@ foreach ( $filter_items as $filter_item ) {
 							'value' => array( $option_key, $option_name ),
 							'compare' => 'IN',
 							'type' => 'CHAR',
-						)
+						),
 					);
 
 					// Add search params to a condition
@@ -438,6 +475,7 @@ foreach ( $filter_items as $filter_item ) {
 	// Separate variable for the item's HTML
 	$output_item_content = '';
 
+
 	// Checkboxes and Radio Buttons semantics
 	if ( in_array( $ui_type, array( 'checkbox', 'radio' ) ) AND ! empty( $item_values ) ) {
 
@@ -449,7 +487,7 @@ foreach ( $filter_items as $filter_item ) {
 				empty( $filter_taxonomies[ $filter_item['source'] ] )
 				OR (
 					! empty( $filter_taxonomies[ $filter_item['source'] ] )
-					AND in_array( '*' /* All */ , $filter_taxonomies[ $filter_item['source'] ] )
+					AND in_array( '*' /* All */, $filter_taxonomies[ $filter_item['source'] ] )
 				)
 			) {
 				$selected_all_value = ' selected';
@@ -464,7 +502,7 @@ foreach ( $filter_items as $filter_item ) {
 
 			$output_item_content .= '<a class="w-filter-item-value' . $selected_all_value . '" href="javascript:void(0);">';
 			$output_item_content .= '<label>';
-			$output_item_content .= '<input ' . us_implode_atts( $all_value_atts ) . checked( $selected_all_value, ' selected', FALSE ) . '>';
+			$output_item_content .= '<input' . us_implode_atts( $all_value_atts ) . checked( $selected_all_value, ' selected', FALSE ) . '>';
 			$output_item_content .= '<span class="w-form-radio"></span>';
 			$output_item_content .= '<span class="w-filter-item-value-label">' . __( 'All', 'us' ) . '</span>';
 			$output_item_content .= '</label>';
@@ -479,6 +517,7 @@ foreach ( $filter_items as $filter_item ) {
 			if ( empty( $item_value->count ) ) {
 				continue;
 			}
+
 
 			$item_value_slug = urlencode( $item_value->slug );
 
@@ -520,7 +559,7 @@ foreach ( $filter_items as $filter_item ) {
 
 			$item_value_atts = array(
 				'class' => 'w-filter-item-value' . $selected_value,
-				'data-item-amount' => intval( $item_value->count ),
+				'data-item-amount' => (int) $item_value->count,
 				'href' => 'javascript:void(0);',
 				'tabindex' => '-1',
 			);
@@ -537,7 +576,7 @@ foreach ( $filter_items as $filter_item ) {
 			}
 
 			// Output filter item values
-			$item_value_html = '<a ' . us_implode_atts( $item_value_atts ) . '>';
+			$item_value_html = '<a' . us_implode_atts( $item_value_atts ) . '>';
 			$item_value_html .= '<label>';
 			$input_atts = array(
 				'class' => 'screen-reader-text',
@@ -550,10 +589,10 @@ foreach ( $filter_items as $filter_item ) {
 			if ( $disabled ) {
 				$input_atts['disabled'] = 'disabled';
 			} else {
-				$item_values_count++;
+				$item_values_count ++;
 			}
 
-			$item_value_html .= '<input ' . us_implode_atts( $input_atts ) . checked( $selected_value, ' selected', FALSE ) . '>';
+			$item_value_html .= '<input' . us_implode_atts( $input_atts ) . checked( $selected_value, ' selected', FALSE ) . '>';
 			$item_value_html .= '<span class="w-form-' . $ui_type . '"></span>';
 			$item_value_html .= '<span class="w-filter-item-value-label">' . strip_tags( $item_value->name ) . '</span>';
 
@@ -630,7 +669,7 @@ foreach ( $filter_items as $filter_item ) {
 				if ( $real_item_name === '_price' ) {
 					$min_max_price_query_vars = array(
 						'tax_query' => us_arr_path( $query_args, 'tax_query', array() ),
-						'meta_query' => us_arr_path( $query_args, 'meta_query', array() )
+						'meta_query' => us_arr_path( $query_args, 'meta_query', array() ),
 					);
 					us_apply_grid_filters( NULL, $min_max_price_query_vars );
 					$range_placeholders = ( array ) us_wc_get_min_max_price( $min_max_price_query_vars );
@@ -642,7 +681,8 @@ foreach ( $filter_items as $filter_item ) {
 				} else {
 					global $wpdb;
 
-					$range_placeholders = (array) $wpdb->get_row( "
+					$range_placeholders = (array) $wpdb->get_row(
+						"
 						SELECT
 							MIN( cast( meta_value as UNSIGNED ) ) AS min,
 							MAX( cast( meta_value as UNSIGNED ) ) AS max
@@ -651,7 +691,8 @@ foreach ( $filter_items as $filter_item ) {
 							meta_key = " . $wpdb->prepare( '%s', $real_item_name ) . "
 							AND meta_value > 0
 						LIMIT 1;
-					" );
+					"
+					);
 				}
 			}
 			foreach ( $range_placeholders as $key => $value ) {
@@ -663,11 +704,11 @@ foreach ( $filter_items as $filter_item ) {
 			}
 		}
 
-		$output_item_content .= '<input ' . us_implode_atts( $input_min_atts ) . '>';
-		$output_item_content .= '<input ' . us_implode_atts( $input_max_atts ) . '>';
-		$output_item_content .= '<input ' . us_implode_atts( $input_hidden_atts ) . '>';
+		$output_item_content .= '<input' . us_implode_atts( $input_min_atts ) . '>';
+		$output_item_content .= '<input' . us_implode_atts( $input_max_atts ) . '>';
+		$output_item_content .= '<input' . us_implode_atts( $input_hidden_atts ) . '>';
 
-		$item_values_count++;
+		$item_values_count ++;
 
 		// Dropdown list
 	} elseif ( $ui_type === 'dropdown' ) {
@@ -733,7 +774,7 @@ foreach ( $filter_items as $filter_item ) {
 					$option_atts['disabled'] = 'disabled';
 					$option_atts['class'] .= ' disabled';
 				} else {
-					$item_values_count++;
+					$item_values_count ++;
 				}
 			}
 
@@ -745,10 +786,10 @@ foreach ( $filter_items as $filter_item ) {
 				}
 			}
 
-			$select_options .= '<option ' . us_implode_atts( $option_atts ) . '>' . strip_tags( $item_value->name ) . '</option>';
+			$select_options .= '<option' . us_implode_atts( $option_atts ) . '>' . strip_tags( $item_value->name ) . '</option>';
 		}
 
-		$output_item_content .= '<select '. us_implode_atts( $select_atts ) .'>' . $select_options . '</select>';
+		$output_item_content .= '<select' . us_implode_atts( $select_atts ) . '>' . $select_options . '</select>';
 	}
 
 	// If set "Hide unavailable values" and there are no values, disable the filter item
@@ -757,7 +798,7 @@ foreach ( $filter_items as $filter_item ) {
 	}
 
 	// Output filter item
-	$output_items .= '<div ' . us_implode_atts( $item_atts ) . '>';
+	$output_items .= '<div' . us_implode_atts( $item_atts ) . '>';
 	$output_items .= '<a class="w-filter-item-title" href="javascript:void(0);">';
 	$output_items .= strip_tags( $item_title );
 	$output_items .= '<span></span></a>';
@@ -775,17 +816,23 @@ foreach ( $filter_items as $filter_item ) {
 	if ( ! empty( $values_max_height ) ) {
 		$item_values_atts['style'] = 'max-height:' . $values_max_height;
 	}
-	$output_items .= '<div ' . us_implode_atts( $item_values_atts ) . '>';
+	$output_items .= '<div' . us_implode_atts( $item_values_atts ) . '>';
 	$output_items .= $output_item_content;
 	$output_items .= '</div>';
 	$output_items .= '</div>';
 }
 
 $output .= $output_items;
-$output .= '</div>';
+$output .= '</div>'; // w-filter-list
 
 // Add Mobiles related button and styles
 if ( ! empty( $mobile_width ) AND $output_items !== '' ) {
+	$output .= '<div class="w-filter-list-panel">';
+	$output .= '<a class="w-btn us-btn-style_1" href="javascript:void(0);">';
+	$output .= '<span class="w-btn-label">' . strip_tags( us_translate( 'Apply' ) ) . '</span>';
+	$output .= '</a>';
+	$output .= '</div>';
+
 	$mobile_button_atts = array(
 		'class' => 'w-filter-opener',
 		'href' => 'javascript:void(0);',
@@ -814,18 +861,18 @@ if ( ! empty( $mobile_width ) AND $output_items !== '' ) {
 		$mobile_button_atts['aria-label'] = __( 'Filters', 'us' );
 	}
 
-	$style = '@media( max-width:' . intval( $mobile_width ) . 'px ) {';
+	$style = '@media( max-width:' . (int) $mobile_width . 'px ) {';
 	$style .= '.w-filter.state_desktop .w-filter-list,';
 	$style .= '.w-filter-item-title > span { display: none; }';
 	$style .= '.w-filter-opener { display: inline-block; }';
 	$style .= '}';
 
 	$output .= '<style>' . us_minify_css( $style ) . '</style>';
-	$output .= '<a ' . us_implode_atts( $mobile_button_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $mobile_button_atts ) . '>';
 	if ( $mobile_button_iconpos == 'left' ) {
 		$output .= $mobile_button_icon_html;
 	}
-	$output .= '<span>'. strip_tags( $mobile_button_label ) .'</span>';
+	$output .= '<span>' . strip_tags( $mobile_button_label ) . '</span>';
 	if ( $mobile_button_iconpos == 'right' ) {
 		$output .= $mobile_button_icon_html;
 	}
@@ -833,7 +880,7 @@ if ( ! empty( $mobile_width ) AND $output_items !== '' ) {
 }
 
 if ( ! empty( $filters_args ) ) {
-	$output .= '<div class="w-filter-json-filters-args hidden"'. us_pass_data_to_js( $filters_args ) .'></div>';
+	$output .= '<div class="w-filter-json-filters-args hidden"' . us_pass_data_to_js( $filters_args ) . '></div>';
 }
 
 $output .= '</form>';

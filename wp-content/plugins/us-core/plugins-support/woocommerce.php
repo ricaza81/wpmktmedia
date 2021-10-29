@@ -17,10 +17,17 @@ function us_woocommerce_support() {
 			'gallery_thumbnail_image_width' => 150, // changed gallery thumbnail size to default WP 'thumbnail'
 		)
 	);
-	if ( in_array( 'zoom', us_get_option( 'product_gallery_options', array() ) ) ) {
+	$product_gallery_options = us_get_option( 'product_gallery_options' );
+
+	// Fallback for var type
+	if ( is_array( $product_gallery_options ) ) {
+		$product_gallery_options = implode( ',', $product_gallery_options );
+	}
+
+	if ( strpos( $product_gallery_options, 'zoom' ) !== FALSE ) {
 		add_theme_support( 'wc-product-gallery-zoom' );
 	}
-	if ( in_array( 'lightbox', us_get_option( 'product_gallery_options', array() ) ) ) {
+	if ( strpos( $product_gallery_options, 'lightbox' ) !== FALSE ) {
 		add_theme_support( 'wc-product-gallery-lightbox' );
 	}
 	if ( us_get_option( 'product_gallery' ) == 'slider' ) {
@@ -164,7 +171,7 @@ if ( ! function_exists( 'us_woocommerce_before_main_content' ) ) {
 			AND absint( get_query_var( 'paged' ) ) === 0
 			AND $shop_page = get_post( wc_get_page_id( 'shop' ) )
 			AND $shop_page_content = apply_filters( 'the_content', $shop_page->post_content )
-			) {
+		) {
 			if ( strpos( $shop_page_content, ' class="l-section' ) === FALSE ) {
 				$shop_page_content = '<section class="l-section for_shop_description"><div class="l-section-h i-cf">' . $shop_page_content . '</div></section>';
 			}
@@ -176,6 +183,7 @@ if ( ! function_exists( 'us_woocommerce_before_main_content' ) ) {
 			echo '<div class="l-section-h i-cf">';
 		}
 	}
+
 	add_action( 'woocommerce_before_main_content', 'us_woocommerce_before_main_content', 10 );
 }
 
@@ -185,6 +193,7 @@ function us_wc_get_template_part_content_single_product( $template, $slug, $name
 		// Output form only, if single Product is password protected
 		if ( post_password_required() ) {
 			echo '<section class="l-section height_' . us_get_option( 'row_height', 'medium' ) . '"><div class="l-section-h">' . get_the_password_form() . '</div></section>';
+
 			return;
 		} else {
 			return us_locate_file( 'templates/content.php' );
@@ -354,7 +363,7 @@ function us_add_to_cart_text_replace( $html, $product, $args ) {
 // Remove metaboxes from Shop page
 add_filter( 'us_config_meta-boxes', 'us_remove_meta_for_shop_page' );
 function us_remove_meta_for_shop_page( $config ) {
-	$post_id = isset( $_GET['post'] ) ? intval( $_GET['post'] ) : NULL;
+	$post_id = isset( $_GET['post'] ) ? (int) $_GET['post'] : NULL;
 	if ( $post_id !== NULL AND $post_id == get_option( 'woocommerce_shop_page_id' ) ) {
 		foreach ( $config as $metabox_key => $metabox ) {
 			if ( $metabox['id'] == 'us_portfolio_settings' ) {
@@ -362,8 +371,13 @@ function us_remove_meta_for_shop_page( $config ) {
 			}
 			if ( $metabox['id'] == 'us_page_settings' ) {
 				$keys = array(
-					'us_header_id', 'us_header_sticky_pos', 'us_titlebar_id',
-					'us_sidebar_id', 'us_sidebar_pos', 'us_content_id', 'us_footer_id'
+					'us_header_id',
+					'us_header_sticky_pos',
+					'us_titlebar_id',
+					'us_sidebar_id',
+					'us_sidebar_pos',
+					'us_content_id',
+					'us_footer_id',
 				);
 				foreach ( $keys as $key ) {
 					unset( $config[ $metabox_key ]['fields'][ $key ] );
@@ -389,9 +403,13 @@ if ( ! function_exists( 'us_wc_add_to_cart_message_html' ) ) {
 	 * @return string
 	 */
 	function us_wc_add_to_cart_message_html( $message ) {
-		return preg_replace_callback( '/(<\s*a[^>]*>.*<\s*\/\s*a>)(.*)/', function( $matches ) {
-			return $matches[2] . ' ' . preg_replace( '/="button\s/' , '="', $matches[1] );
-		}, $message );
+		return preg_replace_callback(
+			'/(<\s*a[^>]*>.*<\s*\/\s*a>)(.*)/',
+			function ( $matches ) {
+				return $matches[2] . ' ' . preg_replace( '/="button\s/', '="', $matches[1] );
+			},
+			$message
+		);
 	}
 }
 
@@ -404,19 +422,18 @@ if ( ! function_exists( 'us_posts_clauses' ) ) {
 		global $wpdb;
 		$query_vars = $wp_query->query_vars;
 		if (
-			$query_vars[ 'post_type' ] === 'product'
-			AND ! empty( $query_vars[ 'orderby' ] )
-			AND in_array( $query_vars[ 'orderby' ], array( 'price', 'popularity', 'rating' ) )
+			$query_vars['post_type'] === 'product'
+			AND ! empty( $query_vars['orderby'] )
+			AND in_array( $query_vars['orderby'], array( 'price', 'popularity', 'rating' ) )
 		) {
 			// Additional sorting for records that do not contain data in the adjacent table will allow you to organize the output.
-			$args['orderby'] = rtrim( $args['orderby'] ) . ', ' . $wpdb->posts . '.ID ' . ( strrpos( $args['orderby'] , 'ASC' ) !== FALSE
-				? 'ASC'
-				: 'DESC'
-			);
+			$args['orderby'] = rtrim( $args['orderby'] ) . ', ' . $wpdb->posts . '.ID ' .
+				( ( strrpos( $args['orderby'], 'ASC' ) !== FALSE ) ? 'ASC' : 'DESC' );
 		}
 
 		return $args;
 	}
+
 	add_action( 'posts_clauses', 'us_posts_clauses', 100, 2 );
 }
 
@@ -430,6 +447,7 @@ if ( ! function_exists( 'us_woocommerce_enable_setup_wizard' ) ) {
 	function us_woocommerce_enable_setup_wizard( $true ) {
 		return defined( 'US_DEV' ) ? FALSE : $true;
 	}
+
 	add_filter( 'woocommerce_enable_setup_wizard', 'us_woocommerce_enable_setup_wizard', 10, 1 );
 }
 
@@ -438,17 +456,24 @@ if ( ! function_exists( 'us_wc_pre_get_posts' ) ) {
 	 * Disable the output of products that are out of stock
 	 *
 	 * @param WP_Query $query
-	 * @return void
 	 */
 	function us_wc_pre_get_posts( $query ) {
+
 		if (
-			is_admin()
+			( is_admin() AND ! wp_doing_ajax() )
 			OR ! class_exists( 'woocommerce' )
 			OR get_option( 'woocommerce_hide_out_of_stock_items', 'no' ) !== 'yes'
 			// If the search page is not for products then exit
 			OR (
-				is_search()
+				$query->is_search
 				AND $query->get( 'post_type' ) !== 'product'
+			)
+			OR (
+				defined( 'REST_REQUEST' )
+				AND REST_REQUEST
+			)
+			OR (
+				wp_doing_ajax() AND isset( $_POST['action'] ) AND $_POST['action'] !== 'us_ajax_grid'
 			)
 		) {
 			return;
@@ -460,7 +485,13 @@ if ( ! function_exists( 'us_wc_pre_get_posts' ) ) {
 		// Check if the query has post type(s) set
 		// then check if it matches post types that support out of stock taxonomy
 		if ( ! empty( $query_vars['post_type'] ) ) {
-			$product_post_types = apply_filters( 'woocommerce_taxonomy_objects_product_visibility', array( 'product', 'product_variation' ) );
+			$product_post_types = apply_filters(
+				'woocommerce_taxonomy_objects_product_visibility',
+				array(
+					'product',
+					'product_variation',
+				)
+			);
 			foreach ( $product_post_types as $product_post_type ) {
 				if ( $query_vars['post_type'] === $product_post_type
 					OR (
@@ -490,7 +521,7 @@ if ( ! function_exists( 'us_wc_pre_get_posts' ) ) {
 			$include_outofstock_meta = TRUE;
 
 			// OR query has product categories
-		} else if ( ! empty( $query_vars['tax_query'] ) ) {
+		} elseif ( ! empty( $query_vars['tax_query'] ) ) {
 			foreach ( $query_vars['tax_query'] as $tax ) {
 				if (
 					! empty( $tax['taxonomy'] )
@@ -514,8 +545,59 @@ if ( ! function_exists( 'us_wc_pre_get_posts' ) ) {
 			);
 		}
 	}
+
 	add_action( 'pre_get_posts', 'us_wc_pre_get_posts', 10, 1 );
 }
+
+if ( ! function_exists( 'us_pre_get_posts_exclude_hidden_products' ) ) {
+	/**
+	 * Removes Hidden Products from AJAX queries
+	 *
+	 * @param WP_Query $query
+	 * @return void
+	 */
+	function us_pre_get_posts_exclude_hidden_products( $query ) {
+		// Do not modify query for product visibility support if ...
+		if (
+			// ... it is a regular request, but post type is not WooCommerce product
+			(
+				! wp_doing_ajax()
+				AND $query->get( 'post_type' ) !== 'product'
+			)
+			// ... or it is an AJAX request, but not for our grid element
+			OR (
+				wp_doing_ajax()
+				AND isset( $_POST['action'] )
+				AND $_POST['action'] !== 'us_ajax_grid'
+			)
+		) {
+			return;
+		}
+
+		$tax_query = $query->get( 'tax_query' );
+
+		if ( empty( $tax_query ) AND ! is_array( $tax_query ) ) {
+			$tax_query = array(
+				'taxonomy' => 'product_visibility',
+				'field' => 'slug',
+				'terms' => array( 'exclude-from-catalog' ),
+				'operator' => 'NOT IN',
+			);
+		} else {
+			$tax_query[] = array(
+				'taxonomy' => 'product_visibility',
+				'field' => 'slug',
+				'terms' => array( 'exclude-from-catalog' ),
+				'operator' => 'NOT IN',
+			);
+		}
+
+		$query->set( 'tax_query', $tax_query );
+	}
+
+	add_action( 'pre_get_posts', 'us_pre_get_posts_exclude_hidden_products' );
+}
+
 
 if ( ! function_exists( 'us_wc_get_min_max_price' ) ) {
 	/**
@@ -615,5 +697,6 @@ if ( ! function_exists( 'us_filter_woocommerce_get_catalog_ordering_args' ) ) {
 
 		return $args;
 	}
+
 	add_filter( 'woocommerce_get_catalog_ordering_args', 'us_filter_woocommerce_get_catalog_ordering_args', 1, 1 );
 }

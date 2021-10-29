@@ -82,13 +82,12 @@
 	padding-top: 10px;
 	padding-bottom: 10px;
 	}
-	.usof-form-row:not(.inline) .usof-form-row-title,
-	.usof-form-wrapper.title_left .usof-form-wrapper-title {
+	.usof-form-row.titlepos_side .usof-form-row-title {
 		float: none !important;
 		padding-top: 0 !important;
 		width: 100%;
 		}
-	.usof-form-row-field {
+	.usof-form-row.titlepos_side .usof-form-row-field {
 		float: none !important;
 		width: 100%;
 		}
@@ -115,7 +114,8 @@
 #wpbody .usof-container select {
 	height: 40px; /* override WP styles */
 	}
-.usof-container {
+.usof-container.type_builder,
+.wrap > .usof-container {
 	padding: 0 0 60px;
 	}
 .usof-header {
@@ -251,11 +251,6 @@
 .usof-form-wrapper .usof-form-row.inline {
 	padding-left: 0 !important;
 	padding-right: 0 !important;
-	}
-.usof-form-row-title {
-	float: none;
-	padding-top: 0;
-	width: auto;
 	}
 .us-bld-window.for_templates .us-bld-window-item {
 	width: 100%;

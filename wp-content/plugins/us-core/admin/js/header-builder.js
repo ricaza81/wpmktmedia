@@ -21,9 +21,9 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	 */
 	$ushb.Tabs = function( container ) {
 		this.$container = $( container );
-		this.$list = this.$container.find( '.usof-tabs-list:first' );
+		this.$list = $( '.usof-tabs-list:first', this.$container );
 		this.$items = this.$list.children( '.usof-tabs-item' );
-		this.$sections = this.$container.find( '.usof-tabs-section' );
+		this.$sections = $( '.usof-tabs-section', this.$container );
 		this.items = this.$items.toArray().map( $ );
 		this.sections = this.$sections.toArray().map( $ );
 		this.active = 0;
@@ -57,7 +57,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	 */
 	$ushb.EForm = function( container ) {
 		this.$container = $( container );
-		this.$tabs = this.$container.find( '.usof-tabs' );
+		this.$tabs = $( '.usof-tabs', this.$container );
 		if ( this.$tabs.length ) {
 			this.tabs = new $ushb.Tabs( this.$tabs );
 		}
@@ -94,8 +94,8 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	};
 	$.extend( $ushb.EList.prototype, $usof.mixins.Events, {
 		init: function() {
-			this.$closer = this.$container.find( '.us-bld-window-closer' );
-			this.$list = this.$container.find( '.us-bld-window-list' );
+			this.$closer = $( '.us-bld-window-closer', this.$container );
+			this.$list = $( '.us-bld-window-list', this.$container );
 			this._events = {
 				select: function( event ) {
 					var $item = $( event.target ).closest( '.us-bld-window-item' );
@@ -153,27 +153,27 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	};
 	$.extend( $ushb.EBuilder.prototype, $usof.mixins.Events, {
 		init: function() {
-			this.$title = this.$container.find( '.us-bld-window-title' );
+			this.$title = $( '.us-bld-window-title', this.$container );
 			this.titles = this.$title[ 0 ].onclick() || {};
 			this.$title.removeAttr( 'onclick' );
-			this.$closer = this.$container.find( '.us-bld-window-closer' );
-			this.$header = this.$container.find( '.us-bld-window-header' );
+			this.$closer = $( '.us-bld-window-closer', this.$container );
+			this.$header = $( '.us-bld-window-header', this.$container );
 			// EForm containers and class instances
 			this.$eforms = {};
 			this.eforms = {};
 			// Set of default values for each elements form
 			this.defaults = {};
-			this.$container.find( '.usof-form' ).each( function( index, eform ) {
+			$( '.usof-form', this.$container ).each( function( index, eform ) {
 				var $eform = $( eform ).css( 'display', 'none' ),
 					name = $eform.usMod( 'for' );
 				this.$eforms[ name ] = $eform;
 			}.bind( this ) );
-			this.$btnSave = this.$container.find( '.usof-button.type_save' );
+			this.$btnSave = $( '.usof-button.type_save', this.$container );
 			// Actve element
 			this.active = false;
 			this._events = {
 				hide: this.hide.bind( this ),
-				save: this.save.bind( this )
+				save: this.save.bind( this ),
 			};
 			this.$closer.on( 'click', this._events.hide );
 			this.$btnSave.on( 'click', this._events.save );
@@ -267,9 +267,8 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			this.hide();
 			this.trigger( 'save', this.getValues(), this.getDefaults() );
 		}
-
 	} );
-	// Singletone instance
+	// Singleton instance
 	$ushb.ebuilder = new $ushb.EBuilder;
 
 	/**
@@ -287,11 +286,11 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	};
 	$.extend( $ushb.ExportImport.prototype, $usof.mixins.Events, {
 		init: function() {
-			this.$closer = this.$container.find( '.us-bld-window-closer' );
-			this.$importButton = this.$container.find( '.usof-button.type_save' );
-			this.$row = this.$container.find( '.usof-form-row' ).first();
-			this.$rowState = this.$row.find( '.usof-form-row-state' );
-			this.$textarea = this.$row.find( 'textarea' );
+			this.$closer = $( '.us-bld-window-closer', this.$container );
+			this.$importButton = $( '.usof-button.type_save', this.$container );
+			this.$row = $( '.usof-form-row', this.$container ).first();
+			this.$rowState = $( '.usof-form-row-state', this.$row );
+			this.$textarea = $( 'textarea', this.$row );
 			this.error = false;
 
 			this._events = {
@@ -337,7 +336,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			this.trigger( 'afterHide' );
 		}
 	} );
-	// Singletone instance
+	// Singleton instance
 	$ushb.exportimport = new $ushb.ExportImport;
 
 	/**
@@ -356,8 +355,8 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	};
 	$.extend( $ushb.HTemplates.prototype, $usof.mixins.Events, {
 		init: function() {
-			this.$closer = this.$container.find( '.us-bld-window-closer' );
-			this.$list = this.$container.find( '.us-bld-window-list' );
+			this.$closer = $( '.us-bld-window-closer', this.$container );
+			this.$list = $( '.us-bld-window-list', this.$container );
 			this._events = {
 				select: function( event ) {
 					var $item = $( event.target ).closest( '.us-bld-window-item' );
@@ -365,7 +364,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 						return;
 					}
 					this.hide();
-					var data = $item.find( '.us-bld-window-item-data' )[ 0 ].onclick();
+					var data = $( '.us-bld-window-item-data', $item )[ 0 ].onclick();
 					this.trigger( 'select', $item.data( 'name' ), data );
 				}.bind( this ),
 				hide: this.hide.bind( this )
@@ -406,7 +405,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			this.trigger( 'afterHide' );
 		}
 	} );
-	// Singletone instance
+	// Singleton instance
 	$ushb.htemplates = new $ushb.HTemplates;
 
 	/**
@@ -414,9 +413,9 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 	 */
 	var HBOptions = function( container ) {
 		this.$container = $( container );
-		this.$sections = this.$container.find( '.us-bld-options-section' );
+		this.$sections = $( '.us-bld-options-section', this.$container );
 		this.$sections.not( '.active' ).children( '.us-bld-options-section-content' ).slideUp();
-		this.$container.find( '.us-bld-options-section-title' ).click( function( event ) {
+		$( '.us-bld-options-section-title', this.$container ).click( function( event ) {
 			var $parentSection = $( event.target ).parent();
 			if ( $parentSection.hasClass( 'active' ) ) {
 				return;
@@ -432,7 +431,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			}.bind( this ) );
 		}.bind( this ) );
 
-		this.$container.find( '.usof-subform-row, .usof-subform-wrapper' ).each( function( index, elm ) {
+		$( '.usof-subform-row, .usof-subform-wrapper', this.$container ).each( function( index, elm ) {
 			elm.className = elm.className.replace( 'usof-subform-', 'usof-form-' );
 		} );
 
@@ -462,40 +461,55 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 		init: function( options ) {
 			$ushb.instance = this;
 			this.parentInit( options );
-			this.$container = this.$row.find( '.us-bld' );
-			this.$workspace = this.$container.find( '.us-bld-workspace' );
-			this.$body = $( document.body );
+
+			// Elements
 			this.$window = $( window );
+			this.$body = $( document.body );
+			this.$container = $( '.us-bld', this.$row );
+			this.$workspace = $( '.us-bld-workspace', this.$container );
 			this.$editor = $( '.us-bld-editor' );
 			this.$dragshadow = $( '<div class="us-bld-editor-dragshadow"></div>' );
-			this.$rows = this.$container.find( '.us-bld-editor-row' );
-			this.$stateTabs = this.$container.find( '.us-bld-state' );
+			this.$rows = $( '.us-bld-editor-row', this.$container );
+			this.$stateTabs = $( '.us-bld-state', this.$container );
 
-			this.params = this.$container.find( '.us-bld-params' )[ 0 ].onclick() || {};
-			this.elmsDefaults = this.$container.find( '.us-bld-defaults' )[ 0 ].onclick() || {};
-			this.translations = this.$container.find( '.us-bld-translations' )[ 0 ].onclick() || {};
-			this.value = this.$container.find( '.us-bld-value' )[ 0 ].onclick() || {};
-			this.states = [ 'default', 'tablets', 'mobiles' ];
+			// Import data from backend.
+			var data = {};
+			if ( $( '.us-bld-data', this.$container ).is('[onclick]') ) {
+				data =  $( '.us-bld-data', this.$container )[ 0 ].onclick() || {};
+			}
+
+			// Variables
 			this.state = 'default';
+			this.value = data['value'] || {};
+			this.params = data['params'] || {};
+			this.elmsDefaults = data['defaults'] || {};
+			this.translations = data['translations'] || {};
+			this.states = data['states'] || [ 'default' ];
 
+			/**
+			 * Bondable events.
+			 *
+			 * @private
+			 * @var {{}}
+			 */
 			this._events = {
 				_maybeDragMove: this._maybeDragMove.bind( this ),
 				_dragMove: this._dragMove.bind( this ),
 				_dragEnd: this._dragEnd.bind( this )
 			};
 
-			this.$places = { hidden: this.$editor.find( '.us-bld-editor-row.for_hidden > .us-bld-editor-row-h' ) };
-			this.$editor.find( '.us-bld-editor-cell' ).each( function( index, cell ) {
+			this.$places = { hidden: $( '.us-bld-editor-row.for_hidden > .us-bld-editor-row-h', this.$editor ) };
+			$( '.us-bld-editor-cell', this.$editor ).each( function( index, cell ) {
 				var $cell = $( cell );
 				this.$places[ $cell.parent().parent().usMod( 'at' ) + '_' + $cell.usMod( 'at' ) ] = $cell;
 			}.bind( this ) );
 			this.$wrappers = {};
-			this.$editor.find( '.us-bld-editor-wrapper' ).each( function( index, wrapper ) {
+			$( '.us-bld-editor-wrapper', this.$editor ).each( function( index, wrapper ) {
 				var $wrapper = $( wrapper );
 				this.$wrappers[ $wrapper.data( 'id' ) ] = $wrapper;
 			}.bind( this ) );
 			this.$elms = {};
-			this.$editor.find( '.us-bld-editor-elm' ).each( function( index, elm ) {
+			$( '.us-bld-editor-elm', this.$editor ).each( function( index, elm ) {
 				var $elm = $( elm );
 				this.$elms[ $elm.data( 'id' ) ] = $elm;
 			}.bind( this ) );
@@ -504,39 +518,47 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			$( '.usof-control.for_import' ).on( 'click', this._showExportImportBtnClick.bind( this ) );
 
 			// Elements modification events
-			this.$container.on( 'click', '.us-bld-editor-add, .us-bld-editor-control.type_add, .us-bld-editor-wrapper-content:empty', this._addBtnClick.bind( this ) );
-			this.$container.on( 'click', '.us-bld-editor-control.type_edit', this._editBtnClick.bind( this ) );
-			this.$container.on( 'click', '.us-bld-editor-control.type_clone', this._cloneBtnClick.bind( this ) );
-			this.$container.on( 'mousedown', '.us-bld-editor-elm, .us-bld-editor-wrapper', this._dragStart.bind( this ) );
-			this.$container.on( 'click', '.us-bld-editor-control.type_delete', this._deleteBtnClick.bind( this ) );
-
-			// Preventing browser native drag event
-			this.$container.on( 'dragstart', function( event ) {
-				event.preventDefault();
-			} );
+			this.$container
+				.on( 'click', '.us-bld-editor-add, .us-bld-editor-control.type_add, .us-bld-editor-wrapper-content:empty', this._addBtnClick.bind( this ) )
+				.on( 'click', '.us-bld-editor-control.type_edit', this._editBtnClick.bind( this ) )
+				.on( 'click', '.us-bld-editor-control.type_clone', this._cloneBtnClick.bind( this ) )
+				.on( 'mousedown', '.us-bld-editor-elm, .us-bld-editor-wrapper', this._dragStart.bind( this ) )
+				.on( 'click', '.us-bld-editor-control.type_delete', this._deleteBtnClick.bind( this ) )
+				// Preventing browser native drag event
+				.on( 'dragstart', function( e ) { e.preventDefault() } );
 
 			// Options that has no responsive values
 			this.sharedOptions = [ 'top_fullwidth', 'middle_fullwidth', 'bottom_fullwidth' ];
 
-			this.sideOptions = new HBOptions( this.$container.find( '.us-bld-options:first' ) );
+			this.sideOptions = new HBOptions( $( '.us-bld-options:first', this.$container ) );
 			$.each( this.sideOptions.fields, function( fieldId, field ) {
 				field.on( 'change', this._optionChanged.bind( this ) );
 			}.bind( this ) );
-			this.sideOptions.fields.orientation.$row.find( 'label' ).on( 'click', function( event ) {
+
+			$( 'input', this.sideOptions.fields.orientation.$row ).on( 'click', function( event ) {
+				var $target = $( event.target ),
+					val = $target.val(),
+					currOrientation = this.value[ this.state ].options.orientation;
+				// Fix for Safari, not to lose active button state
+				if ( val == currOrientation ) {
+					$target.attr( 'checked', 'checked' );
+					return false;
+				}
 				if ( ! confirm( this.translations[ 'orientation_change_confirm' ] ) ) {
 					event.preventDefault();
+					event.stopPropagation();
 				}
 			}.bind( this ) );
 
 			// State togglers
 			this.$stateTabs.on( 'click', function( event ) {
 				var $stateTab = $( event.target ),
-					newState = $stateTab.usMod( 'for' );
+					newState = $stateTab.usMod( 'ui-icon_devices' );
 				this.setState( newState );
 			}.bind( this ) );
 
 			// Highlight rows on side options hover
-			this.$container.find( '.us-bld-options-section' ).each( function( index, section ) {
+			$( '.us-bld-options-section', this.$container ).each( function( index, section ) {
 				var $section = $( section ),
 					id = $section.data( 'id' );
 				$section.hover( function() {
@@ -597,7 +619,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 				var elmId = this.createElement( place, type );
 				// Opening editing form for standard elements
 				if ( type.substr( 1 ) != 'wrapper' ) {
-					this.$elms[ elmId ].find( '.us-bld-editor-control.type_edit' ).trigger( 'click' );
+					$( '.us-bld-editor-control.type_edit', this.$elms[ elmId ] ).trigger( 'click' );
 				}
 			}.bind( this ) );
 			$ushb.elist.show();
@@ -744,7 +766,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 					// If not already in this cell, moving to it
 					var $shadowCell = this.$dragshadow.closest( '.us-bld-editor-cell' );
 					if ( $shadowCell.length == 0 || $shadowCell[ 0 ] != elm ) {
-						this.$dragshadow.insertBefore( $( elm ).find( '.us-bld-editor-add' ) );
+						this.$dragshadow.insertBefore( $( '.us-bld-editor-add', elm ) );
 						this._dragDrop( event );
 					}
 					break;
@@ -781,8 +803,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 		 * @param event
 		 */
 		_dragDrop: function( event ) {
-			this.$container
-				.find( '.us-bld-editor-wrapper' )
+			$( '.us-bld-editor-wrapper', this.$container )
 				.removeClass( 'empty' )
 				.find( '.us-bld-editor-wrapper-content:empty' )
 				.parent()
@@ -854,7 +875,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 				return;
 			}
 			// Changing the active tab setting
-			this.$stateTabs.removeClass( 'active' ).filter( '.for_' + newState ).addClass( 'active' );
+			this.$stateTabs.removeClass( 'active' ).filter( '.ui-icon_devices_' + newState ).addClass( 'active' );
 			this.$workspace.usMod( 'for', newState );
 			this.state = newState;
 			// Changing side options view
@@ -1023,7 +1044,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 		 * @param {jQuery} $html
 		 */
 		_loadAttachments: function( $html ) {
-			$html.find( 'img[data-wpattachment]' ).each( function( index, elm ) {
+			$( 'img[data-wpattachment]', $html ).each( function( index, elm ) {
 				var $elm = $( elm ),
 					id = $elm.data( 'wpattachment' ),
 					attachment = wp.media.attachment( id );
@@ -1096,7 +1117,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			}
 			values = $.extend( {}, this.elmsDefaults[ type ] || {}, values || {} );
 			var type = id.split( ':' )[ 0 ],
-				$content = $elm.find( '.us-bld-editor-elm-content:first' ),
+				$content = $( '.us-bld-editor-elm-content:first', $elm ),
 				content = '';
 			if ( type == 'text' && ( values.text || values.icon ) ) {
 				if ( values.icon ) {
@@ -1325,8 +1346,7 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 				this._updateElementPlaceholder( this.$elms[ elmId ], elmId, this.value.data[ elmId ] );
 			}
 			// Fixing wrappers
-			this.$container
-				.find( '.us-bld-editor-wrapper' )
+			$( '.us-bld-editor-wrapper', this.$container )
 				.removeClass( 'empty' )
 				.find( '.us-bld-editor-wrapper-content:empty' )
 				.parent()
@@ -1430,9 +1450,9 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 		this.fireFieldEvent( this.$container, 'afterShow' );
 
 		// Save action
-		this.$saveControl = this.$container.find( '.usof-control.for_save' );
-		this.$saveBtn = this.$saveControl.find( '.usof-button' ).on( 'click', this.save.bind( this ) );
-		this.$saveMessage = this.$saveControl.find( '.usof-control-message' );
+		this.$saveControl = $( '.usof-control.for_save', this.$container );
+		this.$saveBtn = $( '.usof-button', this.$saveControl ).on( 'click', this.save.bind( this ) );
+		this.$saveMessage = $( '.usof-control-message', this.$saveControl );
 		this.valuesChanged = {};
 		this.saveStateTimer = null;
 		for ( var fieldId in this.fields ) {
@@ -1448,10 +1468,11 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 			}.bind( this ) );
 		}
 
-		$( window ).bind( 'keydown', function( event ) {
-			if ( event.ctrlKey || event.metaKey ) {
-				if ( String.fromCharCode( event.which ).toLowerCase() == 's' ) {
-					event.preventDefault();
+		// Events
+		$( window ).on( 'keydown', function( e ) {
+			if ( e.ctrlKey || e.metaKey ) {
+				if ( String.fromCharCode( e.which ).toLowerCase() == 's' ) {
+					e.preventDefault();
 					this.save();
 				}
 			}
@@ -1473,8 +1494,8 @@ $ushb.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 				ID: this.$container.data( 'id' ),
 				post_title: this.getValue( 'post_title' ),
 				post_content: JSON.stringify( this.getValue( 'post_content' ) ),
-				_wpnonce: this.$container.find( '[name="_wpnonce"]' ).val(),
-				_wp_http_referer: this.$container.find( '[name="_wp_http_referer"]' ).val()
+				_wpnonce: $( '[name="_wpnonce"]', this.$container ).val(),
+				_wp_http_referer: $( '[name="_wp_http_referer"]', this.$container ).val()
 			};
 
 			// Inject polylang data from AJAX request

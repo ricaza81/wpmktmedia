@@ -30,7 +30,7 @@ $_atts['class'] = 'w-post-elm post_image';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= $circle ? ' as_circle' : '';
 
-// When width or height are set in Design options, add the specific classes
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'width' ) ) {
 	$_atts['class'] .= ' has_width';
 }
@@ -42,15 +42,12 @@ if ( us_design_options_has_property( $css, 'height' ) ) {
 $ratio_helper = '';
 if ( $has_ratio ) {
 	$ratio_array = us_get_aspect_ratio_values( $ratio, $ratio_width, $ratio_height );
-	$ratio_helper = '<div style="padding-bottom:' . number_format( $ratio_array[1] / $ratio_array[0] * 100, 4 ) . '%"></div>';
+	$ratio_helper = '<div style="padding-bottom:' . round( $ratio_array[1] / $ratio_array[0] * 100, 4 ) . '%"></div>';
 	$_atts['class'] .= ' has_ratio';
 } elseif ( $stretch ) {
 	$_atts['class'] .= ' stretched';
 }
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 	$_atts['id'] = $el_id;
 }
@@ -62,7 +59,7 @@ if ( ! empty( $us_grid_img_size ) AND $us_grid_img_size != 'default' ) {
 
 // Calculate aspect ratio for media preview and for placeholder
 if ( isset( $_wp_additional_image_sizes[ $thumbnail_size ] ) AND $_wp_additional_image_sizes[ $thumbnail_size ]['width'] != 0 AND $_wp_additional_image_sizes[ $thumbnail_size ]['height'] != 0 ) {
-	$us_post_img_ratio = number_format( $_wp_additional_image_sizes[ $thumbnail_size ]['height'] / $_wp_additional_image_sizes[ $thumbnail_size ]['width'] * 100, 4 );
+	$us_post_img_ratio = round( $_wp_additional_image_sizes[ $thumbnail_size ]['height'] / $_wp_additional_image_sizes[ $thumbnail_size ]['width'] * 100, 4 );
 }
 
 global $us_grid_object_type;
@@ -112,12 +109,22 @@ if ( $link === 'none' ) {
 }
 
 // Force "Open in a new tab" attributes
-if ( ! empty( $link_atts['href'] ) AND empty( $link_atts['target'] ) AND $link_new_tab ) {
+if (
+	! empty( $link_atts['href'] )
+	AND empty( $link_atts['target'] )
+	AND $link_new_tab
+	AND ! in_array( $link, array( 'none', 'popup_post_image', 'custom' ) )
+) {
 	$link_atts['target'] = '_blank';
 	$link_atts['rel'] = 'noopener nofollow';
 }
 
 $_post_preview = '';
+
+// In Live Builder for Page Block / Content template show a placeholder for shortcode
+if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+	$_post_preview = us_get_img_placeholder( $thumbnail_size );
+}
 
 // Get image of taxonomy term (works for WooCommerce Product categories, brands, tags etc.)
 if ( isset( $us_grid_term->taxonomy ) AND strpos( $us_grid_term->taxonomy, 'product_' ) === 0 ) {
@@ -141,33 +148,52 @@ if ( isset( $us_grid_term->taxonomy ) AND strpos( $us_grid_term->taxonomy, 'prod
 // Generate media preview
 if ( $_post_preview == '' AND $media_preview AND ! post_password_required() AND ! $us_grid_term ) {
 
-	// for WooCommerce Products with gallery
-	if ( get_post_type() == 'product' ) {
-		$postID = get_the_ID();
-		if ( $product_images = get_post_meta( $postID, '_product_image_gallery', TRUE ) ) {
-			$img_ids = explode( ',', get_post_thumbnail_id() . ',' . $product_images );
-
-			// Remove empty ids to avoid duplications in output
-			$img_ids = array_diff( $img_ids, array( '' ) );
-
-			foreach ( $img_ids as $key => $img_id ) {
-				$img_width = number_format( 100 / count( $img_ids ), 2 );
-
-				$_post_preview .= '<div class="w-post-slider-trigger"';
-				$_post_preview .= ' style="width:' . $img_width . '%; left:' . $key * $img_width . '%;"></div>';
-				$_post_preview .= wp_get_attachment_image( $img_id, $thumbnail_size );
-			}
-		}
-
-		// for Posts with Video, Audio, Gallery formats
-	} else {
+	// Generate specific preview for posts with Video, Audio, Gallery formats
+	if ( in_array( get_post_format(), array( 'video', 'audio', 'gallery' ) ) ) {
 		$us_post_slider_size = $thumbnail_size;
 		$the_content = get_the_content();
+
+		// Pass custom padding to keep proper preview aspect ratio in Video element
+		if ( get_post_format() == 'video' AND isset( $ratio_array ) ) {
+			$us_post_img_ratio = round( $ratio_array[1] / $ratio_array[0] * 100, 4 );
+			$ratio_helper = '';
+		}
+
 		$_post_preview = us_get_post_preview( $the_content );
 
 		if ( $_post_preview != '' ) {
 			$_atts['class'] .= ' media_preview'; // add CSS class for media preview
 			$link_atts = array(); // remove link for media preview
+		}
+
+		// Generate simple hover gallery for other cases
+	} else {
+		$postID = get_the_ID();
+
+		// For products get its WooCommerce gallery images
+		if ( get_post_type() == 'product' ) {
+			$images = get_post_meta( $postID, '_product_image_gallery', TRUE );
+
+			// For other post types get "Custom appearance in Grid" images
+		} else {
+			$images = get_post_meta( $postID, 'us_tile_additional_image', TRUE );
+		}
+
+		if ( $images ) {
+
+			// Combine with Featured image
+			$img_ids = explode( ',', get_post_thumbnail_id() . ',' . $images );
+
+			// Remove empty ids to avoid duplications in output
+			$img_ids = array_diff( $img_ids, array( '' ) );
+
+			foreach ( $img_ids as $key => $img_id ) {
+				$img_width = round( 100 / count( $img_ids ), 2 );
+
+				$_post_preview .= '<div class="w-post-slider-trigger"';
+				$_post_preview .= ' style="width:' . $img_width . '%; left:' . $key * $img_width . '%;"></div>';
+				$_post_preview .= wp_get_attachment_image( $img_id, $thumbnail_size );
+			}
 		}
 	}
 }
@@ -178,7 +204,7 @@ if ( $_post_preview == '' AND get_post_type() == 'attachment' ) {
 }
 
 // Output Featured image if the current post has it
-if ( $_post_preview == '' AND has_post_thumbnail() AND is_null( $us_grid_term ) ) {
+if ( $_post_preview == '' AND has_post_thumbnail() AND ! $us_grid_term ) {
 	$_post_preview = get_the_post_thumbnail( get_the_ID(), $thumbnail_size );
 }
 
@@ -210,16 +236,16 @@ if ( $_post_preview == '' AND $placeholder ) {
 	}
 }
 
-// Don't output the element without any content
-if ( $_post_preview == '' ) {
+// Don't output the element without any content unless it's US Builder page
+if ( $_post_preview == '' AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
 	return;
 }
 
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= $ratio_helper;
 if ( ! empty( $link_atts['href'] ) ) {
 	$link_atts['aria-label'] = strip_tags( get_the_title() );
-	$output .= '<a ' . us_implode_atts( $link_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $link_atts ) . '>';
 }
 
 $output .= $_post_preview;

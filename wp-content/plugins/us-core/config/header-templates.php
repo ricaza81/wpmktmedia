@@ -28,7 +28,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'middle_height' => '60px',
 			),
 		),
@@ -37,7 +36,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 		),
 	),
@@ -71,7 +70,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'top_show' => TRUE,
 				'top_height' => '40px',
 				'top_sticky_height' => '0px',
@@ -86,7 +84,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'menu:1' => array(
 				'indents' => '2rem',
@@ -150,7 +148,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'middle_height' => '60px',
 				'middle_sticky_height' => '60px',
 			),
@@ -163,10 +160,16 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'menu:1' => array(
+				'mobile_width' => '1025px',
 				'mobile_icon_thickness' => '2px',
+				'css' => array(
+					'mobiles' => array(
+						'margin-right' => '0',
+					),
+				),
 			),
 			'btn:1' => array(
 				'label' => 'BUY NOW',
@@ -207,7 +210,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'sticky' => FALSE,
 				'middle_height' => '60px',
 			),
@@ -217,7 +219,7 @@ return array(
 				'img' => $us_template_directory_uri . '/img/us-logo-white.png',
 				'img_transparent' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'menu:1' => array(
 				'dropdown_font_size' => '13px',
@@ -260,7 +262,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'top_show' => FALSE,
 				'middle_height' => '60px',
 			),
@@ -269,7 +270,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'text:2' => array(
 				'text' => '+321 123 4567',
@@ -337,7 +338,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'middle_height' => '50px',
 			),
 			'layout' => array(
@@ -350,7 +350,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'search:1' => array(
 				'layout' => 'modern',
@@ -400,7 +400,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'top_show' => FALSE,
 				'middle_height' => '66px',
 			),
@@ -416,7 +415,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 				'height_sticky' => '25px',
 			),
 			'vwrapper:1' => array(
@@ -526,7 +525,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'middle_height' => '50px',
 				'middle_sticky_height' => '0px',
 			),
@@ -538,7 +536,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'vwrapper:1' => array(
 				'alignment' => 'right',
@@ -551,8 +549,9 @@ return array(
 			'search:1' => array(
 				'text' => 'In search of...',
 				'layout' => 'simple',
-				'field_width' => '538px',
-				'field_width_tablets' => '340px',
+				'field_width' => '514px',
+				'field_width_laptops' => '514px',
+				'field_width_tablets' => '400px',
 			),
 			'socials:1' => array(
 				'items' => array(
@@ -669,7 +668,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'middle_height' => '50px',
 				'middle_sticky_height' => '0px',
 			),
@@ -683,7 +681,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'search:1' => array(
 				'layout' => 'fullscreen',
@@ -714,7 +712,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'middle_height' => '60px',
 			),
 			'layout' => array(
@@ -725,8 +722,9 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-core.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 				'height' => '80px',
+				'height_laptops' => '70px',
 				'height_tablets' => '60px',
 				'height_sticky' => '40px',
 				'height_sticky_tablets' => '40px',
@@ -779,7 +777,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'top_show' => FALSE,
 				'middle_height' => '60px',
 				'middle_sticky_height' => '60px',
@@ -796,7 +793,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
+				'link' => array( 'url' => '/' ),
 			),
 			'vwrapper:1' => array(
 				'alignment' => 'right',
@@ -886,7 +883,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'sticky' => TRUE,
 				'top_sticky_height' => '0px',
 				'middle_height' => '60px',
@@ -907,18 +903,7 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
-				'css' => array(
-					'default' => array(
-						'height' => '30px',
-					),
-					'tablets' => array(
-						'height' => '25px',
-					),
-					'mobiles' => array(
-						'height' => '20px',
-					),
-				),
+				'link' => array( 'url' => '/' ),
 			),
 			'btn:1' => array(
 				'label' => 'SIGN IN',
@@ -1071,7 +1056,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'orientation' => 'hor',
 				'middle_height' => '60px',
 			),
@@ -1086,40 +1070,19 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-logo.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
-				'css' => array(
-					'default' => array(
-						'margin-top' => '30px',
-						'margin-bottom' => '30px',
-					),
-				),
+				'link' => array( 'url' => '/' ),
 			),
 			'menu:1' => array(
 				'indents' => '0.7em',
-				'css' => array(
-					'default' => array(
-						'margin-bottom' => '30px',
-					),
-				),
 			),
 			'text:2' => array(
 				'text' => '+321 123 4567',
 				'icon' => 'fas|phone',
-				'css' => array(
-					'default' => array(
-						'margin-bottom' => '10px',
-					),
-				),
 			),
 			'text:3' => array(
 				'text' => 'info@test.com',
 				'link_type' => 'elm_value',
 				'icon' => 'fas|envelope',
-				'css' => array(
-					'default' => array(
-						'margin-bottom' => '10px',
-					),
-				),
 			),
 		),
 	),
@@ -1157,7 +1120,6 @@ return array(
 		),
 		'mobiles' => array(
 			'options' => array(
-				'breakpoint' => '600px',
 				'orientation' => 'ver',
 				'top_show' => FALSE,
 				'bottom_show' => TRUE,
@@ -1167,25 +1129,17 @@ return array(
 			'image:1' => array(
 				'img' => $us_template_directory_uri . '/img/us-core.png',
 				'onclick' => 'custom_link',
-				'link' => '/',
-				'css' => array(
-					'default' => array(
-						'height' => '90px',
-					),
-					'tablets' => array(
-						'height' => '90px',
-					),
-					'mobiles' => array(
-						'height' => '60px',
-					),
-				),
+				'link' => array( 'url' => '/' ),
+				'height_default' => '90px',
+				'height_laptops' => '90px',
+				'height_tablets' => '90px',
+				'height_mobiles' => '60px',
 			),
 			'menu:1' => array(
 				'indents' => '1.5vh',
 				'css' => array(
 					'default' => array(
 						'font-size' => '1.2rem',
-						'margin-bottom' => '10px',
 					),
 				),
 			),

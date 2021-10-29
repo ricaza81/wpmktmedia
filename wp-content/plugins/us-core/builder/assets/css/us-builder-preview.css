@@ -1,0 +1,263 @@
+/* US Builder Preview css
+-------------------------------------------------------------------*/
+
+/* Disable Query Monitor */
+#query-monitor-main {
+	display: none !important;
+	}
+
+@font-face {
+	font-family: 'UI icons';
+	font-style: normal;
+	font-weight: 400;
+	src: url(../../../assets/ui-icons.woff) format("woff");
+	}
+.ui-icon_duplicate:before {
+	content: '\e900';
+	font-family: 'UI icons';
+	vertical-align: top;
+	}
+.ui-icon_delete:before {
+	content: '\e903';
+	font-family: 'UI icons';
+	vertical-align: top;
+	}
+
+/* Disable all links and unwanted click events in editable area */
+body.usb_preview [data-usbid] .w-video *,
+body.usb_preview [data-usbid] .w-message-close,
+body.usb_preview.usb_content_ready [data-usbid] a:not(.w-tabs-item) {
+	pointer-events: none !important;
+	}
+
+/* Indicate empty elements in editable area only */
+body.usb_preview [data-usbid] .w-btn-wrapper,
+body.usb_preview [data-usbid] .w-text,
+body.usb_preview [data-usbid] .w-filter,
+body.usb_preview [data-usbid] .w-grid,
+body.usb_preview [data-usbid] .w-tabs,
+body.usb_preview [data-usbid] .w-post-elm,
+body.usb_preview [data-usbid] .w-hwrapper,
+body.usb_preview [data-usbid] .w-vwrapper,
+body.usb_preview [data-usbid] .w-page-block,
+body.usb_preview [data-usbid] .vc_column-inner,
+body.usb_preview [data-usbid] .wpb_text_column {
+	min-height: 28px;
+	}
+body.usb_preview [data-usbid] .w-scroller:not(.with_dots) {
+	position: static;
+	min-height: 28px;
+	height: 100%;
+	border: 1px dotted;
+	transform: translate(0,0);
+	}
+body.usb_preview [data-usbid] .w-menu:empty,
+body.usb_preview [data-usbid] .w-contacts:empty,
+body.usb_preview [data-usbid] .w-popup-trigger:empty,
+body.usb_preview [data-usbid] .w-post-elm:empty,
+body.usb_preview [data-usbid] .w-pricing:empty,
+body.usb_preview [data-usbid] .w-sharing-list:empty,
+body.usb_preview [data-usbid] .w-socials-list:empty,
+body.usb_preview [data-usbid] .w-html:empty,
+body.usb_preview [data-usbid] .w-hwrapper:empty,
+body.usb_preview [data-usbid] .w-vwrapper:empty,
+body.usb_preview [data-usbid] .w-page-block:empty,
+body.usb_preview [data-usbid] .w-tabs-section-content-h:empty,
+body.usb_preview [data-usbid] .vc_column-inner:empty,
+body.usb_preview [data-usbid] .wpb_wrapper:empty {
+	position: relative;
+	min-height: 34px;
+	border: 1px dotted;
+	}
+	body.usb_preview [data-usbid] .w-hwrapper:empty:after,
+	body.usb_preview [data-usbid] .w-vwrapper:empty:after,
+	body.usb_preview [data-usbid] .w-tabs-section-content-h:empty:after,
+	body.usb_preview [data-usbid] .vc_column-inner:empty:after {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%,-50%);
+		content: '\f067';
+		vertical-align: top;
+		font-family: 'fontawesome';
+		font-style: normal;
+		font-weight: 400;
+		line-height: 28px;
+		}
+body.usb_preview [data-usbid] .w-hwrapper > :not(.g-preloader):empty,
+body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
+	min-width: 80px;
+	}
+.w-grid .w-post-elm:empty,
+.w-grid .w-hwrapper:empty,
+.w-grid .w-vwrapper:empty {
+	display: none;
+	}
+
+/* Builder Hover Panel
+--------------------------------------------------------------------------*/
+.usb-builder-hover {
+	display: none;
+	pointer-events: none;
+	position: absolute;
+	z-index: 11111;
+	}
+	.usb-builder-hover-h {
+		height: 100%;
+		border: 1px solid #090;
+		}
+		.usb-builder-hover-h:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			border-width: inherit;
+			border-style: dashed;
+			border-color: #fff;
+			}
+	/* For elements in edit mode */
+	.usb-builder-hover.usb_editable {
+		display: block !important;
+		}
+		.usb-builder-hover.usb_editable:not([style*="block"]) .usb-builder-hover-panel {
+			display: none;
+			}
+
+.usb-builder-hover-panel {
+	display: flex;
+	line-height: 28px;
+	pointer-events: all !important;
+	position: absolute;
+	right: 0;
+	-webkit-user-select: none;
+	user-select: none;
+	background: #090;
+	color: #fff;
+	}
+	.usb-builder-hover-panel-name,
+	.usb-builder-hover-panel-edit {
+		display: none;
+		font-size: 10px;
+		padding: 0 8px;
+		}
+	.usb-builder-hover-panel-btn {
+		cursor: pointer;
+		flex-shrink: 0;
+		text-align: center;
+		font-size: 12px;
+		height: 28px;
+		width: 28px;
+		}
+	.usb-builder-hover-panel-btn:hover,
+	.usb-builder-hover-panel-edit:hover {
+		background-color: rgba(0,0,0,0.3) !important;
+		}
+	.usb-builder-hover-panel-edit {
+		color: inherit !important;
+		}
+
+	/* Display name for containers */
+	.usb-builder-hover.elm_vc_row .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_row_inner .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_column .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_column_inner .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_tta_tabs .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_tta_tour .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_tta_accordion .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_vc_tta_section .usb-builder-hover-panel-name,
+	.usb-builder-hover.elm_us_page_block .usb-builder-hover-panel-edit {
+		display: block;
+		}
+
+.elm_vc_row > .usb-builder-hover-panel,
+.elm_vc_row_inner > .usb-builder-hover-panel {
+	top: 100%;
+	left: 50%;
+	right: auto;
+	transform: translateX(-50%);
+	background: #277cea;
+	}
+.elm_vc_column > .usb-builder-hover-panel,
+.elm_vc_column_inner > .usb-builder-hover-panel {
+	left: 0;
+	right: auto;
+	bottom: 100%;
+	background: #277cea;
+	}
+.elm_vc_row > .usb-builder-hover-h,
+.elm_vc_row_inner > .usb-builder-hover-h,
+.elm_vc_column > .usb-builder-hover-h,
+.elm_vc_column_inner > .usb-builder-hover-h {
+	border-color: #277cea;
+	}
+.elm_vc_row > .usb-builder-hover-h {
+	border-width: 2px;
+	}
+
+.elm_vc_tta_tabs > .usb-builder-hover-panel,
+.elm_vc_tta_tour > .usb-builder-hover-panel,
+.elm_vc_tta_accordion > .usb-builder-hover-panel {
+	bottom: 100%;
+	left: 50%;
+	right: auto;
+	transform: translateX(-50%);
+	background: #f2a200;
+	}
+.elm_vc_tta_section > .usb-builder-hover-panel,
+.elm_us_hwrapper > .usb-builder-hover-panel,
+.elm_us_vwrapper > .usb-builder-hover-panel {
+	left: 0;
+	right: auto;
+	background: #f2a200;
+	}
+.elm_vc_tta_tabs > .usb-builder-hover-h,
+.elm_vc_tta_tour > .usb-builder-hover-h,
+.elm_vc_tta_accordion > .usb-builder-hover-h,
+.elm_vc_tta_section > .usb-builder-hover-h,
+.elm_us_hwrapper > .usb-builder-hover-h,
+.elm_us_vwrapper > .usb-builder-hover-h {
+	border-color: #f2a200;
+	}
+
+/* Preloader
+--------------------------------------------------------------------------*/
+.usb-elm-loading {
+	opacity: 0.5;
+	}
+	.g-preloader.for_usbuilder {
+		display: block;
+		margin: 0 auto;
+		font-size: 20px;
+		}
+	.w-tabs.layout_hor .g-preloader.for_usbuilder {
+		margin: 0 !important;
+		}
+
+/* Classes for Drag & Drop states
+--------------------------------------------------------------------------*/
+body.usb_draging {
+	-webkit-user-select: none;
+	user-select: none;
+	}
+	.usb_transit {
+		display: none !important;
+		pointer-events: none !important;
+		}
+	.usb_dropcontainer {
+		box-shadow: inset 0 0 0 2px #277cea !important;
+		}
+	.usb_dropplace {
+		height: 20px;
+		width: 100%;
+		background: #277cea;
+		}
+	main.l-main > .usb_dropplace {
+		height: 40px;
+		}
+	.usb_dropplace_container {
+		background: #277cea;
+		min-height: 10px;
+		min-width: 40px;
+		}

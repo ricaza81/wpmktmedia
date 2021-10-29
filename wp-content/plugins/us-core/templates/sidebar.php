@@ -171,28 +171,22 @@ if ( $is_display_sidebar ) {
 		}
 	}
 
-	// Generate column for Content area
-	$content_column_start = '<div class="vc_col-sm-9 vc_column_container l-content">';
-	$content_column_start .= '<div class="vc_column-inner"><div class="wpb_wrapper">';
-
-	// Generate column for Sidebar
-	$sidebar_column_start = '<div class="vc_col-sm-3 vc_column_container l-sidebar">';
-	$sidebar_column_start .= '<div class="vc_column-inner"><div class="wpb_wrapper">';
-
 	// Outputs HTML regarding place value
 	if ( $place == 'before' ) {
-		echo '<section class="l-section height_auto for_sidebar at_' . $position . '"><div class="l-section-h">';
-		echo '<div class="g-cols type_default valign_top">';
+		echo '<section class="l-section height_auto for_sidebar at_' . $position . '">';
+		echo '<div class="l-section-h">';
 
 		// Content column
-		echo $content_column_start;
+		echo '<div class="l-content">';
+		echo '<div class="vc_column-inner">';
 
 	} elseif ( $place == 'after' ) {
 
-		echo '</div></div></div>';
+		echo '</div></div>';
 
 		// Sidebar column
-		echo $sidebar_column_start;
+		echo '<div class="l-sidebar">';
+		echo '<div class="vc_column-inner">';
 
 		if ( $is_page_blocks_enabled AND $page_block ) {
 			us_add_to_page_block_ids( $translated_page_block_id );
@@ -202,7 +196,9 @@ if ( $is_display_sidebar ) {
 			dynamic_sidebar( $sidebar_id );
 		}
 
-		echo '</div></div></div>';
-		echo '</div></div></section>';
+		echo '</div></div>';
+
+		echo '</div>';
+		echo '</section>';
 	}
 }

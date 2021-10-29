@@ -92,8 +92,8 @@
 			that.$gradientDot = that.$colpick.find( '.second .usof-colpick-color-selector' );
 
 			// State switchers Solid/Gradient
-			that.$switchers = that.$colpick.find( '.usof-colpick-palette + .usof-radio-list input[type="radio"]' );
-			that.$switchersBox = that.$colpick.find( '.usof-radio-list' );
+			that.$switchers = that.$colpick.find( '.usof-colpick-palette + .usof-radio input[type="radio"]' );
+			that.$switchersBox = that.$colpick.find( '.usof-radio' );
 
 			// Do not proceed if the color value is not valid
 			if ( ! that.isValidColor( that.value ) ) {
@@ -199,8 +199,8 @@
 			that.$switchers.filter( '[value="' + that.colors.state + '"]' ).prop( 'checked', 'checked' );
 
 			// Solid/Gradient handler
-			$( document ).off( 'change', '.usof-colpick-palette + .usof-radio-list input[type="radio"]' )
-				.on( 'change', '.usof-colpick-palette + .usof-radio-list input[type="radio"]', function( e ) {
+			$( document ).off( 'change', '.usof-colpick-palette + .usof-radio input[type="radio"]' )
+				.on( 'change', '.usof-colpick-palette + .usof-radio input[type="radio"]', function( e ) {
 				e.preventDefault();
 				e.stopPropagation();
 

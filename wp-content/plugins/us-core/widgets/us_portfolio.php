@@ -16,9 +16,10 @@ class US_Widget_Portfolio extends US_Widget {
 	 * @return NULL
 	 */
 	function widget( $args, $instance ) {
+
 		// If we are running US Grid loop already, return nothing
 		global $us_grid_loop_running;
-		if ( isset( $us_grid_loop_running ) AND $us_grid_loop_running ) {
+		if ( ! empty( $us_grid_loop_running ) ) {
 			return NULL;
 		}
 		$us_grid_loop_running = TRUE;
@@ -70,7 +71,7 @@ class US_Widget_Portfolio extends US_Widget {
 		}
 
 		// Posts per page
-		$instance['items'] = max( 0, intval( $instance['items'] ) );
+		$instance['items'] = max( 0, (int) $instance['items'] );
 		if ( $instance['items'] > 0 ) {
 			$query_args['posts_per_page'] = $instance['items'];
 		} else {
@@ -111,8 +112,6 @@ class US_Widget_Portfolio extends US_Widget {
 		$output .= $args['after_widget'];
 
 		echo $output;
-
-		$us_grid_loop_running = FALSE;
 	}
 
 	/**

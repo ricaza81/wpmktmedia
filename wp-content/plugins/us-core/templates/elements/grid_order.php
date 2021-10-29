@@ -12,7 +12,12 @@ if ( us_amp() ) {
 if ( ! empty( $orderby_items ) ) {
 	$orderby_items = json_decode( urldecode( $orderby_items ), TRUE );
 } else {
-	return;
+	// If the shortcode is loaded on the USBuilder page, then we will continue processing with empty values
+	if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+		$orderby_items = array();
+	} else {
+		return;
+	}
 }
 
 global $us_grid_order_index;
@@ -83,15 +88,12 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 if ( $width_full ) {
 	$_atts['class'] .= ' width_full';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
 
 // Output the element
-$output = '<form ' . us_implode_atts( $_atts ) . '>';
+$output = '<form' . us_implode_atts( $_atts ) . '>';
 
 // Label
 if ( $text_before ) {
@@ -99,7 +101,7 @@ if ( $text_before ) {
 		'for' => $unique_id,
 		'class' => 'w-order-label',
 	);
-	$output .= '<label ' . us_implode_atts( $label_atts ) . '>' . strip_tags( $text_before ) . '</label>';
+	$output .= '<label' . us_implode_atts( $label_atts ) . '>' . strip_tags( $text_before ) . '</label>';
 }
 
 // Attributes for the select tag
@@ -110,7 +112,7 @@ $select_atts = array(
 
 // Begin select
 $output .= '<div class="w-order-select">';
-$output .= '<select ' . us_implode_atts( $select_atts ) . '>';
+$output .= '<select' . us_implode_atts( $select_atts ) . '>';
 
 // Add default label
 $output .= '<option value="">' . strip_tags( $first_label ) . '</option>';
@@ -126,13 +128,15 @@ foreach ( $orderby_items as $item ) {
 		'value' => us_arr_path( $item, 'value', '' ),
 	);
 
+	$custom_field = us_arr_path( $item, 'custom_field', '' );
+
 	// Get text for every option
 	if ( ! empty( $item['label'] ) ) {
 		$text = $item['label'];
 	} else {
 		$text = $orderby_options[ $item['value'] ];
-		if ( $item['value'] == 'custom' ) {
-			$text .= ': ' . $item['custom_field'];
+		if ( $item['value'] == 'custom' AND $custom_field ) {
+			$text .= ': ' . $custom_field;
 		}
 		if ( ! empty( $item['invert'] ) ) {
 			$text .= ' | ' . __( 'Invert order', 'us' );
@@ -143,7 +147,7 @@ foreach ( $orderby_items as $item ) {
 
 	// For default custom field
 	if ( $option_atts['value'] === 'custom' ) {
-		$option_atts['value'] = esc_attr( us_arr_path( $item, 'custom_field', '' ) );
+		$option_atts['value'] = esc_attr( $custom_field );
 		$option_params[] = 'field';
 	}
 
@@ -166,7 +170,7 @@ foreach ( $orderby_items as $item ) {
 		$option_atts['selected'] = 'selected';
 	}
 
-	$output .= '<option ' . us_implode_atts( $option_atts ) . '>' . trim( strip_tags( $text ) ) . '</option>';
+	$output .= '<option' . us_implode_atts( $option_atts ) . '>' . trim( strip_tags( $text ) ) . '</option>';
 }
 
 $output .= '</select>';

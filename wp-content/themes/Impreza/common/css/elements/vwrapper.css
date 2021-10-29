@@ -6,15 +6,19 @@
 	display: flex;
 	flex-direction: column;
 	}
+
 .w-vwrapper.align_center {
 	align-items: center;
 	}
-.w-vwrapper.align_left {
+.rtl .w-vwrapper.align_right,
+body:not(.rtl) .w-vwrapper.align_left {
 	align-items: flex-start;
 	}
-.w-vwrapper.align_right {
+.rtl .w-vwrapper.align_left,
+body:not(.rtl) .w-vwrapper.align_right {
 	align-items: flex-end;
 	}
+
 .w-vwrapper.valign_middle {
 	justify-content: center;
 	}

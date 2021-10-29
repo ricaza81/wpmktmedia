@@ -17,9 +17,11 @@ $term_atts = array(
 
 // Add items appearance animation on loading
 if ( $load_animation !== 'none' AND ! us_amp() ) {
-	$term_atts['class'] .= ' animate_' . $load_animation;
-	if ( $type == 'masonry' ) {
-		$post_atts['class'] .= ' animate_off_autostart';
+	$term_atts['class'] .= ' us_animate_' . $load_animation;
+
+	// We need to hide CSS animation before isotope.js initialization
+	if ( $type === 'masonry' AND $columns > 1 ) {
+		$post_atts['class'] .= ' off_autostart';
 	}
 
 	// Set "animation-delay" for every doubled amount of columns
@@ -140,7 +142,7 @@ if ( ! $link_title ) {
 
 ob_start();
 ?>
-	<div <?php echo us_implode_atts( $term_atts ) ?>>
+	<div<?= us_implode_atts( $term_atts ) ?>>
 		<div class="w-grid-item-h"<?= $inline_css ?>>
 			<?php if ( $link_url ): ?>
 				<a class="w-grid-item-anchor" href="<?= esc_url( $link_url ) ?>"<?= $link_atts ?>></a>

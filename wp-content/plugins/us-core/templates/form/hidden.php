@@ -16,4 +16,4 @@ $_atts['name'] = isset( $label ) ? $label : '';
 $_atts['value'] = isset( $value ) ? $value : '';
 
 ?>
-<input <?= us_implode_atts( $_atts ) ?> />
+<input<?= us_implode_atts( $_atts ) ?> />

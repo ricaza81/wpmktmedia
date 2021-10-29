@@ -220,18 +220,70 @@ function us_generate_asset_file( $ext, $custom_language_domain = '' ) {
 
 			// Prepend Google Fonts styles
 			if ( $usof_options['include_gfonts_css'] ) {
-				$options = array(
-					'http' => array(
-						'method' => "GET",
-						'header' => "Accept-language: en\r\n" .
-							"User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36\r\n",
-					),
-				);
-				$context = stream_context_create( $options );
+				$gfont_file_copied = FALSE;
+				$gfont_file_url = us_enqueue_fonts( TRUE );
 
-				if ( $google_fonts_content = file_get_contents( us_enqueue_fonts( TRUE ), FALSE, $context ) ) {
-					$content = $google_fonts_content . $content;
+				if ( $gfont_file_url ) {
+					$upload_dir = wp_upload_dir();
+					$gfont_file_path = $upload_dir['basedir'] . '/us_gfonts_tmp.css';
+
+					// Trying to fetch file with cURL
+					if ( function_exists( 'curl_init' ) ) {
+						$header=array(
+							'Accept-language: en',
+							'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
+						);
+						$curl = curl_init();
+						curl_setopt_array( $curl, array(
+							CURLOPT_URL => $gfont_file_url,
+							CURLOPT_HTTPHEADER => $header,
+							CURLOPT_HEADER => 0,
+							CURLOPT_RETURNTRANSFER => TRUE,
+							CURLOPT_SSL_VERIFYHOST => FALSE,
+							CURLOPT_SSL_VERIFYPEER => FALSE,
+						) );
+						$gfont_file_contents = curl_exec( $curl );
+						curl_close( $curl );
+
+						if ( strlen( $gfont_file_contents ) ) {
+							$handle = fopen( $gfont_file_path, 'w' );
+							fwrite( $handle, $gfont_file_contents );
+							$gfont_file_copied = TRUE;
+						}
+					}
+
+					// If previous method didnt work, trying to fetch file with file_get_contents
+					if ( ! $gfont_file_copied AND function_exists( 'ini_get' ) AND ini_get('allow_url_fopen') ) {
+						$options = array(
+							'http' => array(
+								'method' => "GET",
+								'header' => "Accept-language: en\r\n" .
+									"User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36\r\n",
+							),
+						);
+						$context = stream_context_create( $options );
+
+						if ( ( $_font_url = us_enqueue_fonts( TRUE ) ) AND ( $gfont_file_contents = file_get_contents( $_font_url, FALSE, $context ) ) ) {
+							$handle = fopen( $gfont_file_path, 'w' );
+							fwrite( $handle, $gfont_file_contents );
+							$gfont_file_copied = TRUE;
+						}
+					}
+
+					// If something is wrong with cURL, trying to use copy function
+					if ( ! $gfont_file_copied ) {
+						if ( copy( $gfont_file_url, $gfont_file_path ) ) {
+							$gfont_file_copied = TRUE;
+						}
+					}
 				}
+				
+				if ( $gfont_file_copied ) {
+					$google_fonts_content = file_get_contents( $gfont_file_path );
+					$content = $google_fonts_content . $content;
+					unlink( $gfont_file_path );
+				}
+
 			}
 
 			// add theme-options styles
@@ -418,11 +470,8 @@ function us_maybe_flush_rewrite_rules( $updated_options ) {
 // Allow to change Site Icon via Theme Options page
 add_action( 'usof_after_save', 'us_update_site_icon_from_options' );
 function us_update_site_icon_from_options( $updated_options ) {
-	$options_site_icon = $updated_options['site_icon'];
-	$wp_site_icon = get_option( 'site_icon' );
-
-	if ( $options_site_icon != $wp_site_icon ) {
-		update_option( 'site_icon', $options_site_icon );
+	if ( isset( $updated_options['site_icon'] ) AND $updated_options['site_icon'] != get_option( 'site_icon' ) ) {
+		update_option( 'site_icon', $updated_options['site_icon'] );
 	}
 }
 
@@ -479,9 +528,9 @@ function us_exclude_special_pages_from_search( $query ) {
 		$special_pages = array();
 		$special_pages_names = array( 'search_page', 'posts_page', 'page_404' );
 		foreach ( $special_pages_names as $special_page_name ) {
-			$special_page_id = us_get_option( $special_page_name, 'default' );
-			if ( $special_page_id != 'default' AND intval( $special_page_id ) > 0 ) {
-				$special_pages[] = intval( $special_page_id );
+			$special_page_id = (int) us_get_option( $special_page_name, 'default' );
+			if ( $special_page_id != 'default' AND $special_page_id > 0 ) {
+				$special_pages[] = $special_page_id;
 			}
 		}
 		if ( count( $special_pages ) > 0 ) {
@@ -506,7 +555,6 @@ if (
 ) {
 	/**
 	 * Add redirect for Theme Options page, so it is always displayed in default language
-	 * @return void
 	 */
 	global $pagenow;
 	$current_language = apply_filters( 'us_tr_current_language', NULL );

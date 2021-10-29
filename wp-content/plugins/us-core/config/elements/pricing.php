@@ -1,9 +1,13 @@
 <?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
+/**
+ * Configuration for shortcode: pricing
+ */
+
 $btn_styles = us_get_btn_styles();
 
 $misc = us_config( 'elements_misc' );
-$design_options = us_config( 'elements_design_options' );
+$design_options_params = us_config( 'elements_design_options' );
 
 $items_std = array(
 	array(
@@ -15,14 +19,15 @@ $items_std = array(
 200 tasks
 No support',
 		'btn_text' => 'Sign up',
+		'btn_link' => 'url:#|||',
 		'btn_color' => 'light',
-		'btn_style' => 'solid',
+		'btn_style' => '1',
 		'btn_size' => '15px',
 		'btn_iconpos' => 'left',
 	),
 	array(
 		'title' => 'Standard',
-		'type' => 'featured',
+		'type' => '1',
 		'price' => '$24',
 		'substring' => 'per month',
 		'features' => '10 projects
@@ -30,8 +35,9 @@ No support',
 Unlimited tasks
 Premium support',
 		'btn_text' => 'Sign up',
+		'btn_link' => 'url:#|||',
 		'btn_color' => 'primary',
-		'btn_style' => 'solid',
+		'btn_style' => '1',
 		'btn_size' => '15px',
 		'btn_iconpos' => 'left',
 	),
@@ -44,22 +50,24 @@ Unlimited users
 Unlimited tasks
 Premium support',
 		'btn_text' => 'Sign up',
+		'btn_link' => 'url:#|||',
 		'btn_color' => 'light',
-		'btn_style' => 'solid',
+		'btn_style' => '1',
 		'btn_size' => '15px',
 		'btn_iconpos' => 'left',
 	),
 );
 
-$items_std_string = urlencode( json_encode( $items_std ) );
-
+/**
+ * @return array
+ */
 return array(
 	'title' => __( 'Pricing Table', 'us' ),
 	'icon' => 'fas fa-dollar-sign',
-	'params' => array_merge(
-		array(
+	'params' => us_set_params_weight(
 
-			// General
+		// General section
+		array(
 			'style' => array(
 				'title' => us_translate( 'Style' ),
 				'type' => 'select',
@@ -70,13 +78,18 @@ return array(
 				),
 				'std' => 'simple',
 				'admin_label' => TRUE,
+				'usb_preview' => array(
+					'mod' => 'style',
+				),
 			),
 			'items' => array(
 				'type' => 'group',
 				'show_controls' => TRUE,
 				'is_sortable' => TRUE,
+				'is_accordion' => TRUE,
+				'accordion_title' => 'title',
+				'usb_preview' => TRUE,
 				'params' => array(
-
 					'title' => array(
 						'title' => us_translate( 'Title' ),
 						'type' => 'text',
@@ -136,18 +149,18 @@ return array(
 					),
 					'btn_iconpos' => array(
 						'title' => __( 'Button Icon Position', 'us' ),
-						'type' => 'select',
+						'type' => 'radio',
 						'options' => array(
 							'left' => us_translate( 'Left' ),
 							'right' => us_translate( 'Right' ),
 						),
 						'std' => 'left',
 					),
-
 				),
-				'std' => $items_std_string,
+				'std' => $items_std,
 			),
+		),
 
-		), $design_options
+		$design_options_params
 	),
 );

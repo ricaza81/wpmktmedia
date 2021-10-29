@@ -45,7 +45,7 @@ return array(
 	),
 
 	// Font size examples
-	'desc_font_size' => __( 'Examples:', 'us' ) . ' <span class="usof-example">16px</span>, <span class="usof-example">1.2rem</span>',
+	'desc_font_size' => __( 'Examples:', 'us' ) . ' <span class="usof-example">16px</span>, <span class="usof-example">1.2rem</span>, <span class="usof-example">max( 1rem, 1vw )</span>',
 
 	// Line height examples
 	'desc_line_height' => __( 'Examples:', 'us' ) . ' <span class="usof-example">28px</span>, <span class="usof-example">1.7</span>',
@@ -84,22 +84,22 @@ return array(
 	'desc_menu_select' => sprintf( __( 'Add or edit a menu on the %s page', 'us' ), '<a href="' . admin_url( 'nav-menus.php' ) . '" target="_blank" rel="noopener">' . us_translate( 'Menus' ) . '</a>' ),
 
 	// Image Sizes
-	'desc_img_sizes' => '<a target="_blank" rel="noopener" href="' . admin_url( 'admin.php?page=us-theme-options' ) . '#image_sizes">' . __( 'Edit image sizes', 'us' ) . '</a>.',
+	'desc_img_sizes' => '<a target="_blank" rel="noopener" href="' . admin_url( 'admin.php?page=us-theme-options#image_sizes' ) . '">' . __( 'Edit image sizes', 'us' ) . '</a>.',
 
 	// Button styles
-	'desc_btn_styles' => sprintf( __( 'Add or edit Button Styles on %sTheme Options%s', 'us' ), '<a href="' . admin_url() . 'admin.php?page=us-theme-options#buttons" target="_blank" rel="noopener">', '</a>' ),
+	'desc_btn_styles' => sprintf( __( 'Add or edit Button Styles on %sTheme Options%s', 'us' ), '<a href="' . admin_url( 'admin.php?page=us-theme-options#buttons' ) . '" target="_blank" rel="noopener">', '</a>' ),
 
 	// Custom link for Grid Layout
 	'desc_grid_custom_link' => sprintf( __( 'To apply a URL from a custom field, use its name between the %s symbols.', 'us' ), '{{ }}' ) . ' ' . __( 'Examples:', 'us' ) . ' <span class="usof-example">{{custom_field_name}}</span>',
 
 	// Header Description
-	'headers_description' => sprintf( __( 'Add or edit Header on the %s page', 'us' ), '<a href="' . admin_url() . 'edit.php?post_type=us_header" target="_blank" rel="noopener">' . _x( 'Headers', 'site top area', 'us' ) . '</a>' ),
+	'headers_description' => sprintf( __( 'Add or edit a Header on the %s page', 'us' ), '<a href="' . admin_url( 'edit.php?post_type=us_header' ) . '" target="_blank" rel="noopener">' . _x( 'Headers', 'site top area', 'us' ) . '</a>' ),
 
 	// Content Description
-	'content_description' => sprintf( __( 'Add or edit content template on the %s page', 'us' ), '<a href="' . admin_url() . 'edit.php?post_type=us_content_template" target="_blank" rel="noopener">' . __( 'Content templates', 'us' ) . '</a>' ),
+	'content_description' => sprintf( __( 'Add or edit a Content Template on the %s page', 'us' ), '<a href="' . admin_url( 'edit.php?post_type=us_content_template' ) . '" target="_blank" rel="noopener">' . __( 'Content templates', 'us' ) . '</a>' ),
 
 	// Footer Description
-	'footers_description' => sprintf( __( 'Add or edit Footer on the %s page', 'us' ), '<a href="' . admin_url() . 'edit.php?post_type=us_page_block" target="_blank" rel="noopener">' . __( 'Page Blocks', 'us' ) . '</a>' ),
+	'footers_description' => sprintf( __( 'Add or edit a Footer on the %s page', 'us' ), '<a href="' . admin_url( 'edit.php?post_type=us_page_block' ) . '" target="_blank" rel="noopener">' . __( 'Page Blocks', 'us' ) . '</a>' ),
 
 	// Seconds only
 	'desc_seconds' => __( 'In seconds:', 'us' ) . ' <span class="usof-example">3</span>, <span class="usof-example">5</span>, <span class="usof-example">8</span>',

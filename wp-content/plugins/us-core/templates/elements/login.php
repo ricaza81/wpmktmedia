@@ -7,9 +7,6 @@
 $_atts['class'] = 'w-login';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -92,7 +89,7 @@ $use_ajax = us_amp() ? FALSE : (bool) $use_ajax;
 $form_template_vars['json_data']['use_ajax'] = $use_ajax;
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 
 if ( ! $use_ajax ) {
 	if ( is_user_logged_in() ) {

@@ -61,7 +61,7 @@ foreach ( $predefined_colors as $color ) {
 		array(
 			'name' => us_config( 'theme-options.colors.fields.' . $color . '.text' ),
 			'slug' => str_replace( 'color_', '', $color ),
-			'color' => us_get_color( $color ),
+			'color' => us_get_color( $color, /* Gradient */ FALSE, /* css_var */ FALSE ),
 		)
 	);
 }

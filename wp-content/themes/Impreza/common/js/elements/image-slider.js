@@ -4,19 +4,19 @@
 ( function( $ ) {
 	$.fn.wSlider = function() {
 		return this.each( function() {
+			var $this = $( this ),
+				$frame = $this.find( '.w-slider-h' ),
+				$slider = $this.find( '.royalSlider' ),
+				$options = $this.find( '.w-slider-json' ),
+				options = $options[ 0 ].onclick() || {};
+
+			// Prevent double init
+			if ( $this.data( 'sliderInit' ) == 1 ) {
+				return;
+			}
+			$this.data( 'sliderInit', 1 );
+
 			$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/royalslider.js', function() {
-				var $this = $( this ),
-					$frame = $this.find( '.w-slider-h' ),
-					$slider = $this.find( '.royalSlider' ),
-					$options = $this.find( '.w-slider-json' ),
-					options = $options[ 0 ].onclick() || {};
-
-				// Prevent double init
-				if ( $this.data( 'sliderInit' ) == 1 ) {
-					return;
-				}
-				$this.data( 'sliderInit', 1 );
-
 				$options.remove();
 				if ( ! $.fn.royalSlider ) {
 					return;
@@ -57,7 +57,7 @@
 						slider.updateSliderSize();
 					} );
 				} );
-			}.bind( this ) );
+			} );
 		} );
 	};
 	$( function() {

@@ -1,5 +1,12 @@
 <?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
+// Disable Gutenberg (Block Editor) when editing any posts in admin
+if ( ! us_get_option( 'block_editor' ) ) {
+	remove_theme_support( 'core-block-patterns' );
+	add_filter( 'use_block_editor_for_post_type', '__return_false', 100 );
+	remove_action( 'wp_enqueue_scripts', 'wp_common_block_scripts_and_styles' );
+}
+
 // Should be inited before the WPBakery Page Builder (that is 9)
 global $portfolio_slug;
 $portfolio_slug = us_get_option( 'portfolio_slug', 'portfolio' );
@@ -15,31 +22,6 @@ function us_create_post_types() {
 		} else {
 			$portfolio_rewrite = array( 'slug' => untrailingslashit( $portfolio_slug ) );
 		}
-
-		// Portfolio Page post type
-		register_post_type(
-			'us_portfolio', array(
-				'labels' => apply_filters(
-					'us_portfolio_labels', array(
-						'name' => __( 'Portfolio', 'us' ),
-						'singular_name' => __( 'Portfolio Page', 'us' ),
-						'add_new' => __( 'Add Portfolio Page', 'us' ),
-						'add_new_item' => __( 'Add Portfolio Page', 'us' ),
-						'edit_item' => __( 'Edit Portfolio Page', 'us' ),
-						'featured_image' => us_translate_x( 'Featured Image', 'page' ),
-						'view_item' => us_translate( 'View Page' ),
-						'not_found' => us_translate( 'No pages found.' ),
-						'not_found_in_trash' => us_translate( 'No pages found in Trash.' ),
-					)
-				),
-				'public' => TRUE,
-				'rewrite' => $portfolio_rewrite,
-				'supports' => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'comments', 'author' ),
-				'capability_type' => array( 'us_portfolio', 'us_portfolios' ),
-				'map_meta_cap' => TRUE,
-				'menu_icon' => 'dashicons-images-alt',
-			)
-		);
 
 		// Portfolio Categories
 		register_taxonomy(
@@ -63,6 +45,38 @@ function us_create_post_types() {
 				),
 				'show_admin_column' => TRUE,
 				'rewrite' => array( 'slug' => us_get_option( 'portfolio_tag_slug' ) ),
+			)
+		);
+
+		// Portfolio Page post type
+		register_post_type(
+			'us_portfolio', array(
+				'labels' => apply_filters(
+					'us_portfolio_labels', array(
+						'name' => __( 'Portfolio', 'us' ),
+						'singular_name' => __( 'Portfolio Page', 'us' ),
+						'add_new' => __( 'Add Portfolio Page', 'us' ),
+						'add_new_item' => __( 'Add Portfolio Page', 'us' ),
+						'edit_item' => __( 'Edit Portfolio Page', 'us' ),
+						'featured_image' => us_translate_x( 'Featured Image', 'page' ),
+						'view_item' => us_translate( 'View Page' ),
+						'not_found' => us_translate( 'No pages found.' ),
+						'not_found_in_trash' => us_translate( 'No pages found in Trash.' ),
+					)
+				),
+				'public' => TRUE,
+				'rewrite' => $portfolio_rewrite,
+				'supports' => array(
+					'title',
+					'editor',
+					'excerpt',
+					'thumbnail',
+					'custom-fields',
+					'revisions',
+					'comments',
+					'author',
+				),
+				'menu_icon' => 'dashicons-images-alt',
 			)
 		);
 
@@ -95,29 +109,6 @@ function us_create_post_types() {
 
 	if ( us_get_option( 'enable_testimonials', 1 ) ) {
 
-		// Testimonial post type
-		register_post_type(
-			'us_testimonial', array(
-				'labels' => array(
-					'name' => __( 'Testimonials', 'us' ),
-					'singular_name' => __( 'Testimonial', 'us' ),
-					'add_new' => __( 'Add Testimonial', 'us' ),
-					'add_new_item' => __( 'Add Testimonial', 'us' ),
-					'edit_item' => __( 'Edit Testimonial', 'us' ),
-					'featured_image' => __( 'Author Photo', 'us' ),
-				),
-				'public' => TRUE,
-				'publicly_queryable' => FALSE,
-				'show_in_nav_menus' => FALSE,
-				'supports' => array( 'title', 'editor', 'thumbnail' ),
-				'menu_icon' => 'dashicons-testimonial',
-				'capability_type' => array( 'us_testimonial', 'us_testimonials' ),
-				'map_meta_cap' => TRUE,
-				'rewrite' => FALSE,
-				'query_var' => FALSE,
-			)
-		);
-
 		// Testimonial Categories
 		register_taxonomy(
 			'us_testimonial_category', array( 'us_testimonial' ), array(
@@ -132,6 +123,31 @@ function us_create_post_types() {
 				'show_in_rest' => FALSE,
 				'show_tagcloud' => FALSE,
 				'hierarchical' => TRUE,
+			)
+		);
+
+		// Testimonial post type
+		register_post_type(
+			'us_testimonial', array(
+				'labels' => array(
+					'name' => __( 'Testimonials', 'us' ),
+					'singular_name' => __( 'Testimonial', 'us' ),
+					'add_new' => __( 'Add Testimonial', 'us' ),
+					'add_new_item' => __( 'Add Testimonial', 'us' ),
+					'edit_item' => __( 'Edit Testimonial', 'us' ),
+					'featured_image' => __( 'Author Photo', 'us' ),
+				),
+				'public' => TRUE,
+				'publicly_queryable' => FALSE,
+				'show_in_nav_menus' => FALSE,
+				'supports' => array(
+					'title',
+					'editor',
+					'thumbnail',
+				),
+				'menu_icon' => 'dashicons-testimonial',
+				'rewrite' => FALSE,
+				'query_var' => FALSE,
 			)
 		);
 	}
@@ -206,6 +222,17 @@ function us_create_post_types() {
 		)
 	);
 
+	/*
+	 * Since post types should be inited before live builder,
+	 * detecting if we are on builder preview page directly by checking builder's nonce
+	 *
+	 * Dev note: $nonce name should be the same as USBuilder::BUILDER_SLUG constant
+	 */
+	$is_builder_preview = FALSE;
+	if ( $nonce = us_arr_path( $_REQUEST, 'us-builder' ) AND wp_verify_nonce( $nonce, 'us-builder' ) ) {
+		$is_builder_preview = TRUE;
+	}
+
 	// Content templates
 	register_post_type(
 		'us_content_template', array(
@@ -220,7 +247,7 @@ function us_create_post_types() {
 			'show_in_menu' => 'us-theme-options',
 			'exclude_from_search' => TRUE,
 			'show_in_admin_bar' => FALSE,
-			'publicly_queryable' => FALSE,
+			'publicly_queryable' => $is_builder_preview,
 			'show_in_nav_menus' => FALSE,
 			'capability_type' => array( 'us_page_block', 'us_page_blocks' ),
 			'map_meta_cap' => TRUE,
@@ -244,7 +271,7 @@ function us_create_post_types() {
 			'show_in_menu' => 'us-theme-options',
 			'exclude_from_search' => TRUE,
 			'show_in_admin_bar' => FALSE,
-			'publicly_queryable' => FALSE,
+			'publicly_queryable' => $is_builder_preview,
 			'show_in_nav_menus' => TRUE,
 			'capability_type' => array( 'us_page_block', 'us_page_blocks' ),
 			'map_meta_cap' => TRUE,
@@ -513,7 +540,6 @@ if ( ! function_exists( 'us_search_query_adjustment' ) ) {
 	 * Search query adjustment
 	 *
 	 * @param WP_Query $query The query
-	 * @return void
 	 */
 	function us_search_query_adjustment( $query ) {
 		if ( ! $query->is_search OR is_admin() ) {
@@ -527,10 +553,10 @@ if ( ! function_exists( 'us_search_query_adjustment' ) ) {
 		}
 
 		// Excluded post types, specified by user in theme options
-		$exclude_post_types = us_get_option( 'exclude_post_types_in_search', array() );
+		$exclude_post_types = us_get_option( 'exclude_post_types_in_search' );
 
 		// If no post types were set to be excluded, abort following execution
-		if ( count( $exclude_post_types ) == 0 ) {
+		if ( empty( $exclude_post_types ) ) {
 			return;
 		}
 
@@ -543,6 +569,7 @@ if ( ! function_exists( 'us_search_query_adjustment' ) ) {
 		if ( ! empty( $query->query_vars['post_type'] ) ) {
 			return;
 		}
+
 		// Getting list of all public post types
 		$post_types = function_exists( 'us_get_public_post_types' )
 			? array_keys( us_get_public_post_types() )
@@ -553,11 +580,17 @@ if ( ! function_exists( 'us_search_query_adjustment' ) ) {
 			return;
 		}
 
-		foreach ( $post_types as $key => $value ) {
-			if ( in_array( $value, $exclude_post_types ) ) {
+		// Fallback for var type
+		if ( is_array( $exclude_post_types ) ) {
+			$exclude_post_types = implode( ',', $exclude_post_types );
+		}
+
+		foreach ( $post_types as $key => $item ) {
+			if ( strpos( $exclude_post_types, $item ) !== FALSE ) {
 				unset( $post_types[ $key ] );
 			}
 		}
+
 		$query->query_vars['post_type'] = array_unique( $post_types );
 
 		// If all types were excluded, then add a nonexistent one and a message will be displayed
@@ -1099,7 +1132,7 @@ if ( ! function_exists( 'us_get_used_in_locations' ) ) {
 							$result .= $usage_result->name . ' > ';
 							$result .= us_translate( $usage_meta_keys[ $usage_result->meta_key ] ) . '</strong>';
 							$result .= ' (<a href="term.php?taxonomy=' . esc_attr( $usage_result->taxonomy );
-							$result .= '&tag_ID=' . intval( $usage_result->term_id );
+							$result .= '&tag_ID=' . (int) $usage_result->term_id;
 							$result .= '&post_type=' . esc_attr( $tax->object_type[0] );
 							$result .= '" target="_blank" rel="noopener">' . us_translate( 'Edit' ) . '</a>)</div>';
 							$results[ $id ] .= $result;

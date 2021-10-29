@@ -72,7 +72,7 @@ if ( ! empty( $icon ) ) {
 	$_atts['class'] .= ' with_icon';
 }
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<?php if ( ! empty( $label ) ) : ?>
 		<div class="w-form-row-label">
 			<span><?= strip_tags( $label, '<a><br><strong>' ) ?></span>
@@ -81,7 +81,7 @@ if ( ! empty( $icon ) ) {
 	<div class="w-form-row-field">
 		<?php do_action( 'us_form_field_start', $vars ) ?>
 		<?= us_prepare_icon_tag( $icon ) ?>
-		<input <?= us_implode_atts( $field_atts ) ?>/>
+		<input<?= us_implode_atts( $field_atts ) ?>/>
 		<?php do_action( 'us_form_field_end', $vars ) ?>
 	</div>
 	<?php if ( ! empty( $description ) ) : ?>
@@ -95,5 +95,5 @@ if ( ! empty( $icon ) ) {
 		$_state_atts['validation-for'] = $field_atts['id'];
 	}
 	?>
-	<div <?php echo us_implode_atts( $_state_atts ) ?>><?php _e( 'Fill out this field', 'us' ) ?></div>
+	<div<?= us_implode_atts( $_state_atts ) ?>><?php _e( 'Fill out this field', 'us' ) ?></div>
 </div>

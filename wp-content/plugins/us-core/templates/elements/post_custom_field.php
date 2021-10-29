@@ -65,19 +65,27 @@ $type = 'text';
 if ( $key == 'us_tile_additional_image' ) {
 	$type = 'image';
 }
-if ( $key == 'us_tile_icon' ) {
+if ( in_array( $key, array( 'us_tile_icon', 'us_testimonial_rating' ) ) ) {
 	$type = 'icon';
 }
 
 // Get the value from custom field
-if ( $key == 'custom' ) {
+if ( $key == 'custom' AND ! empty( $custom_key ) ) {
+	if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+		$value = $custom_key;
+	} elseif ( $postID ) {
+		$value = get_post_meta( $postID, $custom_key, TRUE );
+	} elseif ( $term ) {
+		$value = get_term_meta( $term->term_id, $custom_key, TRUE );
+	}
 
-	if ( ! empty( $custom_key ) ) {
-		if ( $postID ) {
-			$value = get_post_meta( $postID, $custom_key, TRUE );
-		} elseif ( $term ) {
-			$value = get_term_meta( $term->term_id, $custom_key, TRUE );
-		}
+	// In Live Builder for Page Block / Content template show placeholder for shortcode
+} elseif ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+	$image_fields = us_config( 'elements/post_custom_field.params.thumbnail_size.show_if.2', array() );
+	if ( in_array( $key, $image_fields ) ) {
+		$type = 'image';
+	} else {
+		$value = us_config( 'elements/post_custom_field.usb_preview_dummy_data.' . $key, '' );
 	}
 
 } elseif ( ! in_array( $key, array_keys( $us_predefined_post_custom_fields ) ) ) {
@@ -86,43 +94,25 @@ if ( $key == 'custom' ) {
 	if ( function_exists( 'get_field_object' ) ) {
 		if ( $postID ) {
 			$acf_obj = get_field_object( $key, $postID );
-			$value = us_arr_path( $acf_obj, 'value', '' );
-
-			// Force "image" type
-			// TODO: Add support for link
-			if ( isset( $acf_obj['type'] ) AND $acf_obj['type'] == 'image' ) {
-				$type = 'image';
-			} elseif ( is_array( $value ) ) {
-				$value = implode( ', ', $value );
-			}
-
-			// Get Label if value : label is used
-			if (
-				us_arr_path( $acf_obj, 'menu_order', NULL ) === 0
-				AND $choices = us_arr_path( $acf_obj, 'choices', array() )
-				AND is_array( $choices )
-				AND isset( $choices[ $value ] )
-			) {
-				$value = $choices[ $value ];
-			}
-
 		} elseif ( $term ) {
-			$value = get_field( $key, $term );
+			$acf_obj = get_field_object( $key, $term );
+		}
+		$value = us_arr_path( $acf_obj, 'value', '' );
 
-			if ( is_array( $value ) ) {
-				// TODO: Add support for link
-				if ( isset( $value['type'] ) AND $value['type'] == 'image' ) {
-					$type = 'image';
-				} else {
-					$value = implode( ', ', $value );
-				}
-			}
+		// Force "image" type
+		if ( isset( $acf_obj['type'] ) AND $acf_obj['type'] === 'image' ) {
+			$type = 'image';
+		}
+
+		// Transform array into string
+		if ( is_array( $value ) ) {
+			$value = implode( ', ', $value );
 		}
 	}
 
 } else {
 	if ( $postID ) {
-		$value = get_post_meta( $postID, $key, TRUE );
+		$value = usof_meta( $key, $postID );
 	} elseif ( $term ) {
 		$value = get_term_meta( $term->term_id, $key, TRUE );
 	}
@@ -135,8 +125,21 @@ if ( $key == 'custom' ) {
 	}
 }
 
-// Don't output the element, when it's an object OR its value is empty string
-if ( is_object( $value ) OR ( $hide_empty AND $value == '' ) ) {
+// Don't output the element, when it's an object OR its value is empty
+if (
+	! apply_filters( 'usb_is_preview_page', NULL )
+	AND (
+		is_object( $value )
+		OR (
+			$hide_empty
+			AND (
+				$value === ''
+				OR $value === FALSE
+				OR $value === NULL
+			)
+		)
+	)
+) {
 	return;
 }
 
@@ -148,16 +151,12 @@ if ( $link != 'none' AND $color_link ) {
 	$_atts['class'] .= ' color_link_inherit';
 }
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design Options, add the specific class
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
 if ( us_design_options_has_property( $css, 'border-radius' ) ) {
 	$_atts['class'] .= ' has_border_radius';
-}
-
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
 }
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 	$_atts['id'] = $el_id;
@@ -172,7 +171,7 @@ if ( $type == 'image' ) {
 	}
 
 	// Format the value to get image ID
-	$value_image_ID = is_array( $value ) ? $value['id'] : intval( $value );
+	$value_image_ID = is_array( $value ) ? $value['id'] : (int) $value;
 
 	$value = wp_get_attachment_image( $value_image_ID, $thumbnail_size );
 	if ( empty( $value ) ) {
@@ -182,7 +181,7 @@ if ( $type == 'image' ) {
 	// Set Aspect Ratio values
 	if ( $has_ratio ) {
 		$ratio_array = us_get_aspect_ratio_values( $ratio, $ratio_width, $ratio_height );
-		$ratio_helper_html = '<div style="padding-bottom:' . number_format( $ratio_array[1] / $ratio_array[0] * 100, 4 ) . '%"></div>';
+		$ratio_helper_html = '<div style="padding-bottom:' . round( $ratio_array[1] / $ratio_array[0] * 100, 4 ) . '%"></div>';
 		$_atts['class'] .= ' has_ratio';
 	} elseif ( $stretch ) {
 		$_atts['class'] .= ' stretched';
@@ -209,11 +208,20 @@ if ( $key == 'us_tile_icon' ) {
 	$value = us_prepare_icon_tag( $value );
 }
 
-// Text before value
-$text_before = ( trim( $text_before ) != '' ) ? '<span class="w-post-elm-before">' . trim( $text_before ) . ' </span>' : '';
+// Text before/after values
+$text_before = trim( strip_tags( $text_before, '<br>' ) );
+$text_after = trim( strip_tags( $text_after, '<br>' ) );
 
-// Text after value
-$text_after = ( trim( $text_after ) != '' ) ? ' <span class="w-post-elm-after">' . trim( $text_after ) . ' </span>' : '';
+if ( $text_before !== '' ) {
+	$text_before_html = sprintf( '<%s class="w-post-elm-before">%s </%s>', $text_before_tag, $text_before, $text_before_tag );
+} else {
+	$text_before_html = '';
+}
+if ( $text_after !== '' ) {
+	$text_after_html = sprintf( '<%s class="w-post-elm-after"> %s</%s>', $text_after_tag, $text_after, $text_after_tag );
+} else {
+	$text_after_html = '';
+}
 
 // Link
 if ( $link === 'none' ) {
@@ -268,23 +276,29 @@ if ( ! empty( $link_atts['href'] ) AND empty( $link_atts['target'] ) AND $link_n
 }
 
 // Output the element
-$output = '<' . $tag . ' ' . us_implode_atts( $_atts ) . '>';
+$output = '<' . $tag . us_implode_atts( $_atts ) . '>';
 if ( ! empty( $icon ) ) {
 	$output .= us_prepare_icon_tag( $icon );
 }
-$output .= $text_before;
+$output .= $text_before_html;
 
 if ( ! empty( $link_atts['href'] ) ) {
-	$output .= '<a ' . us_implode_atts( $link_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $link_atts ) . '>';
 }
 
 $output .= $ratio_helper_html;
-$output .= $value;
+
+// Wrap the value into additional <span>, if it doesn't have a <div>
+if ( $type === 'text' AND strpos( $value, '<div' ) === FALSE ) {
+	$output .= '<span class="w-post-elm-value">' . $value . '</span>';
+} else {
+	$output .= $value;
+}
 
 if ( ! empty( $link_atts['href'] ) ) {
 	$output .= '</a>';
 }
-$output .= $text_after;
+$output .= $text_after_html;
 $output .= '</' . $tag . '>';
 
 echo $output;

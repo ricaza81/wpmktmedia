@@ -6,22 +6,29 @@
 
 global $product, $us_grid_object_type;
 
-if (
-	! class_exists( 'woocommerce' )
-	OR ! $product
-	OR ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' )
-) {
+// Never output this element inside Grids with terms
+if ( $us_elm_context === 'grid' AND $us_grid_object_type === 'term' ) {
 	return;
 }
 
 $classes = isset( $classes ) ? $classes : '';
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
 
 // Output WooCommerce Add to cart
 if ( $us_elm_context == 'shortcode' ) {
 
-	echo '<div class="w-post-elm add_to_cart' . $classes . '"' . $el_id . '>';
+	// Do not output this shortcode on the front-end of non-product pages
+	if ( ! $product AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+		return;
+	}
+
+	$_atts['class'] = 'w-post-elm add_to_cart';
+	$_atts['class'] .= $classes;
+
+	if ( ! empty( $el_id ) ) {
+		$_atts['id'] = $el_id;
+	}
+
+	echo '<div' . us_implode_atts( $_atts ) . '>';
 	if ( is_object( $product ) AND method_exists( $product, 'get_type' ) ) {
 		/*
 		 * Checking if both woocommerce_output_all_notices and wc_print_notices functions exist
@@ -35,10 +42,14 @@ if ( $us_elm_context == 'shortcode' ) {
 		) {
 			woocommerce_output_all_notices();
 		}
+
+		// Output placeholder for Live Builder for Content Template / Page Block
+	} elseif ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+		echo '<div class="w-btn us-btn-style_1">' . us_translate( 'Add to cart', 'woocommerce' ) . '</div>';
 	}
 	echo '</div>';
 
-} else {
+} elseif ( function_exists( 'woocommerce_template_loop_add_to_cart' ) ) {
 	add_filter( 'woocommerce_product_add_to_cart_text', 'us_add_to_cart_text', 99, 2 );
 	add_filter( 'woocommerce_loop_add_to_cart_link', 'us_add_to_cart_text_replace', 99, 3 );
 

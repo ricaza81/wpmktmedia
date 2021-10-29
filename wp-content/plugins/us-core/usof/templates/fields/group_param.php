@@ -20,12 +20,15 @@ $group_content_styles = '';
 if ( ! empty( $field['is_accordion'] ) ) {
 	$group_content_styles = ' style="display:none;"';
 
-	$param_title = ! empty( $field['title'] ) ? $field['title'] : '';
+	$accordion_title = ! empty( $field['accordion_title'] ) ? $field['accordion_title'] : '';
 	foreach ( $field['params'] as $param_name => $param ) {
-		if ( strpos( $param_title, '{{' . $param_name . '}}' ) !== FALSE ) {
+		if ( strpos( $accordion_title, $param_name ) !== FALSE ) {
 			$param_value = isset( $params_values[ $param_name ] ) ? $params_values[ $param_name ] : $field['params'][ $param_name ]['std'];
+			if ( $param['type'] == 'select' AND ! empty( $param['options'][ $param_value ] ) ) {
+				$param_value = $param['options'][ $param_value ];
+			}
 			$param_value = esc_attr( trim( $param_value ) );
-			$param_title = str_replace( '{{' . $param_name . '}}', $param_value, $param_title );
+			$accordion_title = str_replace( $param_name, $param_value, $accordion_title );
 		}
 	}
 
@@ -34,10 +37,10 @@ if ( ! empty( $field['is_accordion'] ) ) {
 	// Output Button preview, if preview attribute is set as "button"
 	if ( isset( $field['preview'] ) AND $field['preview'] == 'button' ) {
 		$output .= '<div class="usof-btn-preview hov_fade">';
-		$output .= '<div class="usof-btn"><span class="usof-btn-label">' . strip_tags( $param_title ) . '</span></div>';
+		$output .= '<div class="usof-btn"><span class="usof-btn-label">' . strip_tags( $accordion_title ) . '</span></div>';
 		$output .= '</div>';
 	} else {
-		$output .= $param_title;
+		$output .= strip_tags( $accordion_title );
 	}
 	$output .= '</div>';
 
@@ -67,6 +70,7 @@ foreach ( $field['params'] as $param_name => $param ) {
 			'id' => 'usof_' . $param_name,
 			'field' => $param,
 			'values' => $params_values,
+			'context' => $context,
 		)
 	);
 }
@@ -79,14 +83,14 @@ if ( ! empty( $field['show_controls'] ) ) {
 
 	// Show "Move" button, if "is_sortable" is set
 	if ( ! empty( $field['is_sortable'] ) ) {
-		$output .= '<div class="usof-control-move" title="' . us_translate( 'Move' ) . '"></div>';
+		$output .= '<div class="ui-icon_move" title="' . us_translate( 'Move' ) . '"></div>';
 	}
 
 	// Show "Duplicate" button, if "is_duplicate" is set
 	if ( ! empty( $field['is_duplicate'] ) ) {
-		$output .= '<div class="usof-control-duplicate" title="' . us_translate( 'Duplicate' ) . '"></div>';
+		$output .= '<div class="ui-icon_duplicate" title="' . us_translate( 'Duplicate' ) . '"></div>';
 	}
-	$output .= '<div class="usof-control-delete" title="' . us_translate( 'Delete' ) . '"></div>';
+	$output .= '<div class="ui-icon_delete" title="' . us_translate( 'Delete' ) . '"></div>';
 	$output .= '</div>';
 }
 

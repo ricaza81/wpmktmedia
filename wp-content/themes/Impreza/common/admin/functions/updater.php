@@ -26,7 +26,8 @@ function us_api_addons( $plugins, $force_request = FALSE ) {
 		}
 
 		if ( ( empty( $update_addons_data ) OR $force_request ) AND $results = us_api_remote_request( $url ) ) {
-			set_transient( $transient, $results, 1800 );
+			// We do not need to check this often, since after theme update addons data is reset
+			set_transient( $transient, $results, 6 * HOUR_IN_SECONDS );
 			$update_addons_data = $results;
 			update_option( 'us_addons_version', US_THEMEVERSION );
 		}
@@ -82,7 +83,8 @@ function us_addons_transient_update( $transient ) {
 	}
 
 	foreach ( $addons as $addon ) {
-		$plugin_basename = sprintf( '%s/%s.php', $addon['slug'], $addon['slug'] );
+		$folder = ( ! empty( $addon['folder'] ) ) ? $addon['folder'] : $addon['slug'];
+		$plugin_basename = sprintf( '%s/%s.php', $folder, $addon['slug'] );
 
 		if ( ! isset( $installed_plugins[$plugin_basename] ) ) {
 			continue;

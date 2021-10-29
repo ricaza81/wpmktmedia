@@ -68,10 +68,11 @@ class US_Shortcodes {
 	protected $inited = FALSE;
 
 	public function init() {
+
 		// Adding new shortcodes
 		if ( isset( $this->config['theme_elements'] ) ) {
 			foreach ( $this->config['theme_elements'] as $element ) {
-				$shortcode = 'us_' . $element;
+				$shortcode = ( strpos( $element, 'vc_' ) === 0 ) ? $element : 'us_' . $element;
 				add_shortcode( $shortcode, array( $this, $shortcode ) );
 			}
 		}
@@ -90,10 +91,6 @@ class US_Shortcodes {
 		// Modifying existing shortcodes
 		if ( isset( $this->config['modified'] ) ) {
 			foreach ( $this->config['modified'] as $shortcode => $shortcode_params ) {
-				// Some shortcodes should not be overloaded
-				if ( isset( $shortcode_params['overload'] ) AND ! $shortcode_params['overload'] ) {
-					continue;
-				}
 				// Overloading the previous declaration if exists
 				if ( shortcode_exists( $shortcode ) ) {
 					remove_shortcode( $shortcode );
@@ -103,7 +100,7 @@ class US_Shortcodes {
 		}
 
 		// Removing disabled shortcodes
-		if ( us_get_option( 'disable_extra_vc', 1 ) == 1 AND isset( $this->config['disabled'] ) ) {
+		if ( us_get_option( 'disable_extra_vc', 1 ) AND isset( $this->config['disabled'] ) ) {
 			foreach ( $this->config['disabled'] as $shortcode ) {
 				if ( shortcode_exists( $shortcode ) ) {
 					remove_shortcode( $shortcode );
@@ -126,13 +123,14 @@ class US_Shortcodes {
 	public function __call( $shortcode, $args ) {
 		$_output = '';
 		$shortcode_base = $shortcode;
-		// Checking wif it is alias and getting real shortcode name
+
+		// Checking if it is alias and getting real shortcode name
 		if ( isset( $this->config['alias'][ $shortcode ] ) ) {
 			$shortcode = $this->config['alias'][ $shortcode ];
 		}
 
 		// Check if it is theme element or modified shortcode
-		if ( substr( $shortcode, 0, 3 ) == 'us_' ) {
+		if ( strpos( $shortcode, 'us_' ) === 0 ) {
 			$element = substr( $shortcode, 3 );
 		} else {
 			$element = $shortcode;
@@ -166,7 +164,7 @@ class US_Shortcodes {
 		}
 
 		// Preserving VC before hook
-		if ( substr( $shortcode_base, 0, 3 ) == 'vc_' AND defined( 'VC_SHORTCODE_BEFORE_CUSTOMIZE_PREFIX' ) ) {
+		if ( strpos( $shortcode_base, 'vc_' ) === 0 AND defined( 'VC_SHORTCODE_BEFORE_CUSTOMIZE_PREFIX' ) ) {
 			$custom_output_before = VC_SHORTCODE_BEFORE_CUSTOMIZE_PREFIX . $shortcode_base;
 			if ( function_exists( $custom_output_before ) ) {
 				$_output .= $custom_output_before( $atts, $content );
@@ -188,7 +186,7 @@ class US_Shortcodes {
 		$filled_atts = us_shortcode_atts( $atts, $shortcode );
 
 		// Only for theme elements aliases: get params for both base and alias
-		if ( $shortcode_base != $shortcode AND substr( $shortcode, 0, 3 ) == 'us_' ) {
+		if ( $shortcode_base != $shortcode ) {
 			$filled_atts_base = us_shortcode_atts( $atts, $shortcode_base );
 			$filled_atts = us_array_merge( $filled_atts, $filled_atts_base );
 		}
@@ -204,6 +202,39 @@ class US_Shortcodes {
 				} else {
 					$filled_atts['classes'] .= ' ' . $design_css_class;
 				}
+			}
+		}
+
+		// Add element class which can be added in every shortcode
+		if ( ! empty( $filled_atts['el_class'] ) ) {
+			if ( ! isset( $filled_atts['classes'] ) ) {
+				$filled_atts['classes'] = ' ' . $filled_atts['el_class'];
+			} else {
+				$filled_atts['classes'] .= ' ' . $filled_atts['el_class'];
+			}
+		}
+
+		// Add animation class if set in Design options
+		if ( ! us_amp() AND ! empty( $filled_atts['css'] ) AND us_design_options_has_property( $filled_atts['css'], 'animation-name' ) ) {
+			if ( ! isset( $filled_atts['classes'] ) ) {
+				$filled_atts['classes'] = ' us_animate_this';
+			} else {
+				$filled_atts['classes'] .= ' us_animate_this';
+			}
+		}
+
+		// Add class names based on "Hide on" settings
+		if ( ! empty( $filled_atts['hide_on_states'] ) ) {
+			$hide_on_class = '';
+
+			foreach ( explode( ',', (string) $filled_atts['hide_on_states'] ) as $state ) {
+				$hide_on_class .= ' hide_on_' . $state;
+			}
+
+			if ( ! isset( $filled_atts['classes'] ) ) {
+				$filled_atts['classes'] = ' ' . $hide_on_class;
+			} else {
+				$filled_atts['classes'] .= ' ' . $hide_on_class;
 			}
 		}
 
@@ -259,7 +290,16 @@ class US_Shortcodes {
 		if ( WP_DEBUG AND $this->inited ) {
 			wp_die( 'Shortcodes VC front end compatibility should be provided before the shortcodes init' );
 		}
-		unset( $this->config['modified']['vc_tta_tabs'], $this->config['modified']['vc_tta_accordion'], $this->config['modified']['vc_tta_tour'], $this->config['alias']['vc_tta_accordion'], $this->config['alias']['vc_tta_tour'], $this->config['modified']['vc_tta_section'] );
+		unset(
+			$this->config['alias']['vc_tta_accordion'],
+			$this->config['alias']['vc_tta_tour']
+		);
+
+		foreach ( array( 'vc_tta_tabs', 'vc_tta_accordion', 'vc_tta_tour', 'vc_tta_section' ) as $shortcode_name ) {
+			if ( ( $key = array_search( $shortcode_name, $this->config['theme_elements'] ) ) !== FALSE ) {
+				unset( $this->config['theme_elements'][ $key ] );
+			}
+		}
 	}
 
 }
@@ -334,7 +374,7 @@ function us_media_templates() {
 add_action( 'wp_ajax_save-attachment', 'us_ajax_save_attachment', 1 );
 function us_ajax_save_attachment() {
 
-	if ( ! isset( $_REQUEST['id'] ) || ! isset( $_REQUEST['changes'] ) ) {
+	if ( ! isset( $_REQUEST['id'] ) OR ! isset( $_REQUEST['changes'] ) ) {
 		wp_send_json_error();
 	}
 

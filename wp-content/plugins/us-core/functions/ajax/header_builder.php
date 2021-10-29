@@ -68,7 +68,7 @@ if ( ! function_exists( 'us_ajax_hb_save' ) ) {
 	add_action( 'wp_ajax_us_ajax_hb_save', 'us_ajax_hb_save' );
 	function us_ajax_hb_save() {
 		$post = array(
-			'ID' => isset( $_POST['ID'] ) ? intval( $_POST['ID'] ) : NULL,
+			'ID' => isset( $_POST['ID'] ) ? (int) $_POST['ID'] : NULL,
 			'post_title' => isset( $_POST['post_title'] ) ? $_POST['post_title'] : NULL,
 			'post_content' => isset( $_POST['post_content'] ) ? $_POST['post_content'] : NULL,
 		);

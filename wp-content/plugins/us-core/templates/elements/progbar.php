@@ -27,23 +27,32 @@ $_atts = array(
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' style_' . $style;
 $_atts['class'] .= ' color_' . $color;
+
 if ( $hide_count ) {
 	$_atts['class'] .= ' hide_count';
 }
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
-if ( $title != '' ) {
-	$title_string = '<span class="w-progbar-title-text">' . wptexturize( $title ) . '</span>';
+// If we are in WPB front end editor mode, make sure the progbar has an ID
+if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() AND empty( $_atts['id'] ) ) {
+	$_atts['id'] = us_uniqid();
+}
+
+// Title
+if ( $title !== '' ) {
+
+	// Apply filters to title
+	$title = us_replace_dynamic_value( $title );
+	$title = wptexturize( $title );
+
+	$title_string = '<span class="w-progbar-title-text">' . $title . '</span>';
 } else {
 	$title_string = '';
 	$_atts['class'] .= ' title_none';
@@ -69,27 +78,38 @@ $func_number = function ( $value ) {
 	return $value;
 };
 
+// Check for custom fields
+$count = us_replace_dynamic_value( $count );
+$final_value = us_replace_dynamic_value( $final_value );
+
 // Checking a value that cannot be greater than the final value
-$count_number = $func_number( $count );
-$final_value_number = $func_number( $final_value );
+$initial_number = $func_number( $count );
+$final_number = $func_number( $final_value );
 if (
 	(
-		$count_number > 0
-		AND $count_number > $final_value_number
+		$initial_number > 0
+		AND $initial_number > $final_number
 	)
 	OR (
-		$count_number < 0
-		AND $count_number < $final_value_number
+		$initial_number < 0
+		AND $initial_number < $final_number
 	)
 ) {
 	$count = $final_value;
 }
 
+// Calculate bar width for AMP or Builder preview
+if ( us_amp() ) {
+	$bar_width = round( $initial_number / $final_number * 100, 2 ) . '%';
+} else {
+	$bar_width = '';
+}
+
 $bar_inline_css = us_prepare_inline_css(
 	array(
 		'height' => $size,
+		'width' => $bar_width,
 		'background' => us_get_color( $bar_color, /* Gradient */ TRUE ),
-		'width' => us_amp() ? ( floatval( ( $count_number / $func_number( $final_value ) ) * 100 ) . '% !important' ) : '',
 	)
 );
 
@@ -106,9 +126,9 @@ if ( ! $is_count_unit AND preg_match( '/^((\D*)(:?\-)?)?(\d+)(\D*)?$/', $final_v
 
 // Export options to js
 $json_data = array(
-	'value' => $count_number,
 	'template' => $count,
-	'finalValue' => $func_number( $final_value ),
+	'value' => $initial_number,
+	'finalValue' => $final_number,
 );
 
 // Show Final value
@@ -118,7 +138,7 @@ if ( ! $hide_final_value AND ! empty( $final_value ) ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts );
+$output = '<div' . us_implode_atts( $_atts );
 if ( ! us_amp() ) {
 	$output .= us_pass_data_to_js( $json_data );
 }
@@ -139,14 +159,17 @@ $output .= '</div>';
 
 $output .= '</div>';
 
-// If we are in front end editor mode, apply JS to logos
+// If we are in WPB front end editor mode, apply JS to the progbar
 if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() ) {
 	$output .= '<script>
-	jQuery(function($){
-		if (typeof $.fn.wProgbar === "function") {
-			jQuery(".w-progbar").wProgbar();
+	jQuery( function( $ ){
+		if ( typeof $us !== "undefined" && typeof $.fn.wProgbar === "function" ) {
+			var $elm = jQuery( "#' . $_atts['id'] . '" );
+			if ( $elm.data( "wProgbar" ) === undefined ) {
+				$elm.wProgbar();
+			}
 		}
-	});
+	} );
 	</script>';
 }
 

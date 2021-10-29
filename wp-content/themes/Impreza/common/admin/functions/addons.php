@@ -39,50 +39,13 @@ if ( ! function_exists( 'us_core_admin_notice' ) ) {
 					'<a href="' . admin_url( 'admin.php?page=us-addons' ) . '">UpSolution Core</a>'
 				);
 				echo ' <a href="' . esc_url( $help_portal_url ) . '/' . strtolower( US_THEMENAME ) . '/us-core/" target="_blank" rel="noopener">';
-				echo __( 'Read more about it', 'us' );
+				echo __( 'Learn more', 'us' );
 				echo '</a>';
 			}
 			?>
 			</h2>
 		</div>
 		<?php
-	}
-}
-
-// Display admin notice when WPBakery Page Builder is not active
-if ( ! get_option( 'us_dismiss_js_composer_notice' ) AND ! class_exists( 'Vc_Manager' ) ) {
-	add_action( 'admin_notices', 'us_js_composer_admin_notice' );
-}
-function us_js_composer_admin_notice() {
-	?>
-	<div class="notice notice-warning us-addons-notice is-dismissible">
-		<p><?php echo sprintf( __( 'This theme recommends to use %s plugin.', 'us' ), '<strong><a href="' . admin_url( 'admin.php?page=us-addons' ) . '">WPBakery Page Builder</a></strong>' ); ?></p>
-	</div>
-	<?php
-}
-
-add_action( 'admin_print_scripts', 'us_admin_addons_assets', 99 );
-function us_admin_addons_assets() {
-	?>
-	<script>
-		jQuery(document).on('click', '.us-addons-notice .notice-dismiss', function(){
-			var $notice = jQuery(this).closest('.us-addons-notice');
-			jQuery.ajax({
-				url: '<?php echo admin_url( 'admin-ajax.php' ); ?>',
-				data: {
-					action: 'us_dismiss_addons_notice',
-					pluginAction: 'activate'
-				}
-			});
-		});
-	</script>
-	<?php
-}
-
-add_action( 'wp_ajax_us_dismiss_addons_notice', 'us_dismiss_addons_notice' );
-function us_dismiss_addons_notice() {
-	if ( $_GET['pluginAction'] == 'activate' ) {
-		update_option( 'us_dismiss_js_composer_notice', 1 );
 	}
 }
 
@@ -110,8 +73,6 @@ function us_addons_page() {
 	}
 
 	$plugins = us_config( 'addons', array() );
-
-
 
 	foreach ( $plugins as $i => $plugin ) {
 		if ( isset( $plugins[ $i ]['premium'] ) AND ! isset( $plugins[ $i ]['source'] ) ) {
@@ -171,6 +132,7 @@ function us_addons_page() {
 
 				// Generate status attributes
 				$btn_text = '';
+				$btn_class = 'button action-button';
 				if ( isset( $activated_plugins[ $plugin['file_path'] ] ) ) {
 					$classes .= ' status_active';
 
@@ -193,6 +155,7 @@ function us_addons_page() {
 
 				} elseif ( ! isset( $activated_plugins[ $plugin['file_path'] ] ) ) {
 					$classes .= ' status_notactive';
+					$btn_class .= ' button-primary';
 					$btn_text = us_translate( 'Activate Plugin' );
 					$btn_action = 'activate';
 				}
@@ -209,9 +172,11 @@ function us_addons_page() {
 						<div class="us-addon-status"><?php echo us_translate_x( 'Active', 'plugin' ); ?></div>
 						<?php
 						// Screenlock for premium plugins
-						if ( isset( $plugin['premium'] ) AND ! isset( $plugin['source'] )
-							AND ! ( get_option( 'us_license_activated', 0 )
-								OR get_option( 'us_license_dev_activated', 0 ) ) ) {
+						if (
+							isset( $plugin['premium'] )
+							AND ! isset( $plugin['source'] )
+							AND ! ( get_option( 'us_license_activated', 0 ) OR get_option( 'us_license_dev_activated', 0 ) )
+						) {
 							?>
 							<div class="us-addon-lock">
 								<div><?php echo sprintf( __( '<a href="%s">Activate the theme</a> to install premium addons', 'us' ), admin_url( 'admin.php?page=us-home#activation' ) ) ?></div>
@@ -220,7 +185,9 @@ function us_addons_page() {
 						}
 						if ( ! empty( $btn_text ) ) {
 							?>
-							<a class="usof-button action-button" href="javascript:void(0);" data-plugin="<?php echo esc_attr( $plugin['slug'] ); ?>" data-action="<?php echo esc_attr( $btn_action ); ?>"><span><?php echo strip_tags( $btn_text ); ?></span></a>
+							<a class="<?php echo esc_attr( $btn_class ) ?>" href="javascript:void(0);" data-plugin="<?php echo esc_attr( $plugin['slug'] ) ?>" data-action="<?php echo esc_attr( $btn_action ) ?>">
+								<span><?php echo strip_tags( $btn_text ) ?></span>
+							</a>
 							<?php
 						}
 						?>

@@ -17,7 +17,7 @@
  * @var $css            string Extra css
  * @var $el_id          string element ID
  * @var $el_class       string Extra class name
- * @var $source      string Iframe from custom field
+ * @var $source         string Iframe from custom field
  */
 
 // If ACF field is chosen as a value then parse iframe, get link from value and replace with current
@@ -38,106 +38,139 @@ if ( ! empty( $source ) AND $source != 'custom' AND function_exists( 'get_field'
 $_atts['class'] = 'w-video';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' align_' . $align;
+
 if ( ! empty( $ratio ) ) {
 	$_atts['class'] .= ' ratio_' . $ratio;
 }
+
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'border-radius' ) ) {
 	$_atts['class'] .= ' has_border_radius';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
+
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
 
 // Image Overlay
-if ( ( $is_overlay_image = ! empty( $overlay_image ) ) AND ! us_amp() ) {
+if ( $overlay_image AND ! us_amp() ) {
+	$overlay_image_src = wp_get_attachment_image_url( $overlay_image, 'full' );
+
+	if ( empty( $overlay_image_src ) ) {
+		$overlay_image_src = us_get_img_placeholder( 'full', TRUE );
+	}
 	$_atts['class'] .= ' with_overlay';
-	$_atts['style'] = sprintf( 'background-image:url(%s);', wp_get_attachment_image_url( $overlay_image, 'full' ) );
+	$_atts['style'] = 'background-image:url(' . $overlay_image_src . ');';
 }
 
+// Empty embed by default because video can be loaded with JS
 $embed_html = '';
 
-foreach ( us_config( 'embeds' ) as $provider => $embed ) {
-	if ( $embed['type'] != 'video' OR ! preg_match( $embed['regex'], $link, $matches ) ) {
-		continue;
-	}
+// Check providers.
+if ( ! empty( $link ) ) {
+	foreach ( us_config( 'embeds' ) as $provider => $embed ) {
+		// If there is no video ID then skip iteration.
+		if (
+			! isset( $embed['get_video_id'] )
+			OR ! is_callable( $embed['get_video_id'] )
+			OR ! $video_id = call_user_func( $embed['get_video_id'], $link )
+		) {
+			continue;
+		}
 
-	$url_params = array();
-	$embed_url_params = us_arr_path( $embed, 'url_params', array() );
+		// Get a unique ID for an video player.
+		$player_id = $provider . '-' . us_uniqid();
 
-	switch ( $provider ) {
-		case 'youtube':
-			$url_params = array(
-				'autoplay' => (int) $is_overlay_image,
-				'origin' => get_site_url(),
-				'controls' => (int) ! $hide_controls,
-			);
-			break;
-		case 'vimeo':
-			$url_params = array(
-				'autoplay' => (int) $is_overlay_image,
-				'byline' => (int) $hide_video_title,
-				'title' => (int) $hide_video_title,
-			);
-			break;
-		default:
-			break;
-	}
+		// Get HTML/JS code to init the player.
+		$player_html = us_arr_path( $embed, 'player_html', '' );
 
-	if ( $provider == 'youtube' AND $overlay_image ) {
-		$url_params = array_merge(
-			$url_params,
-			array(
-				'playlist' => $matches[1],
-			)
+		if ( ! $overlay_image ) {
+			// Get raw iframe markup to show as is
+			$embed_html = us_arr_path( $embed, 'iframe_html', '' );
+		}
+
+		// Get player vars.
+		$player_vars = us_arr_path( $embed, 'player_vars', array() );
+
+		// Apply settings.
+		switch ( $provider ) {
+			case 'youtube':
+				$player_vars = array(
+					'origin' => get_site_url(),
+					'controls' => (int) ! $hide_controls,
+				);
+				break;
+			case 'vimeo':
+				$player_vars = array(
+					'byline' => (int) $hide_video_title,
+					'title' => (int) $hide_video_title,
+				);
+				break;
+		}
+
+		// If an overlay is used, then set autoplay.
+		if ( $overlay_image AND ! us_amp() ) {
+			$player_vars['autoplay'] = 1;
+		}
+
+		// Set a playlist for YouTube.
+		if ( $provider == 'youtube' AND $overlay_image ) {
+			$player_vars['playlist'] = $video_id;
+		}
+
+		// Set value to <variable>
+		$variables = array(
+			'video_id' => $video_id,
+			'player_id' => $player_id,
+			'player_vars' => json_encode( $player_vars ),
+			'player_url_params' => build_query( $player_vars ),
 		);
-	}
 
-	$url_params = array_merge( $embed_url_params, $url_params );
-	$variables = array(
-		'id' => (string) $matches[ $embed['match_index'] ],
-		'url_params' => ! empty( $url_params )
-			? '?' . http_build_query( $url_params, '', '&' )
-			: '',
-	);
+		foreach ( $variables as $variable => $value ) {
+			$player_html = str_replace( "<{$variable}>", $value, $player_html );
+			$embed_html = str_replace( "<{$variable}>", $value, $embed_html );
+		}
 
-	$embed_html = $embed['html'];
-	foreach ( $variables as $variable => $value ) {
-		$embed_html = str_replace( "<{$variable}>", $value, $embed_html );
+		// Export data to JS
+		$js_data = array(
+			'player_id' => $player_id,
+			'player_api' => us_arr_path( $embed, 'player_api', '' ),
+			'player_html' => $player_html,
+		);
+
+		if ( $overlay_image ) {
+			$_atts['onclick'] = us_pass_data_to_js( $js_data, /* onclicks */ FALSE );
+		}
+
+		// One successful iteration is enough.
+		break;
 	}
-	break;
 }
 
-if ( empty( $embed_html ) ) {
 
-	// Using the default WordPress way
+if ( empty( $_atts['onclick'] ) ) {
 	global $wp_embed;
-	$embed_html = $wp_embed->run_shortcode( '[embed]' . $link . '[/embed]' );
+	// Using the default WordPress way
+	$player_html = $wp_embed->run_shortcode( '[embed]' . $link . '[/embed]' );
+	$_atts['onclick'] = us_pass_data_to_js( array( 'player_html' => $player_html ), /* onclicks */ FALSE );
 }
 
-// If an overlay is used, then we use the template
-if ( $overlay_image AND ! us_amp() ) {
-	$embed_html = '<script type="us-template/html">' . $embed_html . '</script>';
-}
-
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="w-video-h">' . $embed_html . '</div>';
 
-// Play icon
+// Add play icon in output
 if ( $overlay_icon AND ! us_amp() ) {
-	$output .= '<div class="w-video-icon" style="';
+	$tag_style = '';
 	if ( ! empty( $overlay_icon_size ) ) {
-		$output .= 'font-size:' . esc_attr( $overlay_icon_size ) . ';';
+		$tag_style .= 'font-size:' . esc_attr( $overlay_icon_size ) . ';';
 	}
 	if ( ! empty( $overlay_icon_bg_color ) ) {
-		$output .= 'background:' . us_get_color( $overlay_icon_bg_color, /* Gradient */ TRUE ) . ';';
+		$tag_style .= 'background:' . us_get_color( $overlay_icon_bg_color, /* Gradient */ TRUE ) . ';';
 	}
 	if ( ! empty( $overlay_icon_text_color ) ) {
-		$output .= 'color:' . us_get_color( $overlay_icon_text_color ) . ';';
+		$tag_style .= 'color:' . us_get_color( $overlay_icon_text_color );
 	}
-	$output .= '"></div>';
+	$output .= '<div class="w-video-icon" style="' . $tag_style . '"></div>';
 }
 $output .= '</div>';
 

@@ -28,10 +28,13 @@ $post_atts = array(
 );
 
 // Add items appearance animation on loading
-if ( $load_animation !== 'none' AND ! us_amp() ) {
-	$post_atts['class'] .= ' animate_' . $load_animation;
-	if ( $type == 'masonry' ) {
-		$post_atts['class'] .= ' animate_off_autostart';
+// TODO: add animation preview for US Builder
+if ( $load_animation !== 'none' AND ! us_amp() AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+	$post_atts['class'] .= ' us_animate_' . $load_animation;
+
+	// We need to hide CSS animation before isotope.js initialization
+	if ( $type === 'masonry' AND $columns > 1 ) {
+		$post_atts['class'] .= ' off_autostart';
 	}
 
 	// Set "animation-delay" for every doubled amount of columns
@@ -201,10 +204,10 @@ $post_atts['class'] .= ' ' . implode( ' ', get_post_class() );
 
 ob_start();
 ?>
-	<article <?php echo us_implode_atts( $post_atts ) ?>>
+	<article<?= us_implode_atts( $post_atts ) ?>>
 		<div class="w-grid-item-h"<?= $inline_css ?>>
 			<?php if ( ! empty( $link_atts['href'] ) ): ?>
-				<a <?= us_implode_atts( $link_atts ) ?>></a>
+				<a<?= us_implode_atts( $link_atts ) ?>></a>
 			<?php endif; ?>
 			<?php us_output_builder_elms( $grid_layout_settings, 'default', 'middle_center', 'grid', 'post' ); ?>
 		</div>

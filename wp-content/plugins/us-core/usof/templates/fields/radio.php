@@ -16,15 +16,34 @@
  * @var   $value array List of checked keys
  */
 
-$output = '<ul class="usof-radio-list">';
-foreach ( $field['options'] as $key => $option_title ) {
-	$output .= '<li class="usof-radio">';
-	$output .= '<input type="radio" id="' . $id . '_' . $key . '" name="' . $name . '" value="' . esc_attr( $key ) . '"';
-	$output .= checked( $value, $key, FALSE );
-	$output .= '><label for="' . $id . '_' . $key . '">' . $option_title . '</label>';
-	$output .= '</li>';
+$output = '';
+
+// Add to the output of radio buttons
+foreach ( us_arr_path( $field, 'options', array() ) as $key => $label ) {
+	$radio_atts = us_implode_atts( array(
+		'name' => '', // NOTE: Do not set the field name to disable links between the selection by the browser itself!
+		'type' => 'radio',
+		'value' => $key,
+	) );
+	$output .= '<label title="' . esc_attr( $label ) . '">';
+	$output .= '<input' . $radio_atts . checked( $value, $key, /* Default */FALSE ) . '>';
+
+	// Output icons instead of labels if set
+	$output .= '<span class="usof-radio-value">';
+	$output .= ! empty( $field['labels_as_icons'] )
+		? '<i class="' . esc_attr( str_replace( '*', $key, $field['labels_as_icons'] ) ) . '"></i>'
+		: $label;
+	$output .= '</span>';
+
+	$output .= '</label>';
 }
-$output .= '</ul>';
 
-echo $output;
+// Hidden field for correct data transfer via POST and uniqueness of buttons outside the form
+$input_atts = array(
+	'name' => $name, // Name to define in GET/POST/REQUEST
+	'type' => 'hidden',
+	'value' => $value,
+);
+$output .= '<input' . us_implode_atts( $input_atts ) . '>';
 
+echo '<div class="usof-radio">' . $output . '</div>';

@@ -5,6 +5,8 @@
 	width: 100%; /* fix for usage inside Wrappers */
 	transform: translateZ(0); /* render fix for Safari */
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	background: var(--color-content-bg-alt-grad);
+	color: var(--color-content-text);
 	}
 	.w-ibanner > a {
 		position: absolute;

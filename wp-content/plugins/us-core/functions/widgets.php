@@ -56,7 +56,7 @@ abstract class US_Widget extends WP_Widget {
 
 		foreach ( $this->config['params'] as $param_name => $param ) {
 			if ( ! isset( $param['type'] ) ) {
-				$param['type'] = 'textfield';
+				$param['type'] = 'text';
 			}
 			if ( ! method_exists( $this, 'form_' . $param['type'] ) ) {
 				continue;
@@ -71,12 +71,12 @@ abstract class US_Widget extends WP_Widget {
 	}
 
 	/**
-	 * Output form's textfield element
+	 * Output form's text element
 	 *
 	 * @param array  $param Parameter from config
 	 * @param string $value Current value
 	 */
-	public function form_textfield( $param, $value ) {
+	public function form_text( $param, $value ) {
 		$param['heading'] = isset( $param['heading'] ) ? $param['heading'] : $param['name'];
 		$field_id = $this->get_field_id( $param['name'] );
 		$output = '<p>';
@@ -100,21 +100,19 @@ abstract class US_Widget extends WP_Widget {
 		$output = '<p><label for="' . esc_attr( $field_id ) . '">' . $param['heading'] . ':</label>';
 		$output .= '<select name="' . esc_attr( $this->get_field_name( $param['name'] ) ) . '" id="' . esc_attr( $field_id ) . '" class="widefat">';
 		if ( isset( $param['value'] ) AND is_array( $param['value'] ) ) {
-			$is_first_optgroup = TRUE;
-			foreach ( $param['value'] as $key => $option ) {
-				if ( is_array( $option ) AND isset( $option['optgroup'] ) AND $option['optgroup'] ) {
-					if ( ! $is_first_optgroup ) {
-						$output .= '</optgroup>';
+			foreach ( $param['value'] as $option_key => $option_value ) {
+				if ( is_string( $option_value ) ) {
+					$output .= '<option value="' . esc_attr( $option_key ) . '"' . selected( $value, $option_key, FALSE ) . '>' . $option_value . '</option>';
+				} else if ( ! empty( $option_value ) AND is_array( $option_value ) ) {
+					$output .= '<optgroup label="' . esc_attr( $option_key ) . '">';
+					foreach ( $option_value AS $item_key => $item_value ) {
+						if ( empty( $item_value ) ) {
+							continue;
+						}
+						$output .= '<option value="' . esc_attr( $item_key ) . '"' . selected( $value, $item_key, FALSE ) . '>' . $item_value . '</option>';
 					}
-					$output .= '<optgroup label="' . esc_attr( $option['title'] ) . '">';
-					$is_first_optgroup = FALSE;
-
-				} else {
-					$output .= '<option value="' . esc_attr( $key ) . '"' . selected( $value, $key, FALSE ) . '>' . $option . '</option>';
+					$output .= '</optgroup>';
 				}
-			}
-			if ( ! $is_first_optgroup ) {
-				$output .= '</optgroup>';
 			}
 		}
 		$output .= '</select></p>';

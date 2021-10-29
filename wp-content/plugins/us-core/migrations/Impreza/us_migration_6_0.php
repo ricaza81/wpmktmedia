@@ -280,6 +280,31 @@ class us_migration_6_0 extends US_Migration_Translator {
 	// Theme Options
 	public function translate_theme_options( &$options ) {
 		$this->previous_theme_options = $options;
+		// Setting default values for previous theme options if they are not set yet
+		$this->previous_theme_options['shop_listing_style'] =
+			( isset( $this->previous_theme_options['shop_listing_style'] ) )
+				? $this->previous_theme_options['shop_listing_style']
+				: 'standard';
+		$this->previous_theme_options['shop_layout'] =
+			( isset( $this->previous_theme_options['shop_layout'] ) )
+				? $this->previous_theme_options['shop_layout']
+				: 'blog_compact';
+		$this->previous_theme_options['shop_items_gap'] =
+			( isset( $this->previous_theme_options['shop_items_gap'] ) )
+				? $this->previous_theme_options['shop_items_gap']
+				: '1.5rem';
+		$this->previous_theme_options['shop_elements'] =
+			( isset( $this->previous_theme_options['shop_elements'] ) )
+				? $this->previous_theme_options['shop_elements']
+				: array( 'shop_title', 'product_title', 'breadcrumbs' );
+		$this->previous_theme_options['shop_columns'] =
+			( isset( $this->previous_theme_options['shop_columns'] ) )
+				? $this->previous_theme_options['shop_columns']
+				: '3';
+		$this->previous_theme_options['product_related_qty'] =
+			( isset( $this->previous_theme_options['product_related_qty'] ) )
+				? $this->previous_theme_options['product_related_qty']
+				: '3';
 
 		// Set new content templates for WooCommerce pages
 		if ( class_exists( 'woocommerce' ) ) {
@@ -342,7 +367,7 @@ class us_migration_6_0 extends US_Migration_Translator {
 		$content_width = intval( $options['site_content_width'] );
 		$old_sidebar_width = intval( $options['sidebar_width'] );
 		$new_sidebar_width = 100 * ( $content_width * $old_sidebar_width / 100 + 3 * $rem ) / ( $content_width + 3 * $rem );
-		$options['sidebar_width'] = number_format( $new_sidebar_width, 2 ) . '%';
+		$options['sidebar_width'] = round( $new_sidebar_width, 2 ) . '%';
 
 		// Force Titlebar & Sidebar option
 		$options['enable_sidebar_titlebar'] = TRUE;

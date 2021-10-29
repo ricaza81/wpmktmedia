@@ -2,6 +2,32 @@
 /* WordPress Admin UI customizations
    ========================================================================== */
 
+/* Highlight "Edit Live" links */
+.wp-list-table .edit_us_builder > a {
+	font-weight: 600;
+	color: #23ccaa;
+	}
+#us-builder-switch {
+	display: inline-block;
+	vertical-align: top;
+	margin-top: 10px;
+	}
+	#us-builder-switch > .button {
+		font-size: 14px;
+		line-height: 44px;
+		font-weight: 600;
+		padding: 0 13px;
+		border: none;
+		background: #23ccaa;
+		}
+	#us-builder-switch > .button:hover {
+		background: #1ca086;
+		}
+.composer-switch ~ #us-builder-switch {
+	margin-left: 6px;
+	margin-right: 6px;
+	}
+
 /* Media editing window */
 .wp-list-table th.column-us_preview {
 	width: 50px;
@@ -142,7 +168,7 @@
 		}
 		#TB_window .usof-header h2 span {
 			font-weight: 400;
-			color: #b4b9be;
+			color: var(--usof-color-gray-20);
 			}
 		@media (max-width: 600px) {
 		#TB_window .usof-header h2 span {
@@ -169,7 +195,6 @@
 
 .usof-container.for_meta {
 	max-width: 860px;
-	padding-top: 0;
 	}
 .usof-container.for_meta .usof-form-row {
 	padding: 10px;

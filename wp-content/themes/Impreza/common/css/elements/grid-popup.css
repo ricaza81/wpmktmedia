@@ -5,9 +5,17 @@
 html.usoverlay_fixed {
 	overflow: hidden;
 	}
+
 html[style*="hidden"] .header_hor .l-header.pos_fixed,
 html.usoverlay_fixed .header_hor .l-header.pos_fixed {
 	overflow-y: scroll;
+	}
+/* Safari fix for mobile menu */
+@media not all and (min-resolution: 0.001dpcm) {
+	html[style*="hidden"] .header_hor .l-header.pos_fixed,
+	html.usoverlay_fixed .header_hor .l-header.pos_fixed {
+		overflow-y: hidden;
+		}
 	}
 .l-popup-overlay {
 	display: none;
@@ -57,6 +65,8 @@ html.usoverlay_fixed .header_hor .l-header.pos_fixed {
 			transition: height 0.2s;
 			-webkit-overflow-scrolling: touch;
 			overflow-y: auto;
+			background: var(--color-content-bg-grad);
+			color: var(--color-content-text);
 			}
 		.no-touch .l-popup-box-content {
 			overflow-y: hidden;

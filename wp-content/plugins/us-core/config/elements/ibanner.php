@@ -1,21 +1,30 @@
 <?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
-$misc = us_config( 'elements_misc' );
-$design_options = us_config( 'elements_design_options' );
+/**
+ * Configuration for shortcode: ibanner
+ */
 
+$misc = us_config( 'elements_misc' );
+$design_options_params = us_config( 'elements_design_options' );
+
+/**
+ * @return array
+ */
 return array(
 	'title' => __( 'Interactive Banner', 'us' ),
 	'description' => __( 'Image and text with hover effect', 'us' ),
-	'icon' => 'fas fa-image',
-	'params' => array_merge(
-		array(
+	'category' => __( 'Interactive', 'us' ),
+	'icon' => 'fas fa-camera-retro',
+	'params' => us_set_params_weight(
 
-			// General
+		// General section
+		array(
 			'image' => array(
 				'title' => us_translate( 'Image' ),
 				'type' => 'upload',
 				'extension' => 'png,jpg,jpeg,gif,svg',
 				'cols' => 2,
+				'usb_preview' => TRUE,
 			),
 			'size' => array(
 				'title' => __( 'Image Size', 'us' ),
@@ -24,12 +33,17 @@ return array(
 				'options' => us_get_image_sizes_list(),
 				'std' => 'large',
 				'cols' => 2,
+				'usb_preview' => TRUE,
 			),
 			'title' => array(
 				'title' => us_translate( 'Title' ),
 				'type' => 'text',
 				'std' => us_translate( 'Title' ),
 				'admin_label' => TRUE,
+				'usb_preview' => array(
+					'attr' => 'text',
+					'elm' => '.w-ibanner-title',
+				),
 			),
 			'title_size' => array(
 				'title' => __( 'Title Size', 'us' ),
@@ -38,6 +52,10 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'show_if' => array( 'title', '!=', '' ),
+				'usb_preview' => array(
+					'css' => 'font-size',
+					'elm' => '.w-ibanner-title',
+				),
 			),
 			'title_tag' => array(
 				'title' => __( 'Title HTML tag', 'us' ),
@@ -46,19 +64,30 @@ return array(
 				'std' => 'h2',
 				'cols' => 2,
 				'show_if' => array( 'title', '!=', '' ),
+				'usb_preview' => array(
+					'attr' => 'tag',
+					'elm' => '.w-ibanner-title',
+				),
 			),
 			'desc' => array(
 				'title' => us_translate( 'Description' ),
 				'type' => 'textarea',
 				'std' => '',
+				'usb_preview' => array(
+					'attr' => 'html',
+					'elm' => '.w-ibanner-desc',
+				),
 			),
 			'link' => array(
 				'title' => us_translate( 'Link' ),
 				'type' => 'link',
 				'std' => '',
+				'usb_preview' => TRUE,
 			),
+		),
 
-			// Appearance
+		// Appearance section
+		array(
 			'ratio' => array(
 				'title' => __( 'Aspect Ratio', 'us' ),
 				'type' => 'select',
@@ -73,6 +102,9 @@ return array(
 				),
 				'std' => '1x1',
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'mod' => 'ratio',
+				),
 			),
 			'animation' => array(
 				'title' => __( 'Animation Type', 'us' ),
@@ -90,6 +122,9 @@ return array(
 				'std' => 'melete',
 				'cols' => 2,
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'mod' => 'animation',
+				),
 			),
 			'easing' => array(
 				'title' => __( 'Animation Easing', 'us' ),
@@ -102,11 +137,16 @@ return array(
 				'std' => 'ease',
 				'cols' => 2,
 				'group' => us_translate( 'Appearance' ),
+				'usb_preview' => array(
+					'mod' => 'easing',
+				),
 			),
 
-		), $design_options
+		),
+
+		$design_options_params
 	),
-	'deprecated_params' => array(
+	'fallback_params' => array(
 		'align',
 	),
 );

@@ -233,7 +233,7 @@ class us_migration_4_6 extends US_Migration_Translator {
 					$post_content = json_encode( $header_options );
 				}
 				$post_content = str_replace( "\\n", "\\\\n", $post_content );
-				
+
 				$header_post_array = array(
 					'post_type' => 'us_header',
 					'post_date' => date( 'Y-m-d H:i', time() - 86400 ),
@@ -382,6 +382,7 @@ class us_migration_4_6 extends US_Migration_Translator {
 	// Meta
 	public function translate_meta( &$meta, $post_type ) {
 		$changed = FALSE;
+		$breakpoints_keys = (array) us_get_responsive_states( /* Only keys */TRUE );
 
 		if ( ! empty( $meta['us_header_remove'][0] ) AND $meta['us_header_remove'][0] == 1 ) {
 			$meta['us_header'][0] = 'hide';
@@ -395,7 +396,7 @@ class us_migration_4_6 extends US_Migration_Translator {
 
 		if ( ! empty( $meta['us_header_pos'][0] ) AND $meta['us_header_pos'][0] == 'sticky' ) {
 			$meta['us_header_sticky_override'][0] = 1;
-			$meta['us_header_sticky'][0] = array( 'default', 'tablets', 'mobiles' );
+			$meta['us_header_sticky'][0] = $breakpoints_keys;
 			$changed = TRUE;
 		}
 
@@ -407,7 +408,7 @@ class us_migration_4_6 extends US_Migration_Translator {
 
 		if ( ! empty( $meta['us_header_bg'][0] ) AND $meta['us_header_bg'][0] == 'transparent' ) {
 			$meta['us_header_transparent_override'][0] = 1;
-			$meta['us_header_transparent'][0] = array( 'default', 'tablets', 'mobiles' );
+			$meta['us_header_transparent'][0] = $breakpoints_keys;
 			$changed = TRUE;
 		}
 

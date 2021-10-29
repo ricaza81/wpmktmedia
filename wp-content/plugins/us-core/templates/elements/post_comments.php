@@ -17,7 +17,7 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 	return;
 } elseif ( get_post_format() == 'link' ) {
 	return;
-} elseif ( ! ( ( get_post() AND comments_open() ) OR get_comments_number() ) ) {
+} elseif ( ! comments_open() AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
 	return;
 }
 
@@ -30,9 +30,6 @@ $_atts['class'] = 'w-post-elm post_comments';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' layout_' . $layout;
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 	$_atts['id'] = $el_id;
 }
@@ -72,12 +69,17 @@ if ( $layout == 'amount' ) {
 
 	// "Hide this element if no comments"
 	if ( $hide_zero AND empty( $comments_number ) ) {
+
+		// Output empty container for Live Builder
+		if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+			echo '<div class="w-post-elm"></div>';
+		}
 		return;
 	}
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 
 if ( $layout == 'comments_template' ) {
 	if ( ! us_amp() ) {
@@ -93,7 +95,7 @@ if ( $layout == 'comments_template' ) {
 		$output .= us_prepare_icon_tag( $icon );
 	}
 	if ( ! empty( $link_atts['href'] ) ) {
-		$output .= '<a ' . us_implode_atts( $link_atts ) . '>';
+		$output .= '<a' . us_implode_atts( $link_atts ) . '>';
 	}
 
 	if ( class_exists( 'woocommerce' ) AND get_post_type() == 'product' ) {

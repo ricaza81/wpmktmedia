@@ -4,141 +4,152 @@
 ! function( $ ) {
 	"use strict";
 
-	function WShare( selector ) {
-		var $this = $( selector ),
-			$parent = $this.parent(),
-			first_image_src,
-			opt = {
-				url: window.location,
-				text: document.title,
-				lang: document.documentElement.lang,
-				image: $( 'meta[name="og:image"]' ).attr( 'content' ) || ''
-			};
-		if ( window.selectedText ) {
-			opt.text = window.selectedText;
-		}
-		if ( $parent.attr( 'data-sharing-url' ) !== undefined && $parent.attr( 'data-sharing-url' ) !== '' ) {
-			opt.url = $parent.attr( 'data-sharing-url' );
-		}
-		if ( $parent.attr( 'data-sharing-image' ) !== undefined && $parent.attr( 'data-sharing-image' ) !== '' ) {
-			opt.image = $parent.attr( 'data-sharing-image' );
-		}
-		if ( opt.image === '' || opt.image === undefined ) {
-			first_image_src = $( 'img' ).first().attr( 'src' );
-			if ( first_image_src !== undefined && first_image_src !== '' ) {
-				opt.image = first_image_src;
-			}
-		}
-		if ( $this.hasClass( 'facebook' ) ) {
-			window.open( "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent( opt.url ) + "&quote=" + encodeURIComponent( opt.text ) + "", "facebook", "toolbar=0, status=0, width=900, height=500" );
-		} else if ( $this.hasClass( 'twitter' ) ) {
-			window.open( "https://twitter.com/intent/tweet?text=" + encodeURIComponent( opt.text ) + "&url=" + encodeURIComponent( opt.url ), "twitter", "toolbar=0, status=0, width=650, height=360" );
-		} else if ( $this.hasClass( 'linkedin' ) ) {
-			window.open( 'https://www.linkedin.com/shareArticle?mini=true&url=' + encodeURIComponent( opt.url ), 'linkedin', 'toolbar=no,width=550,height=550' );
-		} else if ( $this.hasClass( 'whatsapp' ) ) {
-			if ( jQuery.isMobile ) {
-				window.open( "https://api.whatsapp.com/send?text=" + encodeURIComponent( opt.text + ' ' + opt.url ), "whatsapp", "toolbar=0, status=0, width=900, height=500" );
-			} else {
-				window.open( "https://web.whatsapp.com/send?text=" + encodeURIComponent( opt.text + ' ' + opt.url ), "whatsapp", "toolbar=0, status=0, width=900, height=500" );
-			}
-		} else if ( $this.hasClass( 'xing' ) ) {
-			window.open( "https://www.xing.com/spi/shares/new?url=" + encodeURIComponent( opt.url ), "xing", "toolbar=no, status=0, width=900, height=500" );
-		} else if ( $this.hasClass( 'reddit' ) ) {
-			window.open( "https://www.reddit.com/submit?url=" + encodeURIComponent( opt.url ) + "&title=" + encodeURIComponent( opt.text ), "reddit", "toolbar=no, status=0, width=900, height=500" );
-		} else if ( $this.hasClass( 'pinterest' ) ) {
-			window.open( 'https://www.pinterest.com/pin/create/button/?url=' + encodeURIComponent( opt.url ) + '&media=' + encodeURIComponent( opt.image ) + '&description=' + encodeURIComponent( opt.text ), 'pinterest', 'toolbar=no,width=700,height=300' );
-		} else if ( $this.hasClass( 'vk' ) ) {
-			window.open( 'https://vk.com/share.php?url=' + encodeURIComponent( opt.url ) + '&title=' + encodeURIComponent( opt.text ) +  '&description=&image=' + encodeURIComponent( opt.image ),'vk','toolbar=no,width=700,height=300' );
-		} else if ( $this.hasClass( 'email' ) ) {
-			window.location = 'mailto:?subject=' + opt.text + '&body=' + encodeURIComponent ( opt.url );
-		}
-	}
+	$us.UsSharing = function( container, options ) {
+		this.init( container, options );
+	};
 
+	$us.UsSharing.prototype = {
+		init: function( container, options ) {
+			this.$container = $( container );
 
-	// Enable sharing via text selection
-	if ( $( '.w-sharing-tooltip' ).length ) {
-
-		var activeArea = '.l-main';
-
-		// If Allow sharing in post content only
-		if ( $( '.w-sharing-tooltip' ).attr( 'data-sharing-area' ) === 'post_content' ) {
-			activeArea = '.w-post-elm.post_content';
-		}
-
-		// Close tooltip if click anywhere on page
-		$( 'body' ).not( activeArea ).bind( 'mouseup', function() {
-			var selection;
-			if ( window.getSelection ) {
-				selection = window.getSelection();
-			} else if ( document.selection ) {
-				selection = document.selection.createRange();
-			}
-
-			if ( selection.toString() === '' ) {
-				$( ".w-sharing-tooltip.active:visible" ).hide();
-			}
-
-		} );
-
-		// Open tooltip
-		$( activeArea ).bind( 'mouseup', function( e ) {
-			var selection, tooltip = '', url, $copy2clipboard = $( '.w-sharing-item.copy2clipboard' );
-
-			if ( window.getSelection ) {
-				selection = window.getSelection();
-			} else if ( document.selection ) {
-				selection = document.selection.createRange();
-			}
-
-			$( ".w-sharing-tooltip" ).each( function() {
-				if ( $( this ).hasClass( 'active' ) ) {
-					tooltip = this;
-				}
-			} );
-
-			// mark first tooltip as active
-			if ( tooltip === '' ) {
-				$( ".w-sharing-tooltip:first" ).addClass( 'active' );
-				$( ".w-sharing-tooltip.active" ).appendTo( "body" );
-				tooltip = ".w-sharing-tooltip.active";
-			}
-
-			//copy selected text to window.selectedText and show tooltip
-			if ( selection.toString() !== '' ) {
-				window.selectedText = selection.toString();
-				$( tooltip ).css( {
-					"display": "inline-block", "left": e.pageX, "top": e.pageY - 50,
-				} );
-			} else {
-				window.selectedText = '';
-				$( tooltip ).hide();
-			}
-
-			//if copy
-			$copy2clipboard.on( 'click', function() {
-				// get url
-				if ( $copy2clipboard.parent().attr( 'data-sharing-url' ) !== undefined && $copy2clipboard.parent().attr( 'data-sharing-url' ) !== '' ) {
-					url = $copy2clipboard.parent().attr( 'data-sharing-url' );
+			// If no post image is set, try to get first image from content
+			if ( !! this.$container.find( '.w-sharing-list' ).data( 'content-image' ) ) {
+				if ( $( '.l-canvas img:first-child' ).length ) {
+					this.sharingImage = $( '.l-canvas img:first-child' ).attr( 'src' );
 				} else {
-					url = window.location;
+					this.sharingImage = '';
 				}
-				// create hidden selection
-				var el = document.createElement( 'textarea' );
-				el.value = window.selectedText + ' ' + url;
-				el.setAttribute( 'readonly', '' );
-				el.style.position = 'absolute';
-				el.style.left = '-9999px';
-				document.body.appendChild( el );
-				el.select();
-				document.execCommand( 'copy' );
-				document.body.removeChild( el );
-				$( tooltip ).hide();
-			} );
-		} );
-	}
 
-	$( '.w-sharing-item' ).on( 'click', function() {
-		WShare( this );
-		$( '.w-sharing-tooltip' ).hide();
+				this.setSharingImage();
+			}
+
+			if ( ! this.$container.hasClass( 'w-sharing-tooltip' ) ) {
+				// Change WhatsApp Mobile URL
+				if ( this.$container.find( '.whatsapp' ).length && $.isMobile ) {
+					this.setWhatsAppUrl( this.$container.find( '.whatsapp' ) );
+				}
+			} else {
+				this.$copy2clipboard = this.$container.find( '.w-sharing-item.copy2clipboard' );
+				this.selectedText = '';
+				this.activeArea = '.l-main';
+
+				// If Allow sharing in post content only
+				if ( this.$container.data( 'sharing-area' ) === 'post_content' ) {
+					this.activeArea = '.w-post-elm.post_content';
+				}
+
+				// Move the tooltip for better positioning
+				this.$container.appendTo( "body" );
+
+				// Close tooltip if click anywhere on page
+				$( 'body' ).not( this.activeArea ).bind( 'mouseup', function() {
+					var selection = this.getSelection();
+					if ( selection === '' ) {
+						this.$container.hide();
+					}
+				}.bind( this ) );
+
+				// Show/Hide the tooltip
+				$( this.activeArea ).on( 'mouseup', function( e ) {
+					var selection = this.getSelection();
+
+					// Copy selected text and show tooltip
+					if ( selection !== '' ) {
+						this.selectedText = selection;
+
+						this.showTooltip( e );
+					} else {
+						this.selectedText = '';
+						this.hideTooltip();
+					}
+				}.bind( this ) );
+
+				this.$copy2clipboard.on( 'click', function() {
+					this.copyToClipboard();
+				}.bind( this ) );
+			}
+		},
+		showTooltip: function( e ) {
+			// Replace placeholder text with the copied one
+			this.$container.find( '.w-sharing-item' ).each( function( index, elm ) {
+				// Skip copy to clipboard item
+				if ( $( elm ).hasClass( 'copy2clipboard' ) ) {
+					return;
+				}
+
+				// Change WhatsApp Mobile URL
+				if ( $.isMobile && $( elm ).hasClass( 'whatsapp' ) ) {
+					this.setWhatsAppUrl( $( elm ) );
+				}
+				$( elm ).attr( 'href', $( elm ).data( 'url' ).replace( '{{text}}', this.selectedText ) );
+			}.bind( this ) );
+
+			// Show the tooltip
+			this.$container.css( {
+				"display": "inline-block", "left": e.pageX, "top": e.pageY - 50,
+			} );
+		},
+		setSharingImage: function() {
+			this.$container.find( '.w-sharing-item' ).each( function( index, elm ) {
+				// Skip copy to clipboard item
+				if ( $( elm ).hasClass( 'copy2clipboard' ) ) {
+					return;
+				}
+				$( elm ).attr( 'href', $( elm ).attr( 'href' ).replace( '{{image}}', this.sharingImage ) );
+
+				if ( $( elm ).attr( 'data-url' ) ) {
+					$( elm ).attr( 'data-url', $( elm ).attr( 'data-url' ).replace( '{{image}}', this.sharingImage ) );
+				}
+
+			}.bind( this ) );
+		},
+		setWhatsAppUrl: function( $elm ) {
+			$elm.attr( 'href', $elm.attr( 'href' ).replace( 'https://web', 'https://api' ) );
+		},
+		hideTooltip: function() {
+			this.$container.hide();
+		},
+		copyToClipboard: function() {
+			var url,
+				el = document.createElement( 'textarea' );
+
+			// Get url
+			if ( this.$copy2clipboard.parent().data( 'sharing-url' ) !== undefined
+				&& this.$copy2clipboard.parent().data( 'sharing-url' ) !== '' ) {
+				url = this.$copy2clipboard.parent().attr( 'data-sharing-url' );
+			} else {
+				url = window.location;
+			}
+
+			// Create hidden element to manipulated the selected text
+			el.value = this.selectedText + ' ' + url;
+			el.setAttribute( 'readonly', '' );
+			el.style.position = 'absolute';
+			el.style.left = '-9999px';
+			document.body.appendChild( el );
+			el.select();
+			document.execCommand( 'copy' );
+			document.body.removeChild( el );
+			this.hideTooltip();
+		},
+		getSelection: function() {
+			var selection = '';
+			if ( window.getSelection ) {
+				selection = window.getSelection();
+			} else if ( document.selection ) {
+				selection = document.selection.createRange();
+			}
+			return selection.toString().trim();
+		},
+	};
+
+	$.fn.UsSharing = function( options ) {
+		return this.each( function() {
+			$( this ).data( 'UsSharing', new $us.UsSharing( this, options ) );
+		} );
+	};
+
+	$( function() {
+		$( '.w-sharing-tooltip, .w-sharing' ).UsSharing();
 	} );
 }( jQuery );

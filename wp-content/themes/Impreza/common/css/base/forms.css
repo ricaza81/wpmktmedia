@@ -26,6 +26,7 @@
 	.w-form-row-description {
 		font-size: 0.9em;
 		margin-top: 0.3em;
+		color: var(--color-content-faded);
 		}
 	.w-form-row-field {
 		position: relative;
@@ -34,6 +35,11 @@
 			position: absolute;
 			z-index: 1;
 			transform: translateY(-50%);
+			top: calc( var( --inputs-height ) / 2 );
+			font-size: var( --inputs-font-size );
+			padding: 0 var( --inputs-padding );
+			margin: var( --inputs-border-width );
+			color: var( --inputs-text-color );
 			text-align: center;
 			pointer-events: none;
 			transition: color 0.2s;
@@ -51,6 +57,9 @@
 			top: 56%;
 			transform: translateY(-50%);
 			right: 0;
+			font-size: var( --inputs-font-size );
+			margin: 0 var( --inputs-padding );
+			color: var( --inputs-text-color );
 			pointer-events: none;
 			border: 0.4em solid;
 			border-left-color: transparent;
@@ -68,16 +77,14 @@
 		.w-form-radio {
 			display: block;
 			flex-shrink: 0;
+			font-size: 0.75em;
+			text-align: center;
 			margin-right: 0.4em;
 			line-height: 1.5em;
 			height: 1.5em;
 			width: 1.5em;
-			border: 0px solid transparent; /* default "solid" style is needed */
+			border: var(--inputs-border-width, 0px) solid transparent; /* default "solid" style is needed */
 			box-sizing: content-box;
-			}
-		.w-form-checkbox {
-			font-size: 0.75em;
-			text-align: center;
 			}
 			.w-form-checkbox:before {
 				visibility: hidden;
@@ -103,6 +110,13 @@
 		input:checked + .w-form-radio:before {
 			visibility: visible;
 			}
+
+/* Shift with icon */
+body:not(.rtl) .w-form-row.with_icon input,
+body:not(.rtl) .w-form-row.with_icon textarea,
+body:not(.rtl) .w-form-row.with_icon select {
+	padding-left: calc( 1.8em + var(--inputs-padding) );
+	}
 
 /* Move Label */
 .w-form-row.move_label .w-form-row-label {
@@ -258,102 +272,107 @@
 	width: 17.4rem;
 	margin: 0;
 	padding: 1rem;
-	border: none;
-	box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+	box-shadow: var(--box-shadow);
+	background: var(--color-content-bg-grad);
+	color: var(--color-content-text);
 	}
-.ui-datepicker a {
-	transition: none;
-	color: inherit !important;
-	}
-.ui-datepicker-header {
-	position: relative;
-	text-align: center;
-	line-height: 2.2rem;
-	min-height: 2.2rem;
-	margin: 0 0 0.5rem;
-	padding: 0;
-	border: none;
-	}
-.ui-datepicker-title {
-	font-size: 0.9rem;
-	margin: 0 14.285%;
-	}
-.ui-datepicker-title select {
-	font-size: inherit;
-	line-height: inherit;
-	height: 2.2rem;
-	min-height: 0;
-	width: 40%;
-	padding: 0 0.3rem;
-	margin: 0;
-	border-radius: 0 !important;
-	box-shadow: none !important;
-	background: none !important;
-	color: inherit !important;
-	}
-.ui-datepicker-prev {
-	position: absolute;
-	left: 0;
-	width: 14.285%;
-	cursor: pointer;
-	border-radius: 0.2rem;
-	}
-.ui-datepicker-prev span {
-	vertical-align: top;
-	font-size: 0;
-	}
-.ui-datepicker-prev:before {
-	vertical-align: top;
-	content: '\f104';
-	font-family: fontawesome;
-	font-weight: 400;
-	font-size: 1.4rem;
-	}
-.ui-datepicker-next {
-	position: absolute;
-	right: 0;
-	width: 14.285%;
-	cursor: pointer;
-	border-radius: 0.2rem;
-	}
-.ui-datepicker-next span {
-	vertical-align: top;
-	font-size: 0;
-	}
-.ui-datepicker-next::before {
-	vertical-align: top;
-	content: '\f105';
-	font-family: fontawesome;
-	font-weight: 400;
-	font-size: 1.4rem;
-	}
-.ui-datepicker th {
-	font-size: 0.8rem;
-	font-weight: normal;
-	text-align: center;
-	border: none;
-	padding: 0;
-	opacity: 0.33;
-	}
-.ui-datepicker tbody td {
-	font-size: 0.9rem;
-	text-align: center;
-	width: 14.285%;
-	padding: 0;
-	border: none;
-	}
-.ui-datepicker td span,
-.ui-datepicker td a {
-	display: block;
-	line-height: 2.2rem;
-	border-radius: 0.2rem;
-	}
-.ui-datepicker a.ui-state-active {
-	color: #fff !important;
-	}
-.ui-datepicker a.ui-state-highlight {
-	box-shadow: inset 0 0 0 1px;
-	}
+	.ui-datepicker a {
+		transition: none;
+		color: inherit !important;
+		}
+	.ui-datepicker-header {
+		position: relative;
+		text-align: center;
+		line-height: 2.2rem;
+		min-height: 2.2rem;
+		margin: 0 0 0.5rem;
+		padding: 0;
+		border: none;
+		}
+	.ui-datepicker-title {
+		font-size: 0.9rem;
+		margin: 0 14.285%;
+		}
+		.ui-datepicker-title select {
+			font-size: inherit;
+			line-height: inherit;
+			height: 2.2rem;
+			min-height: 0;
+			width: 40%;
+			padding: 0 0.3rem;
+			margin: 0;
+			border-radius: 0 !important;
+			box-shadow: none !important;
+			background: none !important;
+			color: inherit !important;
+			}
+	.ui-datepicker-prev {
+		position: absolute;
+		left: 0;
+		width: 14.285%;
+		cursor: pointer;
+		border-radius: 0.2rem;
+		}
+		.ui-datepicker-prev span {
+			vertical-align: top;
+			font-size: 0;
+			}
+		.ui-datepicker-prev:before {
+			vertical-align: top;
+			content: '\f104';
+			font-family: fontawesome;
+			font-weight: 400;
+			font-size: 1.4rem;
+			}
+	.ui-datepicker-next {
+		position: absolute;
+		right: 0;
+		width: 14.285%;
+		cursor: pointer;
+		border-radius: 0.2rem;
+		}
+		.ui-datepicker-next span {
+			vertical-align: top;
+			font-size: 0;
+			}
+		.ui-datepicker-next::before {
+			vertical-align: top;
+			content: '\f105';
+			font-family: fontawesome;
+			font-weight: 400;
+			font-size: 1.4rem;
+			}
+	.ui-datepicker th {
+		font-size: 0.8rem;
+		font-weight: normal;
+		text-align: center;
+		border: none;
+		padding: 0;
+		opacity: 0.33;
+		}
+	.ui-datepicker tbody td {
+		font-size: 0.9rem;
+		text-align: center;
+		width: 14.285%;
+		padding: 0;
+		border: none;
+		}
+		.ui-datepicker td span,
+		.ui-datepicker td a {
+			display: block;
+			line-height: 2.2rem;
+			border-radius: 0.2rem;
+			}
+		.ui-datepicker a.ui-state-active {
+			background: var(--color-content-primary-grad);
+			color: #fff !important;
+			}
+		.no-touch .ui-datepicker a:not(.ui-state-active):hover {
+			background: var(--color-content-bg-alt-grad);
+			}
+		.ui-datepicker a.ui-state-highlight {
+			box-shadow: inset 0 0 0 1px;
+			}
 
 /* Contact Form 7
    ========================================================================== */

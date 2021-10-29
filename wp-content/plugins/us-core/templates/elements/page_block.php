@@ -38,7 +38,7 @@ if ( $remove_rows == '1' ) {
 	$page_block_content = str_replace( '[vc_row ', '[vc_row width="full" ', $page_block_content );
 }
 
-// Apply filters to Page Block content and echoing it ouside of us_open_wp_query_context
+// Apply filters to Page Block content and echoing it out of us_open_wp_query_context
 echo apply_filters( 'us_page_block_the_content', $page_block_content );
 
 us_remove_from_page_block_ids();

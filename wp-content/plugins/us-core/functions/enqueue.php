@@ -83,7 +83,7 @@ function us_styles() {
 	}
 
 	// Remove WP Block Editor styles if set
-	if ( us_get_option( 'disable_block_editor_assets', 0 ) ) {
+	if ( ! us_get_option( 'block_editor' ) ) {
 		wp_dequeue_style( 'wp-block-library' );
 		wp_dequeue_style( 'wc-block-style' );
 	}
@@ -149,10 +149,10 @@ function us_jscripts() {
 	}
 
 	// Link Google Maps API key
-	if ( us_get_option( 'gmaps_api_key', '' ) ) {
-		wp_register_script( 'us-google-maps', '//maps.googleapis.com/maps/api/js?key=' . trim( esc_attr( us_get_option( 'gmaps_api_key', '' ) ) ), array(), NULL, FALSE );
+	if ( $gmaps_api_key = trim( us_get_option( 'gmaps_api_key', '' ) ) ) {
+		wp_register_script( 'us-google-maps', '//maps.googleapis.com/maps/api/js?key=' . esc_attr( $gmaps_api_key ), array(), NULL, FALSE );
 	} else {
-		wp_register_script( 'us-google-maps', '//maps.googleapis.com/maps/api/js', array(), '', FALSE );
+		wp_register_script( 'us-google-maps', '//maps.googleapis.com/maps/api/js', array(), NULL, FALSE );
 	}
 
 	// Embed vendor JS components

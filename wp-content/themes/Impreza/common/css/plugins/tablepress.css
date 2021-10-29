@@ -43,6 +43,9 @@
 	.tablepress .odd td {
 		background: rgba(0,0,0,0.03);
 		}
+	.tablepress .row-hover tr:hover td {
+		background: var(--color-content-bg-alt-grad);
+		}
 	.tablepress img {
 		max-width: none;
 		}
@@ -114,6 +117,13 @@
 .tablepress .sorting_asc,
 .tablepress .sorting_desc {
 	cursor: pointer;
+	}
+.no-touch .tablepress .sorting:hover {
+	color: var(--color-content-link-hover);
+	}
+.tablepress .sorting_asc,
+.tablepress .sorting_desc {
+	color: var(--color-content-link);
 	}
 	.tablepress .sorting_asc:after,
 	.tablepress .sorting_desc:after {

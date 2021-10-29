@@ -1,5 +1,5 @@
 /**
- * UpSolution Element: Page Scroller
+ * UpSolution Element: Page Scroller.
  */
 ;( function( $, undefined ) {
 	"use strict";
@@ -13,16 +13,16 @@
 			var defaults = {
 				coolDown: 100,
 				/**
-				 * @param {Number} Duration of scroll animation
+				 * @param {Number} Duration of scroll animation.
 				 */
 				animationDuration: 1000,
 				/**
-				 * @param {String} Easing for scroll animation
+				 * @param {String} Easing for scroll animation.
 				 */
 				animationEasing: $us.getAnimationName( 'easeInOutExpo' ),
 
 				/**
-				 * @param {String} End easing for scroll animation
+				 * @param {String} End easing for scroll animation.
 				 */
 				endAnimationEasing: $us.getAnimationName( 'easeOutExpo' )
 			};
@@ -44,47 +44,55 @@
 			this.isTouch = ( ( 'ontouchstart' in window ) || ( navigator.msMaxTouchPoints > 0 ) || ( navigator.maxTouchPoints ) );
 			this.disableWidth = ( this.$container.data( 'disablewidth' ) !== undefined ) ? this.$container.data( 'disablewidth' ) : 768;
 			this.hiddenClasses = {
-				// Ultimate Addons classes and width limits
+				// Ultimate Addons classes and width limits.
 				'uvc_hidden-xs': [0, 479],
 				'uvc_hidden-xsl': [480, 767],
 				'uvc_hidden-sm': [768, 991],
 				'uvc_hidden-md': [992, 1199],
 				'uvc_hidden-ml': [1200, 1823],
-				'uvc_hidden-lg': [1824, 99999], // 99999 max screen resolution
+				'uvc_hidden-lg': [1824, 99999], // 99999 max screen resolution.
 
 				// WPBakery classes
 				'vc_hidden-xs': [0, 767],
 				'vc_hidden-sm': [768, 991],
 				'vc_hidden-md': [992, 1199],
-				'vc_hidden-lg': [1200, 99999] // 99999 max screen resolution
+				'vc_hidden-lg': [1200, 99999] // 99999 max screen resolution.
 			};
 
 			if ( this.$container.data( 'speed' ) !== undefined ) {
 				this.options.animationDuration = this.$container.data( 'speed' );
 			}
 
-			this._attachEvents();
-
-			// Bondable events
+			// Bondable events.
 			this._events = {
-				scroll: this.scroll.bind( this ),
-				resize: this.resize.bind( this )
+				destroy: this._destroy.bind( this ),
+				mouseWheelHandler: this._mouseWheelHandler.bind( this ),
+				resize: this.resize.bind( this ),
+				scroll: this.scroll.bind( this )
 			};
 
-			$us.$canvas.on( 'contentChange', $us.debounce( this._events.resize, 5 ) );
+			this._attachEvents();
 
-			// Pass stop param from Page Scroller not to execute this handler
-			$us.$window.on( 'resize', function( e, stop ) {
-				if ( stop !== undefined ) {
-					$us.debounce( this._events.resize, 5 );
-				}
-			}.bind( this ) );
-			$us.$window.on( 'scroll', $us.debounce( this._events.scroll, 5 ) );
+			// Destroying all dependencies when deleting an element in the USBuilder
+			this.$container
+				.on( 'usb.removeHtml', this._events.destroy )
+
+			$us.$canvas
+				.on( 'contentChange', $us.debounce( this._events.resize, 5 ) );
+
+			// Pass stop param from Page Scroller not to execute this handler.
+			$us.$window
+				.on( 'resize', function( e, stop ) {
+					if ( stop !== undefined ) {
+						$us.debounce( this._events.resize, 5 );
+					}
+				}.bind( this ) )
+				.on( 'scroll', $us.debounce( this._events.scroll, 5 ) );
 
 			// Late init not to load things twice
 			$us.timeout( this._init.bind( this ), 100 );
 
-			// Gets the height of the header after animation
+			// Gets the height of the header after animation.
 			this.headerHeight = 0;
 			$us.header.on( 'transitionEnd', function( header ) {
 				this.headerHeight = header.getCurrentHeight() - header.getAdminBarHeight();
@@ -92,13 +100,13 @@
 		},
 
 		is_popup: function() {
-			// Detect popup not to trigger extra events
+			// Detect popup not to trigger extra events.
 			return $us.$html.hasClass( 'usoverlay_fixed' );
 		},
 
 		_init: function() {
 			// Add header, only when it's not sticky and not transparent, because it occupies part of the screen in
-			// that case
+			// that case.
 			if ( $us.canvas.headerPos === 'static' && $us.header.isHorizontal() && ! $us.header.isTransparent() ) {
 				$us.canvas.$header.each( function() {
 					var $section = $us.canvas.$header,
@@ -112,11 +120,18 @@
 				}.bind( this ) );
 			}
 
-			// Adding canvas sections
+			// Adding canvas sections.
 			$us.$canvas.find( '> *:not(.l-header) .l-section' ).each( function( key, elm ) {
+				var isPopupContent = !! $( elm ).closest( '.w-popup' ).length,
+					isPopupWrapper = !! $( elm ).find( '.w-popup .l-section' ).length;
+
+				// Exclude popup inner sections
+				if ( isPopupContent ) {
+					return;
+				}
 
 				// Exclude parent sections
-				if ( $( '.l-section', elm ).length ) {
+				if ( $( '.l-section', elm ).length && ! isPopupWrapper ) {
 					return;
 				}
 
@@ -129,7 +144,7 @@
 					},
 					addedWidths = [];
 
-				// Handle hidden sections
+				// Handle hidden sections.
 				hidden:
 					for ( var i in this.hiddenClasses ) {
 						if ( this.hiddenClasses.hasOwnProperty( i ) ) {
@@ -139,10 +154,10 @@
 								var addedWidthLength = addedWidths.length,
 									j;
 
-								// Save added sections to exclude doubles
+								// Save added sections to exclude doubles.
 								addedWidths.push( [low, high] );
 
-								// Exclude repeating widths
+								// Exclude repeating widths.
 								for ( j = 0; j < addedWidthLength; j ++ ) {
 									if ( addedWidths[ j ][ 0 ] === low && addedWidths[ j ][ 1 ] === high ) {
 										break hidden;
@@ -163,7 +178,7 @@
 				this.initialSections.push( section );
 			}.bind( this ) );
 
-			// Save last content section for reveal footer sections
+			// Save last content section for reveal footer sections.
 			this.lastContentSectionIndex = this.sections.length - 1;
 
 			// Adding footer sections
@@ -179,16 +194,31 @@
 				this.initialSections.push( section );
 			}.bind( this ) );
 
-			// Adding dots for canvas sections
+			// Adding dots for canvas sections.
 			this.$dotsContainer = this.$container.find( '.w-scroller-dots' );
 			if ( this.$dotsContainer.length ) {
 				this.usingDots = true;
 
 				this.$firstDot = this.$dotsContainer.find( '.w-scroller-dot' ).first();
 				this.redrawDots( true );
-				// Initialize scroll to determine the position of dots
+				// Initialize scroll to determine the position of dots.
 				this.scroll();
 			}
+		},
+
+		/**
+		 * Destroying all dependencies
+		 *
+		 * @private
+		 * @event handler
+		 */
+		_destroy: function() {
+			var that = this;
+			$us.$document.off( 'mousewheel DOMMouseScroll MozMousePixelScroll' );
+			document.removeEventListener( 'mousewheel', that._events.mouseWheelHandler );
+			document.removeEventListener( 'DOMMouseScroll', that._events.mouseWheelHandler );
+			document.removeEventListener( 'MozMousePixelScroll', that._events.mouseWheelHandler );
+			$us.$canvas.off( 'touchstart touchmove' );
 		},
 
 		isSectionHidden: function( section ) {
@@ -212,10 +242,10 @@
 		},
 
 		redrawDots: function( inited ) {
-			if ( ! this.$dotsContainer.length || ! this.usingDots ) {
+			if ( ! this.usingDots || ! this.$dotsContainer || ! this.$dotsContainer.length ) {
 				return false;
 			}
-			// Clean up dots container
+			// Clean up dots container.
 			this.$dotsContainer.html( '' );
 
 			for ( var i = 0; i < this.sections.length; i ++ ) {
@@ -236,7 +266,7 @@
 						this.$dots.removeClass( 'active' );
 						$dot.addClass( 'active' );
 					}.bind( this ) )
-					// Control of the number of points
+					// Control of the number of points.
 					.toggleClass( 'hidden', this.sections[ key ].isSticky && $us.$window.width() > $us.canvas.options.columnsStackingWidth );
 			}.bind( this ) );
 			if ( !! inited ) {
@@ -247,18 +277,18 @@
 
 		recountSections: function() {
 			if ( this.currHidden ) {
-				// Set sections to initial state to extract hidden
+				// Set sections to initial state to extract hidden.
 				for ( var initialSection in this.initialSections ) {
 					this.sections[ initialSection ] = this.initialSections[ initialSection ];
 				}
 			}
 
-			// Loop backward to don't mess with the indexes
+			// Loop backward to don't mess with the indexes.
 			for ( var i = this.hiddenSections.length - 1; i >= 0; i -- ) {
 				var indexOfTheItem = this.currHidden.indexOf( this.hiddenSections[ i ] );
 
 				if ( this.isSectionHidden( this.hiddenSections[ i ] ) ) {
-					// Add to currently hidden if it wasn't added before
+					// Add to currently hidden if it wasn't added before.
 					if ( indexOfTheItem === - 1 ) {
 						this.currHidden.push( this.hiddenSections[ i ] );
 					}
@@ -282,58 +312,62 @@
 			return Math.ceil( sum / number );
 		},
 
+		/**
+		 * Wheel scroll handler
+		 *
+		 * @event handler
+		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
+		 */
+		_mouseWheelHandler: function( e ) {
+			var that = this;
+
+			// Cancel processing if a modal window is open on the page.
+			if ( that.is_popup() ) {
+				return;
+			}
+			e.preventDefault();
+			var currentTime = new Date().getTime(),
+				target = that.activeSection,
+				direction = e.wheelDelta || - e.detail,
+				speedEnd, speedMiddle, isAccelerating;
+
+			if ( that.scrolls.length > 149 ) {
+				that.scrolls.shift();
+			}
+			that.scrolls.push( Math.abs( direction ) );
+
+			if ( ( currentTime - that.previousMouseWheelTime ) > that.options.coolDown ) {
+				that.scrolls = [];
+			}
+			that.previousMouseWheelTime = currentTime;
+
+			speedEnd = that.getScrollSpeed( 10 );
+			speedMiddle = that.getScrollSpeed( 70 );
+			isAccelerating = speedEnd >= speedMiddle;
+
+			if ( isAccelerating ) {
+				if ( direction < 0 ) {
+					target ++;
+				} else if ( direction > 0 ) {
+					target --;
+				}
+				if ( that.sections[ target ] === undefined ) {
+					return;
+				}
+				that.scrollTo( target );
+				that.lastScroll = currentTime;
+			}
+		},
+
 		_attachEvents: function() {
 			var that = this;
 
-			function mouseWheelHandler( e ) {
-				// Cancel processing if a modal window is open on the page
-				if ( that.is_popup() ) {
-					return;
-				}
-				e.preventDefault();
-				var currentTime = new Date().getTime(),
-					target = that.activeSection,
-					direction = e.wheelDelta || - e.detail,
-					speedEnd, speedMiddle, isAccelerating;
-
-				if ( that.scrolls.length > 149 ) {
-					that.scrolls.shift();
-				}
-				that.scrolls.push( Math.abs( direction ) );
-
-				if ( ( currentTime - that.previousMouseWheelTime ) > that.options.coolDown ) {
-					that.scrolls = [];
-				}
-				that.previousMouseWheelTime = currentTime;
-
-				speedEnd = that.getScrollSpeed( 10 );
-				speedMiddle = that.getScrollSpeed( 70 );
-				isAccelerating = speedEnd >= speedMiddle;
-
-				if ( isAccelerating ) {
-					if ( direction < 0 ) {
-						target ++;
-					} else if ( direction > 0 ) {
-						target --;
-					}
-					if ( that.sections[ target ] === undefined ) {
-						return;
-					}
-					that.scrollTo( target );
-					that.lastScroll = currentTime;
-				}
-			}
-
-			$us.$document.off( 'mousewheel DOMMouseScroll MozMousePixelScroll' );
-			document.removeEventListener( 'mousewheel', mouseWheelHandler );
-			document.removeEventListener( 'DOMMouseScroll', mouseWheelHandler );
-			document.removeEventListener( 'MozMousePixelScroll', mouseWheelHandler );
-			$us.$canvas.off( 'touchstart touchmove' );
+			that._destroy();
 
 			if ( $us.$window.width() > this.disableWidth && $us.mobileNavOpened <= 0 && ( ! $us.$html.hasClass( 'cloverlay_fixed' ) ) ) {
-				document.addEventListener( 'mousewheel', mouseWheelHandler, { passive: false } );
-				document.addEventListener( 'DOMMouseScroll', mouseWheelHandler, { passive: false } );
-				document.addEventListener( 'MozMousePixelScroll', mouseWheelHandler, { passive: false } );
+				document.addEventListener( 'mousewheel', that._events.mouseWheelHandler, { passive: false } );
+				document.addEventListener( 'DOMMouseScroll', that._events.mouseWheelHandler, { passive: false } );
+				document.addEventListener( 'MozMousePixelScroll', that._events.mouseWheelHandler, { passive: false } );
 
 				if ( $.isMobile || this.isTouch ) {
 					$us.$canvas.on( 'touchstart', function( event ) {
@@ -407,7 +441,7 @@
 			}
 			this.previousScrollTime = currentTime;
 
-			// The for dots points from sticky block
+			// The for dots points from sticky block.
 			if ( this.sections[ target ].isSticky && $us.$window.width() > $us.canvas.options.columnsStackingWidth ) {
 				if ( target > this.activeSection ) {
 					target += 1;
@@ -424,7 +458,7 @@
 			}
 
 			// For a header that has sticky and auto-hide enabled, add the height of the header when scrolling to the
-			// bottom, this will allow not to recalculate the position of the page section when hide header
+			// bottom, this will allow not to recalculate the position of the page section when hide header.
 			var top = parseInt( this.sections[ target ][ 'top' ] || 0 );
 
 			if ( top === $us.header.getScrollTop() ) {
@@ -435,29 +469,23 @@
 			var animateOptions = {
 				duration: this.options.animationDuration,
 				easing: this.options.animationEasing,
-				/**
-				 * @return void
-				 */
 				start: function() {
 					this.isScrolling = true;
 				}.bind( this ),
-				/**
-				 * @return void
-				 */
 				always: function() {
 					this.isScrolling = false;
 					this.activeSection = target;
 				}.bind( this ),
 				/**
-				 * Get and applying new values during animation
+				 * Get and applying new values during animation.
+				 *
 				 * @param number now
 				 * @param object fx
-				 * @return void
 				 */
 				step: function( now, fx ) {
 					var newTop = top;
 					// Since the header at the moment of scrolling the scroll can change the height,
-					// we will correct the position of the element
+					// we will correct the position of the element.
 					if ( $us.header.isStickyEnabled() ) {
 						newTop -= this.headerHeight;
 					}
@@ -481,7 +509,7 @@
 			}
 			this._attachEvents();
 			this.recountSections();
-			// Delaying the resize event to prevent glitches
+			// Delaying the resize event to prevent glitches.
 			$us.timeout( this._countAllPositions.bind( this ), 150 );
 		},
 
@@ -510,7 +538,7 @@
 						&& this.activeSection !== index
 					) {
 						this.activeSection = index;
-						// NOTE: Do not add break because everything should be checked!
+						// Note: Do not add break because everything should be checked!
 					}
 				}
 

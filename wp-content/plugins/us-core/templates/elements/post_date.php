@@ -20,27 +20,30 @@ global $us_grid_object_type;
 // Cases when the element shouldn't be shown
 if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 	return;
+
 } elseif ( $us_elm_context == 'shortcode' AND is_archive() ) {
 	return;
 }
 
-$classes = isset( $classes ) ? $classes : '';
+$_atts['class'] = 'w-post-elm post_date';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
 
 // Classes for Google structured data
-$classes .= ' entry-date';
+$_atts['class'] .= ' entry-date';
 if ( $type == 'modified' ) {
-	$classes .= ' updated';
+	$_atts['class'] .= ' updated';
 } else {
-	$classes .= ' published';
+	$_atts['class'] .= ' published';
 }
 
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
+if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
+	$_atts['id'] = $el_id;
+}
 
 $tag = 'time';
-$elm_attr = '';
 
 $smart_date = FALSE;
+
 // Generate date format
 if ( $format == 'default' ) {
 	$format = get_option( 'date_format' );
@@ -54,16 +57,16 @@ if ( $format == 'default' ) {
 if ( $type == 'modified' ) {
 	$date = get_the_modified_date( $format );
 
-	$elm_attr .= ' datetime="' . get_the_modified_date( 'c' ) . '"'; // needed datetime attribute for <time> tag
+	$_atts['datetime'] = get_the_modified_date( 'c' ); // needed datetime attribute for <time> tag
 	if ( $smart_date ) {
-		$elm_attr .= ' title="' . sprintf( us_translate( '%1$s at %2$s' ), get_the_modified_date( 'j F Y' ), get_the_modified_date( 'H:i:s e' ) ) . '"';
+		$_atts['title'] = sprintf( us_translate( '%1$s at %2$s' ), get_the_modified_date( 'j F Y' ), get_the_modified_date( 'H:i:s e' ) );
 	}
 } else {
 	$date = get_the_date( $format );
 
-	$elm_attr .= ' datetime="' . get_the_date( 'c' ) . '"'; // needed datetime attribute for <time> tag
+	$_atts['datetime'] = get_the_date( 'c' ); // needed datetime attribute for <time> tag
 	if ( $smart_date ) {
-		$elm_attr .= ' title="' . sprintf( us_translate( '%1$s at %2$s' ), get_the_date( 'j F Y' ), get_the_date( 'H:i:s e' ) ) . '"';
+		$_atts['title'] = sprintf( us_translate( '%1$s at %2$s' ), get_the_date( 'j F Y' ), get_the_date( 'H:i:s e' ) );
 	}
 }
 
@@ -72,17 +75,15 @@ if ( $smart_date ) {
 	$date = us_get_smart_date( $date );
 }
 
-// Schema.org markup
+// Add Schema.org markup
 if ( us_get_option( 'schema_markup' ) AND $us_elm_context == 'shortcode' ) {
-	$elm_attr .= ( $type == 'modified' ) ? ' itemprop="dateModified"' : ' itemprop="datePublished"';
+	$_atts['itemprop'] = ( $type == 'modified' ) ? 'dateModified' : 'datePublished';
 }
 
 $text_before = ( trim( $text_before ) != '' ) ? '<span class="w-post-elm-before">' . trim( $text_before ) . ' </span>' : '';
 
 // Output the element
-$output = '<' . $tag . ' class="w-post-elm post_date' . $classes . '"';
-$output .= $el_id . $elm_attr;
-$output .= '>';
+$output = '<' . $tag . us_implode_atts( $_atts ) . '>';
 if ( ! empty( $icon ) ) {
 	$output .= us_prepare_icon_tag( $icon );
 }

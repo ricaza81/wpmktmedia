@@ -24,10 +24,11 @@
 		// Get options
 		if ( this.$container.is( '[onclick]' ) ) {
 			$.extend( this.options, this.$container[0].onclick() || {} );
-			this.$container.removeAttr( 'onclick' );
+			// Delete data everywhere except for the preview of the USBuilder, the data may be needed again to restore the elements.
+			if ( ! $us.usbPreview ) this.$container.removeAttr( 'onclick' );
 		}
 
-		// Priority in transferred options through JS will be higher
+		// Priority in transferred options through JS will be higher.
 		$.extend( this.options, options || {} );
 
 		if ( /bot|googlebot|crawler|spider|robot|crawling/i.test( navigator.userAgent ) ) {
@@ -37,7 +38,7 @@
 		// Set start value
 		this.$count.text( '' );
 
-		// When an item falls into scope, a run callback function
+		// When an item falls into scope, a run callback function.
 		$us.waypoints.add( this.$container, this.options.offset, this.init.bind( this ) );
 	};
 
@@ -45,7 +46,6 @@
 	$.extend( $us.WProgbar.prototype, {
 		/**
 		 * Init the object.
-		 * @return void
 		 */
 		init: function() {
 			if ( this.running ) {
@@ -57,7 +57,7 @@
 				this.$container.removeClass( 'initial' )
 			}
 
-			// Get all the necessary parameters for the meter and run it
+			// Get all the necessary parameters for the meter and run it.
 			var
 				loops = Math.ceil( this.options.duration / this.options.delay ),
 				increment = parseFloat( this.options.value ) / loops,
@@ -66,8 +66,7 @@
 				startValue = 0;
 
 			/**
-			 * Anonymous function for creating an interval
-			 * @return void
+			 * Anonymous function for creating an interval.
 			 */
 			var funLoop = function() {
 				startValue += increment;
@@ -94,7 +93,7 @@
 				width =  ( ( parseFloat( parseFloat( this.options.value ) ) / parseFloat( finalValue ) ) * 100 )
 				.toFixed( 0 );
 
-			// Run the CSS animations to render a progress bar
+			// Run the CSS animations to render a progress bar.
 			this.$bar
 				.on( 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', this._events.transitionEnd.bind( this ) )
 				.css( {
@@ -105,8 +104,7 @@
 		// Event handlers
 		_events: {
 			/**
-			 * Called after css animation finishes
-			 * @return void
+			 * Called after css animation finishes.
 			 */
 			transitionEnd: function() {
 				var result = this.options.template;
@@ -118,9 +116,9 @@
 			}
 		},
 		/**
-		 * Render of the counter
-		 * @param value numeric
-		 * @return void
+		 * Render of the counter.
+		 *
+		 * @param {numeric} value
 		 */
 		render: function( value ) {
 			var index = 0,
@@ -129,7 +127,7 @@
 					.replace( /([\-\d\.])/g, function( match ) {
 						value += '';
 						if ( index === 0 && match === '0' ) {
-							// Skip point if float value
+							// Skip point if float value.
 							if ( value.charAt( index + 1 ) === '.' || match === '.' ) {
 								index++;
 							}

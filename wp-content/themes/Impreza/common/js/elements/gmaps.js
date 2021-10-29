@@ -58,8 +58,6 @@
 			lng: 0,
 			zoom: this.options.zoom,
 			type: this.options.type,
-			height: this.options.height + 'px',
-			width: '100%',
 			mapTypeId: google.maps.MapTypeId[ this.options.maptype ]
 		};
 
@@ -71,9 +69,6 @@
 		}
 		if ( this.options.disableDragging && ( ! $us.$html.hasClass( 'no-touch' ) ) ) {
 			gmapsOptions.draggable = false;
-		}
-		if ( this.options.mapBgColor ) {
-			gmapsOptions.backgroundColor = this.options.mapBgColor;
 		}
 
 		this.GMapsObj = new GMaps( gmapsOptions );
@@ -155,10 +150,12 @@
 									var latlng = results[ 0 ].geometry.location;
 									markerOptions.lat = latlng.lat();
 									markerOptions.lng = latlng.lng();
-									markerOptions.infoWindow = { content: that.options.markers[ i ].html };
+									if ( that.options.markers[ i ].html ) {
+										markerOptions.infoWindow = { content: that.options.markers[ i ].html };
+									}
 									var marker = that.GMapsObj.addMarker( markerOptions );
 									if ( that.options.markers[ i ].infowindow ) {
-										marker.infoWindow.open( that.GMapsObj.map, marker );
+										marker.infoWindow.open( $.extend( {}, that.GMapsObj.map, { shouldFocus: false } ), marker );
 									}
 									$us.WMapsCurrentGeocode ++;
 									$us.WMapsRunGeoCode();
@@ -193,6 +190,7 @@
 			if ( this.$container.is( ':hidden' ) ) {
 				return;
 			}
+			this.$container.css( { height: '', width: '' } );
 			this.GMapsObj.refresh();
 			if ( this.options.latitude != null && this.options.longitude != null ) {
 				this.GMapsObj.setCenter( this.options.latitude, this.options.longitude );
@@ -205,6 +203,14 @@
 		return this.each( function() {
 			$( this ).data( 'wMaps', new $us.WMaps( this, options ) );
 		} );
+	};
+
+	$.fn.wMapsWithPreload = function( options ) {
+		$us.getScript( $us.templateDirectoryUri + '/common/js/vendor/gmaps.js', function() {
+			return this.each( function() {
+				$( this ).data( 'wMaps', new $us.WMaps( this, options ) );
+			} );
+		}.bind( this ) );
 	};
 
 	$( function() {

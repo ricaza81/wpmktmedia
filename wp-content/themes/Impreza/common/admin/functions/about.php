@@ -126,9 +126,9 @@ function us_welcome_page() {
 
 				<div class="us-activation-status no">
 					<span><?php echo sprintf( __( '%s is not activated', 'us' ), US_THEMENAME ); ?></span>
-					<div class="us-activation-desc">
-						<div class="us-activation-desc-sign"></div>
-						<div class="us-activation-desc-text">
+					<div class="us-activation-tooltip">
+						<div class="us-activation-tooltip-sign"></div>
+						<div class="us-activation-tooltip-text">
 							<p><?php _e( 'By activating theme license you will unlock premium options:', 'us' ) ?></p>
 							<ul>
 								<li><?php _e( 'White Label feature', 'us' ) ?></li>
@@ -159,8 +159,14 @@ function us_welcome_page() {
 					wp_enqueue_media();
 				}
 
-				wp_enqueue_script( 'usof-scripts', US_CORE_URI . '/usof/js/usof.js', array( 'jquery' ), US_CORE_VERSION, TRUE );
-				wp_enqueue_style( 'usof-styles', US_CORE_URI . '/usof/css/usof.css', array(), US_CORE_VERSION );
+				// Enqueue USOF JS files separately, when US_DEV is set
+				if ( defined( 'US_DEV' ) ) {
+					foreach ( us_config( 'assets-admin.js', array() ) as $key => $admin_js_file ) {
+						wp_enqueue_script( 'usof-js-' . $key, US_CORE_URI . $admin_js_file, array(), US_CORE_VERSION );
+					}
+				} else {
+					wp_enqueue_script( 'usof-scripts', US_CORE_URI . '/usof/js/usof.min.js', array( 'jquery' ), US_CORE_VERSION, TRUE );
+				}
 
 				// Output UI
 				echo '<div class="usof-container for_white_label';

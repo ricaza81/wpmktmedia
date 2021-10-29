@@ -133,8 +133,7 @@ if ( ! us_amp() AND empty( $us_iframe ) AND us_get_option( 'preloader' ) != 'dis
 		}
 
 		if ( $preloader_type == 'custom' AND $preloader_image = us_get_option( 'preloader_image', '' ) ) {
-			$img_arr = explode( '|', $preloader_image );
-			$preloader_image_html = wp_get_attachment_image( $img_arr[0], 'medium' );
+			$preloader_image_html = wp_get_attachment_image( $preloader_image, 'medium' );
 			if ( empty( $preloader_image_html ) ) {
 				$preloader_image_html = us_get_img_placeholder( 'medium' );
 			}

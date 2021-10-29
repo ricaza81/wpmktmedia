@@ -10,9 +10,6 @@ $_atts['class'] .= ' align_' . $alignment;
 $_atts['class'] .= ' valign_' . $valign;
 $_atts['class'] .= ( $wrap ) ? ' wrap' : '';
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -22,7 +19,7 @@ if ( trim( $inner_items_gap ) != '1.2rem' ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= do_shortcode( $content );
 $output .= '</div>';
 

@@ -9,26 +9,24 @@
 global $pagenow;
 $us_is_widget_page = ( wp_doing_ajax() OR $pagenow == 'widgets.php' );
 $grid_templates_config = us_config( 'grid-templates', array(), TRUE );
-$us_grid_layout_list = us_array_merge(
-	array(
-		0 => array(
-			'optgroup' => TRUE,
-			'title' => __( 'Grid Layouts', 'us' ),
-		),
+
+// Grid Layout
+$grid_layout_option_key = __( 'Grid Layouts', 'us' );
+$us_grid_layout_list = array(
+	$grid_layout_option_key => ( $us_is_widget_page
+		? us_get_posts_titles_for( 'us_grid_layout' )
+		: array()
 	),
-	( $us_is_widget_page ? us_get_posts_titles_for( 'us_grid_layout' ) : array() )
 );
 
-$current_tmpl_group = '';
+// Grid templates
+$current_option_key = '';
 foreach ( $grid_templates_config as $template_name => $template ) {
-	if ( ! empty( $template['group'] ) AND $current_tmpl_group != $template['group'] ) {
-		$current_tmpl_group = $template['group'];
-		$us_grid_layout_list[] = array(
-			'optgroup' => TRUE,
-			'title' => $template['group'],
-		);
+	if ( ! empty( $template['group'] ) AND $current_option_key != $template['group'] ) {
+		$current_option_key = $template['group'];
+		$us_grid_layout_list[ $current_option_key ] = array();
 	}
-	$us_grid_layout_list[$template_name] = $template['title'];
+	$us_grid_layout_list[ $current_option_key ][ $template_name ] = $template['title'];
 }
 
 // Social Links fields
@@ -71,7 +69,7 @@ $old_social_links = array(
 $social_links_config = array();
 foreach ( $old_social_links as $name => $title ) {
 	$social_links_config[$name] = array(
-		'type' => 'textfield',
+		'type' => 'text',
 		'heading' => $title,
 		'std' => '',
 	);
@@ -84,32 +82,34 @@ return array(
 		'class' => 'US_Widget_Contacts',
 		'name' => us_translate( 'Contact Info' ),
 		'description' => us_translate( 'Contact Info' ),
-		'params' => array(
-			'title' => array(
-				'type' => 'textfield',
-				'heading' => us_translate( 'Title' ),
-				'std' => '',
-			),
-			'address' => array(
-				'type' => 'textarea',
-				'heading' => __( 'Address', 'us' ),
-				'std' => '',
-			),
-			'phone' => array(
-				'type' => 'textarea',
-				'heading' => __( 'Phone', 'us' ),
-				'std' => '',
-			),
-			'fax' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Mobiles', 'us' ),
-				'std' => '',
-			),
-			'email' => array(
-				'type' => 'textfield',
-				'heading' => us_translate( 'Email' ),
-				'std' => '',
-			),
+		'params' => us_set_params_weight(
+			array(
+				'title' => array(
+					'type' => 'text',
+					'heading' => us_translate( 'Title' ),
+					'std' => '',
+				),
+				'address' => array(
+					'type' => 'textarea',
+					'heading' => __( 'Address', 'us' ),
+					'std' => '',
+				),
+				'phone' => array(
+					'type' => 'textarea',
+					'heading' => __( 'Phone', 'us' ),
+					'std' => '',
+				),
+				'fax' => array(
+					'type' => 'text',
+					'heading' => __( 'Mobiles', 'us' ),
+					'std' => '',
+				),
+				'email' => array(
+					'type' => 'text',
+					'heading' => us_translate( 'Email' ),
+					'std' => '',
+				),
+			)
 		),
 	),
 
@@ -118,32 +118,34 @@ return array(
 		'class' => 'US_Widget_Login',
 		'name' => __( 'Login', 'us' ),
 		'description' => __( 'Login Form', 'us' ),
-		'params' => array(
-			'title' => array(
-				'type' => 'textfield',
-				'heading' => us_translate( 'Title' ),
-				'std' => '',
-			),
-			'register' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Register URL', 'us' ),
-				'std' => '',
-			),
-			'lostpass' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Lost Password URL', 'us' ),
-				'std' => '',
-			),
-			'login_redirect' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Login Redirect URL', 'us' ),
-				'std' => '',
-			),
-			'logout_redirect' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Logout Redirect URL', 'us' ),
-				'std' => '',
-			),
+		'params' => us_set_params_weight(
+			array(
+				'title' => array(
+					'type' => 'text',
+					'heading' => us_translate( 'Title' ),
+					'std' => '',
+				),
+				'register' => array(
+					'type' => 'text',
+					'heading' => __( 'Register URL', 'us' ),
+					'std' => '',
+				),
+				'lostpass' => array(
+					'type' => 'text',
+					'heading' => __( 'Lost Password URL', 'us' ),
+					'std' => '',
+				),
+				'login_redirect' => array(
+					'type' => 'text',
+					'heading' => __( 'Login Redirect URL', 'us' ),
+					'std' => '',
+				),
+				'logout_redirect' => array(
+					'type' => 'text',
+					'heading' => __( 'Logout Redirect URL', 'us' ),
+					'std' => '',
+				),
+			)
 		),
 	),
 
@@ -152,48 +154,50 @@ return array(
 		'class' => 'US_Widget_Portfolio',
 		'name' => __( 'Portfolio', 'us' ),
 		'description' => __( 'Portfolio', 'us' ),
-		'params' => array(
-			'title' => array(
-				'type' => 'textfield',
-				'heading' => us_translate( 'Title' ),
-				'std' => '',
-			),
-			'layout' => array(
-				'type' => 'dropdown',
-				'heading' => __( 'Grid Layout', 'us' ),
-				'value' => $us_grid_layout_list,
-				'std' => 'portfolio_compact',
-			),
-			'orderby' => array(
-				'type' => 'dropdown',
-				'heading' => us_translate( 'Order' ),
-				'value' => array(
-					'date' => __( 'Date of creation', 'us' ),
-					'date_asc' => __( 'Date of creation', 'us' ) . __( 'Invert order', 'us' ),
-					'modified' => __( 'Date of update', 'us' ),
-					'modified_asc' => __( 'Date of update', 'us' ) . __( 'Invert order', 'us' ),
-					'alpha' => us_translate( 'Title' ),
-					'rand' => us_translate( 'Random' ),
+		'params' => us_set_params_weight(
+			array(
+				'title' => array(
+					'type' => 'text',
+					'heading' => us_translate( 'Title' ),
+					'std' => '',
 				),
-				'std' => 'date',
-			),
-			'columns' => array(
-				'type' => 'dropdown',
-				'heading' => us_translate( 'Columns' ),
-				'value' => array(
-					'1' => '1',
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
+				'layout' => array(
+					'type' => 'dropdown',
+					'heading' => __( 'Grid Layout', 'us' ),
+					'value' => $us_grid_layout_list,
+					'std' => 'portfolio_compact',
 				),
-				'std' => '3',
-			),
-			'items' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Items Quantity', 'us' ),
-				'std' => '6',
-			),
+				'orderby' => array(
+					'type' => 'dropdown',
+					'heading' => us_translate( 'Order' ),
+					'value' => array(
+						'date' => __( 'Date of creation', 'us' ),
+						'date_asc' => __( 'Date of creation', 'us' ) . __( 'Invert order', 'us' ),
+						'modified' => __( 'Date of update', 'us' ),
+						'modified_asc' => __( 'Date of update', 'us' ) . __( 'Invert order', 'us' ),
+						'alpha' => us_translate( 'Title' ),
+						'rand' => us_translate( 'Random' ),
+					),
+					'std' => 'date',
+				),
+				'columns' => array(
+					'type' => 'dropdown',
+					'heading' => us_translate( 'Columns' ),
+					'value' => array(
+						'1' => '1',
+						'2' => '2',
+						'3' => '3',
+						'4' => '4',
+						'5' => '5',
+					),
+					'std' => '3',
+				),
+				'items' => array(
+					'type' => 'text',
+					'heading' => __( 'Items Quantity', 'us' ),
+					'std' => '6',
+				),
+			)
 		),
 	),
 
@@ -202,44 +206,46 @@ return array(
 		'class' => 'US_Widget_Blog',
 		'name' => us_translate( 'Blog' ),
 		'description' => us_translate( 'Blog' ),
-		'params' => array(
-			'title' => array(
-				'type' => 'textfield',
-				'heading' => us_translate( 'Title' ),
-				'std' => '',
-			),
-			'layout' => array(
-				'type' => 'dropdown',
-				'heading' => __( 'Grid Layout', 'us' ),
-				'value' => $us_grid_layout_list,
-				'std' => 'blog_1',
-			),
-			'orderby' => array(
-				'type' => 'dropdown',
-				'heading' => us_translate( 'Order' ),
-				'value' => array(
-					'date' => __( 'By date of creation (newer first)', 'us' ),
-					'date_asc' => __( 'By date of creation (older first)', 'us' ),
-					'modified' => __( 'By date of update (newer first)', 'us' ),
-					'modified_asc' => __( 'By date of update (older first)', 'us' ),
-					'alpha' => __( 'By title', 'us' ),
-					'rand' => us_translate( 'Random' ),
+		'params' => us_set_params_weight(
+			array(
+				'title' => array(
+					'type' => 'text',
+					'heading' => us_translate( 'Title' ),
+					'std' => '',
 				),
-				'std' => 'date',
-			),
-			'items' => array(
-				'type' => 'textfield',
-				'heading' => __( 'Items Quantity', 'us' ),
-				'std' => '3',
-			),
-			'ignore_sticky' => array(
-				'type' => 'checkbox',
-				'heading' => '',
-				'value' => array(
-					__( 'Ignore sticky posts', 'us' ) => TRUE,
+				'layout' => array(
+					'type' => 'dropdown',
+					'heading' => __( 'Grid Layout', 'us' ),
+					'value' => $us_grid_layout_list,
+					'std' => 'blog_1',
 				),
-				'std' => array(),
-			),
+				'orderby' => array(
+					'type' => 'dropdown',
+					'heading' => us_translate( 'Order' ),
+					'value' => array(
+						'date' => __( 'By date of creation (newer first)', 'us' ),
+						'date_asc' => __( 'By date of creation (older first)', 'us' ),
+						'modified' => __( 'By date of update (newer first)', 'us' ),
+						'modified_asc' => __( 'By date of update (older first)', 'us' ),
+						'alpha' => __( 'By title', 'us' ),
+						'rand' => us_translate( 'Random' ),
+					),
+					'std' => 'date',
+				),
+				'items' => array(
+					'type' => 'text',
+					'heading' => __( 'Items Quantity', 'us' ),
+					'std' => '3',
+				),
+				'ignore_sticky' => array(
+					'type' => 'checkbox',
+					'heading' => '',
+					'value' => array(
+						__( 'Ignore sticky posts', 'us' ) => TRUE,
+					),
+					'std' => array(),
+				),
+			)
 		),
 	),
 
@@ -248,15 +254,15 @@ return array(
 		'class' => 'US_Widget_Socials',
 		'name' => __( 'Social Links', 'us' ),
 		'description' => __( 'Social Links', 'us' ),
-		'params' => array_merge(
+		'params' => us_set_params_weight(
 			array(
 				'title' => array(
-					'type' => 'textfield',
+					'type' => 'text',
 					'heading' => us_translate( 'Title' ),
 					'std' => '',
 				),
 				'size' => array(
-					'type' => 'textfield',
+					'type' => 'text',
 					'heading' => us_translate( 'Size' ),
 					'std' => '20px',
 				),
@@ -301,24 +307,26 @@ return array(
 					),
 					'std' => 'fade',
 				),
-			), $social_links_config, array(
+			),
+			$social_links_config,
+			array(
 				'custom_link' => array(
-					'type' => 'textfield',
+					'type' => 'text',
 					'heading' => __( 'Custom Link', 'us' ),
 					'std' => '',
 				),
 				'custom_title' => array(
-					'type' => 'textfield',
+					'type' => 'text',
 					'heading' => __( 'Custom Link Title', 'us' ),
 					'std' => '',
 				),
 				'custom_icon' => array(
-					'type' => 'textfield',
+					'type' => 'text',
 					'heading' => __( 'Custom Link Icon', 'us' ),
 					'std' => '',
 				),
 				'custom_color' => array(
-					'type' => 'textfield',
+					'type' => 'text',
 					'heading' => __( 'Custom Link Color', 'us' ),
 					'std' => '#999',
 				),

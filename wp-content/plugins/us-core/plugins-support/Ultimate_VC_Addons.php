@@ -157,49 +157,55 @@ function us_ult_addons_check_element_on_page( $post_content ) {
 	$found_ultimate_backgrounds = FALSE;
 	if ( stripos( $post_content, 'bg_type=' ) ) {
 		preg_match( '/bg_type="(.*?)"/', $post_content, $output );
-		if ( $output[1] === 'bg_color' || $output[1] === 'grad' || $output[1] === 'image' || $output[1] === 'u_iframe' || $output[1] === 'video' ) {
+		if (
+			$output[1] === 'bg_color'
+			OR $output[1] === 'grad'
+			OR $output[1] === 'image'
+			OR $output[1] === 'u_iframe'
+			OR $output[1] === 'video'
+		) {
 			$found_ultimate_backgrounds = TRUE;
 		}
 	}
-if (
+	if (
 		stripos( $post_content, '[ultimate_spacer' )
-		|| stripos( $post_content, '[ult_buttons' )
-		|| stripos( $post_content, '[ultimate_icon_list' )
-		|| stripos( $post_content, '[just_icon' )
-		|| stripos( $post_content, '[ult_animation_block' )
-		|| stripos( $post_content, '[icon_counter' )
-		|| stripos( $post_content, '[ultimate_google_map' )
-		|| stripos( $post_content, '[icon_timeline' )
-		|| stripos( $post_content, '[bsf-info-box' )
-		|| stripos( $post_content, '[info_list' )
-		|| stripos( $post_content, '[ultimate_info_table' )
-		|| stripos( $post_content, '[interactive_banner_2' )
-		|| stripos( $post_content, '[interactive_banner' )
-		|| stripos( $post_content, '[ultimate_pricing' )
-		|| stripos( $post_content, '[ultimate_icons' )
-		|| stripos( $post_content, '[ultimate_heading' )
-		|| stripos( $post_content, '[ultimate_carousel' )
-		|| stripos( $post_content, '[ult_countdown' )
-		|| stripos( $post_content, '[ultimate_info_banner' )
-		|| stripos( $post_content, '[swatch_container' )
-		|| stripos( $post_content, '[ult_ihover' )
-		|| stripos( $post_content, '[ult_hotspot' )
-		|| stripos( $post_content, '[ult_content_box' )
-		|| stripos( $post_content, '[ultimate_ctation' )
-		|| stripos( $post_content, '[stat_counter' )
-		|| stripos( $post_content, '[ultimate_video_banner' )
-		|| stripos( $post_content, '[ult_dualbutton' )
-		|| stripos( $post_content, '[ult_createlink' )
-		|| stripos( $post_content, '[ultimate_img_separator' )
-		|| stripos( $post_content, '[ult_tab_element' )
-		|| stripos( $post_content, '[ultimate_exp_section' )
-		|| stripos( $post_content, '[info_circle' )
-		|| stripos( $post_content, '[ultimate_modal' )
-		|| stripos( $post_content, '[ult_sticky_section' )
-		|| stripos( $post_content, '[ult_team' )
-		|| stripos( $post_content, '[ultimate_fancytext' )
-		|| stripos( $post_content, '[ult_range_slider' )
-		|| $found_ultimate_backgrounds
+		OR stripos( $post_content, '[ult_buttons' )
+		OR stripos( $post_content, '[ultimate_icon_list' )
+		OR stripos( $post_content, '[just_icon' )
+		OR stripos( $post_content, '[ult_animation_block' )
+		OR stripos( $post_content, '[icon_counter' )
+		OR stripos( $post_content, '[ultimate_google_map' )
+		OR stripos( $post_content, '[icon_timeline' )
+		OR stripos( $post_content, '[bsf-info-box' )
+		OR stripos( $post_content, '[info_list' )
+		OR stripos( $post_content, '[ultimate_info_table' )
+		OR stripos( $post_content, '[interactive_banner_2' )
+		OR stripos( $post_content, '[interactive_banner' )
+		OR stripos( $post_content, '[ultimate_pricing' )
+		OR stripos( $post_content, '[ultimate_icons' )
+		OR stripos( $post_content, '[ultimate_heading' )
+		OR stripos( $post_content, '[ultimate_carousel' )
+		OR stripos( $post_content, '[ult_countdown' )
+		OR stripos( $post_content, '[ultimate_info_banner' )
+		OR stripos( $post_content, '[swatch_container' )
+		OR stripos( $post_content, '[ult_ihover' )
+		OR stripos( $post_content, '[ult_hotspot' )
+		OR stripos( $post_content, '[ult_content_box' )
+		OR stripos( $post_content, '[ultimate_ctation' )
+		OR stripos( $post_content, '[stat_counter' )
+		OR stripos( $post_content, '[ultimate_video_banner' )
+		OR stripos( $post_content, '[ult_dualbutton' )
+		OR stripos( $post_content, '[ult_createlink' )
+		OR stripos( $post_content, '[ultimate_img_separator' )
+		OR stripos( $post_content, '[ult_tab_element' )
+		OR stripos( $post_content, '[ultimate_exp_section' )
+		OR stripos( $post_content, '[info_circle' )
+		OR stripos( $post_content, '[ultimate_modal' )
+		OR stripos( $post_content, '[ult_sticky_section' )
+		OR stripos( $post_content, '[ult_team' )
+		OR stripos( $post_content, '[ultimate_fancytext' )
+		OR stripos( $post_content, '[ult_range_slider' )
+		OR $found_ultimate_backgrounds
 	) {
 		return TRUE;
 	} else {

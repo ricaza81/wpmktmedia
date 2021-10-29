@@ -35,11 +35,9 @@ if ( ! empty( $btn_inner_css ) ) {
 $btn_atts['aria-label'] = $title;
 $btn_atts['type'] = $type;
 
-// Add Size on mobiles as inline style tag
-$inline_style = '';
+// Add size on mobiles as inline CSS var
 if ( ! empty( $btn_size_mobiles ) ) {
-	global $us_cform_index;
-	$inline_style .= '<style>@media(max-width:600px){.us_form_' . $us_cform_index . ' .w-btn{font-size:' . $btn_size_mobiles . '!important}}</style>';
+	$_atts['style'] = '--btn-size-mobiles:' . $btn_size_mobiles . ';';
 }
 
 // Swap icon position for RTL
@@ -48,10 +46,9 @@ if ( is_rtl() ) {
 }
 
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<div class="w-form-row-field">
-		<?= $inline_style ?>
-		<button <?= us_implode_atts( $btn_atts ) ?>>
+		<button<?= us_implode_atts( $btn_atts ) ?>>
 			<span class="g-preloader type_1"></span>
 			<?= ( $icon_pos == 'left' ) ? $icon : ''; ?>
 			<span class="w-btn-label"><?= strip_tags( $title, '<br>' ) ?></span>

@@ -12,11 +12,10 @@ return array(
 		'type' => 'radio',
 		'options' => array(
 			'auto' => us_translate( 'Auto' ),
-			'full' => us_translate( 'Full width' ),
+			'full' => __( 'Full Width', 'us' ),
 			'custom' => __( 'Custom', 'us' ),
 		),
 		'std' => 'auto',
-		'classes' => 'width_full',
 	),
 	'custom_width' => array(
 		'type' => 'slider',
@@ -39,14 +38,14 @@ return array(
 				'max' => 100,
 			),
 		),
-		'classes' => 'width_full for_above',
+		'classes' => 'for_above',
 		'show_if' => array( 'width', '=', 'custom' ),
 	),
 	'stretch' => array(
 		'type' => 'switch',
 		'switch_text' => __( 'Stretch background to the screen edges', 'us' ),
 		'std' => FALSE,
-		'classes' => 'width_full for_above',
+		'classes' => 'for_above',
 		'show_if' => array( 'width', '=', 'full' ),
 	),
 	'drop_from' => array(
@@ -58,7 +57,6 @@ return array(
 		),
 		'std' => 'menu_item',
 		'cols' => 2,
-		'classes' => 'width_full',
 		'show_if' => array( 'width', '!=', 'full' ),
 	),
 	'drop_to' => array(
@@ -71,7 +69,6 @@ return array(
 		),
 		'std' => 'right',
 		'cols' => 2,
-		'classes' => 'width_full',
 		'show_if' => array( 'width', '!=', 'full' ),
 	),
 	'columns' => array(
@@ -86,7 +83,6 @@ return array(
 			'6' => '6',
 		),
 		'std' => '1',
-		'classes' => 'width_full',
 	),
 	'padding' => array(
 		'title' => __( 'Inner indents', 'us' ) . ' (padding)',
@@ -116,7 +112,6 @@ return array(
 				'max' => 10,
 			),
 		),
-		'classes' => 'width_full',
 	),
 	'color_bg' => array(
 		'title' => __( 'Background Color', 'us' ),
@@ -124,7 +119,6 @@ return array(
 		'clear_pos' => 'right',
 		'std' => '',
 		'cols' => 2,
-		'classes' => 'width_full',
 	),
 	'color_text' => array(
 		'title' => __( 'Text Color', 'us' ),
@@ -133,12 +127,10 @@ return array(
 		'with_gradient' => FALSE,
 		'std' => '',
 		'cols' => 2,
-		'classes' => 'width_full',
 	),
 	'bg_image' => array(
 		'title' => __( 'Background Image', 'us' ),
 		'type' => 'upload',
-		'classes' => 'width_full',
 	),
 	'bg_image_size' => array(
 		'title' => __( 'Background Image Size', 'us' ),
@@ -149,7 +141,6 @@ return array(
 			'initial' => __( 'Initial', 'us' ),
 		),
 		'std' => 'cover',
-		'classes' => 'width_full',
 		'show_if' => array( 'bg_image', '!=', '' ),
 	),
 	'bg_image_repeat' => array(
@@ -162,25 +153,25 @@ return array(
 			'no-repeat' => us_translate( 'None' ),
 		),
 		'std' => 'repeat',
-		'classes' => 'width_full',
 		'show_if' => array( 'bg_image', '!=', '' ),
 	),
 	'bg_image_position' => array(
 		'title' => __( 'Background Image Position', 'us' ),
 		'type' => 'radio',
+		'labels_as_icons' => 'fas fa-arrow-up',
 		'options' => array(
-			'top left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-			'top center' => '<span class="dashicons dashicons-arrow-up-alt"></span>',
-			'top right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-			'center left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-			'center center' => '<span class="dashicons dashicons-marker"></span>',
-			'center right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
-			'bottom left' => '<span class="dashicons dashicons-arrow-left-alt"></span>',
-			'bottom center' => '<span class="dashicons dashicons-arrow-down-alt"></span>',
-			'bottom right' => '<span class="dashicons dashicons-arrow-right-alt"></span>',
+			'top left' => us_translate( 'Top Left' ),
+			'top center' => us_translate( 'Top' ),
+			'top right' => us_translate( 'Top Right' ),
+			'center left' => us_translate( 'Left' ),
+			'center center' => us_translate( 'Center' ),
+			'center right' => us_translate( 'Right' ),
+			'bottom left' => us_translate( 'Bottom Left' ),
+			'bottom center' => us_translate( 'Bottom' ),
+			'bottom right' => us_translate( 'Bottom Right' ),
 		),
 		'std' => 'top left',
-		'classes' => 'bgpos width_full',
+		'classes' => 'bgpos',
 		'show_if' => array( 'bg_image', '!=', '' ),
 	),
 	'override_settings' => array(
@@ -188,7 +179,6 @@ return array(
 		'type' => 'switch',
 		'switch_text' => __( 'Override settings for this menu item', 'us' ),
 		'std' => FALSE,
-		'classes' => 'width_full',
 	),
 	'mobile_behavior' => array(
 		'title' => __( 'Show dropdown by click on', 'us' ),
@@ -198,7 +188,7 @@ return array(
 			'label' => __( 'Label and Arrow', 'us' ),
 		),
 		'std' => 'arrow',
-		'classes' => 'width_full for_above',
+		'classes' => 'for_above',
 		'show_if' => array( 'override_settings', '=', TRUE ),
 	),
 );

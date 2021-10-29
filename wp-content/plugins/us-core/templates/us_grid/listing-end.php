@@ -5,7 +5,7 @@
  */
 
 $us_grid_index = isset( $us_grid_index )
-	? intval( $us_grid_index )
+	? (int) $us_grid_index
 	: 0;
 $items_count = isset( $items_count )
 	? $items_count
@@ -67,7 +67,7 @@ if ( $preloader_type == 'custom' AND $preloader_image = us_get_option( 'preloade
 echo '</div>';
 
 // Output custom styles from Design settings of every post in the Grid, if it has Post Content with Full Content
-if ( ! empty( $items_jsoncss_collection ) AND $items_custom_css = us_jsoncss_compile( $items_jsoncss_collection ) ) {
+if ( $items_custom_css = us_jsoncss_compile( $items_jsoncss_collection ) ) {
 	echo '<style id="grid-post-content-css">' . $items_custom_css . '</style>';
 }
 
@@ -133,7 +133,7 @@ if (
 		$paginate_links = str_replace( $paginate_home_url . 'wp-admin/admin-ajax.php', '', $paginate_links );
 
 		if ( ! empty( $pagination_style ) ) {
-			$paginate_class = ' custom us-nav-style_' . intval( $pagination_style );
+			$paginate_class = ' custom us-nav-style_' . (int) $pagination_style;
 		} else {
 			$paginate_class = '';
 		}
@@ -263,8 +263,9 @@ $json_data = array(
 	'infinite_scroll' => ( isset( $is_infinite ) ? $is_infinite : 0 ),
 	'max_num_pages' => $wp_query->max_num_pages,
 	'pagination' => $pagination,
-	'permalink_url' => is_singular() ? get_permalink() : home_url( add_query_arg( array(), $wp->request ) ),
-
+	'permalink_url' => is_singular()
+		? get_permalink()
+		: home_url( add_query_arg( array(), $wp->request ) ),
 	// Grid listing template variables that will be passed to this file in the next call
 	'template_vars' => array(
 		'columns' => $columns,
@@ -298,51 +299,51 @@ if ( $type == 'carousel' ) {
 
 	$carousel_autoplay = ( $carousel_autoplay AND ( $items_count > $columns ) );
 	$carousel_settings = array(
-		'autoHeight' => ( $columns == 1 ) ? intval( $carousel_autoheight ) : 0,
+		'autoHeight' => ( $columns == 1 ) ? (int) $carousel_autoheight : 0,
 		'autoplay' => $carousel_autoplay ? 1 : 0,
-		'carousel_fade' => intval( !! $carousel_fade ),
-		'center' => intval( !! $carousel_center ),
-		'dots' => intval( !! $carousel_dots ),
+		'carousel_fade' => (int) !! $carousel_fade,
+		'center' => (int) !! $carousel_center,
+		'dots' => (int) !! $carousel_dots,
 		'items' => $columns,
 		'loop' => ( ( $carousel_autoplay AND $columns == 1 ) OR $carousel_center )
 			? TRUE
 			: !! $carousel_loop,
-		'nav' => intval( !! $carousel_arrows ),
+		'nav' => (int) !! $carousel_arrows,
 		'slideby' => $carousel_slideby ? 'page' : '1',
-		'smooth_play' => intval( !! $carousel_autoplay_smooth ),
-		'speed' => intval( $carousel_speed ),
-		'timeout' => intval( $carousel_interval ) * 1000,
+		'smooth_play' => (int) !! $carousel_autoplay_smooth,
+		'speed' => (int) $carousel_speed,
+		'timeout' => (int) $carousel_interval * 1000,
 		'transition' => strip_tags( $carousel_transition ),
 	);
 
 	$carousel_breakpoints = array(
-		intval( $breakpoint_1_width ) => array(
-			'items' => intval( $columns ),
+		(int) $breakpoint_1_width => array(
+			'items' => (int) $columns,
 		),
-		intval( $breakpoint_2_width ) => array(
-			'autoHeight' => ( min( intval( $breakpoint_1_cols ), $columns ) == 1 ) ? intval( $carousel_autoheight ) : 0,
-			'autoplay' => intval( !! $breakpoint_1_autoplay ),
-			'autoplayHoverPause' => intval( !! $breakpoint_1_autoplay ),
-			'items' => min( intval( $breakpoint_1_cols ), $columns ),
-			'loop' => ( intval( !! $breakpoint_1_autoplay ) AND ( min( intval( $breakpoint_1_cols ), $columns ) == 1 ) )
+		(int) $breakpoint_2_width => array(
+			'autoHeight' => ( min( (int) $breakpoint_1_cols, $columns ) == 1 ) ? (int) $carousel_autoheight : 0,
+			'autoplay' => (int) !! $breakpoint_1_autoplay,
+			'autoplayHoverPause' => (int) !! $breakpoint_1_autoplay,
+			'items' => min( (int) $breakpoint_1_cols, $columns ),
+			'loop' => ( (int) !! $breakpoint_1_autoplay AND ( min( (int)  $breakpoint_1_cols, $columns ) == 1 ) )
 				? TRUE
 				: $carousel_settings['loop'],
 		),
-		intval( $breakpoint_3_width ) => array(
-			'autoHeight' => ( min( intval( $breakpoint_2_cols ), $columns ) == 1 ) ? intval( $carousel_autoheight ) : 0,
-			'autoplay' => intval( !! $breakpoint_2_autoplay ),
-			'autoplayHoverPause' => intval( ! ! $breakpoint_2_autoplay ),
-			'items' => min( intval( $breakpoint_2_cols ), $columns ),
-			'loop' => ( intval( !! $breakpoint_2_autoplay ) AND ( min( intval( $breakpoint_2_cols ), $columns ) == 1 ) )
+		(int) $breakpoint_3_width => array(
+			'autoHeight' => ( min( (int) $breakpoint_2_cols, $columns ) == 1 ) ? (int) $carousel_autoheight : 0,
+			'autoplay' => (int) !! $breakpoint_2_autoplay,
+			'autoplayHoverPause' => (int) ! ! $breakpoint_2_autoplay,
+			'items' => min( (int) $breakpoint_2_cols, $columns ),
+			'loop' => ( (int) !! $breakpoint_2_autoplay AND ( min( (int) $breakpoint_2_cols, $columns ) == 1 ) )
 				? TRUE
 				: $carousel_settings['loop'],
 		),
 		0 => array(
-			'autoHeight' => ( min( intval( $breakpoint_3_cols ), $columns ) == 1 ) ? intval( $carousel_autoheight ) : 0,
-			'autoplay' => intval( !! $breakpoint_3_autoplay ),
-			'autoplayHoverPause' => intval( !! $breakpoint_3_autoplay ),
-			'items' => min( intval( $breakpoint_3_cols ), $columns ),
-			'loop' => ( intval( !! $breakpoint_3_autoplay ) AND ( min( intval( $breakpoint_3_cols ), $columns ) == 1 ) )
+			'autoHeight' => ( min( (int) $breakpoint_3_cols, $columns ) == 1 ) ? (int) $carousel_autoheight : 0,
+			'autoplay' => (int) !! $breakpoint_3_autoplay,
+			'autoplayHoverPause' => (int) !! $breakpoint_3_autoplay,
+			'items' => min( (int) $breakpoint_3_cols, $columns ),
+			'loop' => ( (int) !! $breakpoint_3_autoplay AND ( min( (int) $breakpoint_3_cols, $columns ) == 1 ) )
 				? TRUE
 				: $carousel_settings['loop'],
 		),
@@ -382,7 +383,7 @@ if ( ! us_amp() AND $overriding_link == 'popup_post' ) {
 					<iframe class="l-popup-box-content-frame" allowfullscreen></iframe>
 				</div>
 			</div>
-			<?php if ( $popup_arrows ) { ?>
+			<?php if ( ! empty( $popup_arrows ) ) { ?>
 				<div class="l-popup-arrow to_next" title="<?php echo us_translate( 'Next' ) ?>"></div>
 				<div class="l-popup-arrow to_prev" title="<?php echo us_translate( 'Previous' ) ?>"></div>
 			<?php } ?>
@@ -394,10 +395,8 @@ if ( ! us_amp() AND $overriding_link == 'popup_post' ) {
 
 // Output No results
 if ( $no_results ) {
-	// Output No results message if it is not empty
-	if ( ! empty( $no_items_message ) ) {
-		echo '<h4 class="w-grid-none">' . strip_tags( $no_items_message, '<br><strong>' ) . '</h4>';
-	}
+	us_grid_stop_loop( TRUE, FALSE );
+
 	if ( $use_custom_query ) {
 		us_close_wp_query_context();
 	}

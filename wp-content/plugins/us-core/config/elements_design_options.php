@@ -6,49 +6,41 @@
 
 $misc = us_config( 'elements_misc' );
 
+// Generate options for "Hide on states"
+$hide_on_states_options = array();
+foreach ( us_get_responsive_states() as $state => $data ) {
+	$hide_on_states_options[ $state ] = $data['title'];
+}
+
 return array(
-
-	// Extra CSS class
-	'el_class' => array(
-		'title' => __( 'Extra class', 'us' ),
-		'type' => 'text',
-		'std' => '',
-		'shortcode_cols' => 2,
-		'header_cols' => 2,
-		'group' => __( 'Design', 'us' ),
-	),
-
-	// Element ID
-	'el_id' => array(
-		'title' => __( 'Element ID', 'us' ),
-		'type' => 'text',
-		'std' => '',
-		'cols' => 2,
-		'group' => __( 'Design', 'us' ),
-		'context' => array( 'shortcode', 'header' ), // can't be added to Grid Layout
-	),
 
 	// Design settings based on CSS properties
 	'css' => array(
 		'type' => 'design_options',
 		'group' => __( 'Design', 'us' ),
 
-		// NOTE: All new property keys for css must be written with a hyphen, an example is font-size and not font_size
+		// DEV: property keys for css MUST be written with a hyphen. Example: font-size and not font_size
 		'params' => array(
 
 			// Text
 			'color' => array(
 				'title' => us_translate( 'Color' ),
 				'type' => 'color',
-				'clear_pos' => 'left',
+				'clear_pos' => 'right',
 				'with_gradient' => FALSE,
 				'std' => '',
 				'cols' => 2,
 				'group' => us_translate( 'Text' ),
+				'usb_preview' => array(
+					'toggle_class' => 'has_text_color',
+				),
 			),
+			// Note: When using responsive design, the default value will be `inherit`
+			// for the possibility of canceling other values.
 			'text-align' => array(
 				'title' => us_translate( 'Alignment' ),
-				'type' => 'select',
+				'type' => 'radio',
+				'labels_as_icons' => 'fas fa-align-*',
 				'options' => array(
 					'' => us_translate( 'Default' ),
 					'left' => us_translate( 'Left' ),
@@ -65,7 +57,7 @@ return array(
 				'type' => 'select',
 				'options' => us_get_fonts(),
 				'std' => '',
-				'group' => us_translate( 'Text' ),
+				'group' => us_translate( 'Text' )
 			),
 			'font-weight' => array(
 				'title' => __( 'Font Weight', 'us' ),
@@ -119,6 +111,9 @@ return array(
 				'std' => '',
 				'cols' => 3,
 				'group' => us_translate( 'Text' ),
+				'usb_preview' => array(
+					'toggle_class' => 'has_font_size',
+				),
 			),
 			'line-height' => array(
 				'title' => __( 'Line height', 'us' ),
@@ -141,9 +136,12 @@ return array(
 			'background-color' => array(
 				'title' => __( 'Background Сolor', 'us' ),
 				'type' => 'color',
-				'clear_pos' => 'left',
+				'clear_pos' => 'right',
 				'std' => '',
 				'group' => __( 'Background', 'us' ),
+				'usb_preview' => array(
+					'toggle_class' => 'has_bg_color',
+				),
 			),
 			'background-image' => array(
 				'title' => __( 'Background Image', 'us' ),
@@ -185,10 +183,10 @@ return array(
 			),
 			'background-attachment' => array(
 				'title' => __( 'Background Image Attachment', 'us' ),
-				'type' => 'select',
+				'type' => 'radio',
 				'options' => array(
-					'scroll' => us_translate( 'Scroll with Page' ),
-					'fixed' => __( 'Fixed', 'us' ),
+					'scroll' => 'scroll',
+					'fixed' => 'fixed',
 				),
 				'std' => 'scroll',
 				'cols' => 2,
@@ -204,6 +202,9 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => __( 'Sizes', 'us' ),
+				'usb_preview' => array(
+					'toggle_class' => 'has_width',
+				),
 			),
 			'height' => array(
 				'title' => us_translate( 'Height' ),
@@ -212,6 +213,9 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => __( 'Sizes', 'us' ),
+				'usb_preview' => array(
+					'toggle_class' => 'has_height',
+				),
 			),
 			'max-width' => array(
 				'title' => us_translate( 'Max Width' ),
@@ -336,6 +340,9 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => __( 'Border', 'us' ),
+				'usb_preview' => array(
+					'toggle_class' => 'has_border_radius',
+				),
 			),
 			'border-left-width' => array(
 				'title' => __( 'Border Width', 'us' ),
@@ -383,7 +390,7 @@ return array(
 			'border-color' => array(
 				'title' => __( 'Border Сolor', 'us' ),
 				'type' => 'color',
-				'clear_pos' => 'left',
+				'clear_pos' => 'right',
 				'with_gradient' => FALSE,
 				'std' => '',
 				'group' => __( 'Border', 'us' ),
@@ -485,12 +492,85 @@ return array(
 			'box-shadow-color' => array(
 				'title' => us_translate( 'Color' ),
 				'type' => 'color',
-				'clear_pos' => 'left',
+				'clear_pos' => 'right',
 				'with_gradient' => FALSE,
 				'std' => '',
 				'group' => __( 'Box Shadow', 'us' ),
 			),
 
+			// Animation
+			'animation-name' => array(
+				'description' => __( 'Will be applied to this element, when it enters into the browsers viewport.', 'us' ),
+				'type' => 'select',
+				'options' => array(
+					'none' => us_translate( 'None' ),
+					'fade' => __( 'Fade', 'us' ),
+					'afc' => __( 'Appear From Center', 'us' ),
+					'afl' => __( 'Appear From Left', 'us' ),
+					'afr' => __( 'Appear From Right', 'us' ),
+					'afb' => __( 'Appear From Bottom', 'us' ),
+					'aft' => __( 'Appear From Top', 'us' ),
+					'hfc' => __( 'Height Stretch', 'us' ),
+					'wfc' => __( 'Width Stretch', 'us' ),
+					'bounce' => __( 'Bounce', 'us' ),
+				),
+				'std' => 'none',
+				'group' => __( 'Animation', 'us' ),
+			),
+			'animation-delay' => array(
+				'title' => __( 'Animation Delay', 'us' ),
+				'description' => __( 'Examples:', 'us' ) . ' <span class="usof-example">250ms</span>, <span class="usof-example">0.5s</span>, <span class="usof-example">1s</span>, <span class="usof-example">1.5s</span>',
+				'type' => 'text',
+				'std' => '',
+				'show_if' => array( 'animation-name', '!=', '' ),
+				'group' => __( 'Animation', 'us' ),
+			),
+		),
+
+		// The value will be compiled into css and added to the style tag
+		'usb_preview' => array(
+			'design_options' => TRUE,
+		),
+	),
+
+	// Extra CSS class
+	'el_class' => array(
+		'title' => __( 'Extra class', 'us' ),
+		'type' => 'text',
+		'std' => '',
+		'shortcode_cols' => 2,
+		'header_cols' => 2,
+		'group' => __( 'Design', 'us' ),
+		'usb_preview' => array(
+			'attr' => 'class',
+		),
+	),
+
+	// Element ID
+	'el_id' => array(
+		'title' => __( 'Element ID', 'us' ),
+		'type' => 'text',
+		'std' => '',
+		'cols' => 2,
+		'group' => __( 'Design', 'us' ),
+		'context' => array( 'shortcode', 'header' ), // can't be added to Grid Layout
+		'usb_preview' => array(
+			'attr' => 'id',
+		),
+	),
+
+	// Hide element on responsive states
+	'hide_on_states' => array(
+		'title' => __( 'Hide on', 'us' ),
+		'type' => 'checkboxes',
+		'options' => $hide_on_states_options,
+		'std' => '',
+		'classes' => 'vertical',
+		'cols' => 1, // for correct UI in WPBakery
+		'group' => __( 'Design', 'us' ),
+		'context' => array( 'shortcode' ),
+		'usb_preview' => array(
+			'mod' => 'hide_on',
 		),
 	),
 

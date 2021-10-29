@@ -732,7 +732,7 @@ class US_Migration {
 		if (
 			$post instanceof WP_Post
 			AND ! empty( $post->post_content )
-			AND strpos( $header->post_content, '{' ) === 0
+			AND strpos( $post->post_content, '{' ) === 0
 		) {
 			try {
 				$settings = json_decode( $post->post_content, TRUE );

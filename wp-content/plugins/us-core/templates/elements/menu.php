@@ -56,8 +56,9 @@ if ( $mobile_layout == 'panel' ) {
 if ( $mobile_layout == 'fullscreen' ) {
 	$_atts['class'] .= ' m_effect_' . $mobile_effect_f;
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
+
+if ( ! empty( $el_id ) ) {
+	$_atts['id'] = $el_id;
 }
 
 if ( us_get_option( 'schema_markup' ) ) {
@@ -66,7 +67,7 @@ if ( us_get_option( 'schema_markup' ) ) {
 }
 
 // Output the element
-echo '<nav ' . us_implode_atts( $_atts ) . '>';
+echo '<nav' . us_implode_atts( $_atts ) . '>';
 
 $_open_button_atts['class'] = 'w-nav-control';
 $_open_button_atts['aria-label'] = us_translate( 'Menu' );
@@ -82,12 +83,12 @@ if ( us_amp() ) {
 	$_open_button_atts['href'] = 'javascript:void(0);';
 }
 
-echo '<a ' . us_implode_atts( $_open_button_atts ) . '>';
+echo '<a' . us_implode_atts( $_open_button_atts ) . '>';
 
 if ( $mobile_icon_text == 'left' ) {
 	echo '<span>' . strip_tags( $mobile_icon_text_label ) . '</span>';
 }
-echo '<div class="w-nav-icon"><i></i></div>';
+echo '<div class="w-nav-icon"><div></div></div>';
 if ( $mobile_icon_text == 'right' ) {
 	echo '<span>' . strip_tags( $mobile_icon_text_label ) . '</span>';
 }
@@ -100,13 +101,13 @@ if ( us_amp() ) {
 }
 
 // Items list
-echo '<ul ' . us_implode_atts( $_list_atts ) . '>';
+echo '<ul' . us_implode_atts( $_list_atts ) . '>';
 if ( $location ) {
 	wp_nav_menu(
 		array(
 			'theme_location' => $location,
 			'container' => FALSE,
-			'walker' => new US_Walker_Nav_Menu,
+			'walker' => new US_Walker_Nav_Menu( $mobile_behavior ),
 			'items_wrap' => '%3$s',
 			'fallback_cb' => FALSE,
 		)
@@ -116,7 +117,7 @@ if ( $location ) {
 		array(
 			'menu' => $source,
 			'container' => FALSE,
-			'walker' => new US_Walker_Nav_Menu,
+			'walker' => new US_Walker_Nav_Menu( $mobile_behavior ),
 			'items_wrap' => '%3$s',
 			'fallback_cb' => FALSE,
 		)
@@ -128,15 +129,15 @@ if ( us_amp() ) {
 	$_close_button_atts['id'] = 'w-nav-close-' . $amp_menu_id;
 	$_close_button_atts['on'] = 'tap:hamburger-' . $amp_menu_id . '.toggleClass(class=\'active\'),w-nav-list-' . $amp_menu_id . '.toggleClass(class=\'active\')';
 }
-echo '<li ' . us_implode_atts( $_close_button_atts ) . '></li>';
+echo '<li' . us_implode_atts( $_close_button_atts ) . '></li>';
 echo '</ul>';
 
 if ( ! us_amp() ) {
 	echo '<div class="w-nav-options hidden"';
 	echo us_pass_data_to_js(
 		array(
-			'mobileWidth' => intval( $mobile_width ),
-			'mobileBehavior' => intval( $mobile_behavior ),
+			'mobileWidth' => (int) $mobile_width,
+			'mobileBehavior' => (int) $mobile_behavior,
 		)
 	);
 	echo '></div>';

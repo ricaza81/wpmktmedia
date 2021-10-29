@@ -132,9 +132,15 @@ class US_Layout {
 			$classes .= ' state_mobiles';
 		}
 
+		// Add class for pages opened inside iframe
 		global $us_iframe;
 		if ( ! empty( $us_iframe ) ) {
 			$classes .= ' us_iframe';
+		}
+
+		// Add class for pages opened inside US Builder
+		if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+			$classes .= ' usb_preview';
 		}
 
 		return $classes;

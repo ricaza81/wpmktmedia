@@ -6,6 +6,15 @@
  * @link http://codecanyon.net/item/visual-composer-page-builder-for-wordpress/242431?ref=UpSolution
  */
 
+/**
+ * Link "fallback" file for correct work of deprecated shortcodes attributes.
+ * This allows to avoid content migration after updates.
+ */
+require US_CORE_DIR . 'plugins-support/js_composer/fallback.php';
+
+/**
+ * IF WPBakery is inactive - add functions that we need ONLY in case it is inactive and abort following file execution
+ */
 if ( ! class_exists( 'Vc_Manager' ) ) {
 
 	/**
@@ -25,6 +34,9 @@ if ( ! class_exists( 'Vc_Manager' ) ) {
 					$width = 'vc_col-sm-' . $value;
 				}
 			}
+		}
+		if ( preg_match( '/\d+\/5$/', $width ) ) {
+			$width = 'vc_col-sm-' . $width;
 		}
 
 		return $width;
@@ -48,51 +60,14 @@ if ( ! class_exists( 'Vc_Manager' ) ) {
 }
 
 /**
- * Check for CSS property in the shortcode attribute
- * @param string|array $subject
- * @param string|array $props
- * @param bool $strict
- * @return array
+ * Code from this line and to the end of the file should be executed ONLY with WPBakery active
  */
-function us_design_options_has_property( $subject, $props, $strict = FALSE ) {
-	$result = [];
-
-	if ( empty( $props ) ) {
-		return $result;
-	}
-
-	if ( ! is_array( $props ) ) {
-		$props = array( (string) $props );
-	}
-
-	$props = array_map( 'trim', $props );
-	$props = array_map( 'strtolower', $props );
-
-	if ( is_string( $subject ) ) {
-		$subject = json_decode( urldecode( $subject ), TRUE );
-	}
-
-	if ( ! empty( $subject ) AND is_array( $subject ) ) {
-		foreach ( $subject as $device_type => $values ) {
-			$values = array_keys( $values );
-			$values = array_map( 'strtolower', $values );
-
-			foreach ( $props as $prop ) {
-				if ( ! in_array( $device_type, $result ) AND array_search( $prop, $values, $strict ) !== FALSE ) {
-					$result[] = $device_type;
-				}
-			}
-		}
-	}
-
-	return array_unique( $result );
-}
-
 add_action( 'vc_before_init', 'us_vc_set_as_theme' );
 function us_vc_set_as_theme() {
 	vc_set_as_theme();
 }
 
+// Disable WPBakery own updating hooks
 add_action( 'vc_after_init', 'us_vc_after_init' );
 function us_vc_after_init() {
 	$updater = vc_manager()->updater();
@@ -110,8 +85,8 @@ function us_vc_after_set_mode() {
 	do_action( 'us_before_js_composer_mappings' );
 
 	// Remove VC Font Awesome style in admin pages
-	add_action( 'admin_head', 'us_remove_js_composer_admin_assets', 1 );
-	function us_remove_js_composer_admin_assets() {
+	add_action( 'admin_head', 'us_wpb_remove_admin_assets', 1 );
+	function us_wpb_remove_admin_assets() {
 		foreach ( array( 'ui-custom-theme', 'vc_font_awesome_5_shims', 'vc_font_awesome_5' ) as $handle ) {
 			if ( wp_style_is( $handle, 'registered' ) ) {
 				wp_dequeue_style( $handle );
@@ -124,11 +99,23 @@ function us_vc_after_set_mode() {
 		}
 	}
 
-	if ( ! vc_is_page_editable() ) {
+	// Remove original VC styles and scripts
+	if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() ) {
+
+		// Remove some of the shortcodes handlers to use native VC shortcodes instead for front-end compatibility
+		US_Shortcodes::instance()->vc_front_end_compatibility();
+
+		// Add theme CSS for frontend editor
+		add_action( 'wp_enqueue_scripts', 'us_process_css_for_frontend_js_composer', 15 );
+		function us_process_css_for_frontend_js_composer() {
+			wp_enqueue_style( 'us_js_composer_front', US_CORE_URI . '/plugins-support/js_composer/css/us_frontend_editor.css' );
+		}
+
+	} else {
 
 		// Remove original VC styles and scripts
-		add_action( 'wp_enqueue_scripts', 'us_remove_vc_base_css_js', 15 );
-		function us_remove_vc_base_css_js() {
+		add_action( 'wp_enqueue_scripts', 'us_vc_remove_base_css_js', 15 );
+		function us_vc_remove_base_css_js() {
 			if ( wp_style_is( 'vc_font_awesome_5', 'registered' ) ) {
 				wp_dequeue_style( 'vc_font_awesome_5' );
 				wp_deregister_style( 'vc_font_awesome_5' );
@@ -148,29 +135,16 @@ function us_vc_after_set_mode() {
 				}
 			}
 		}
-	} else {
-
-		// Disable some of the shortcodes for frontend editor
-		US_Shortcodes::instance()->vc_front_end_compatibility();
-
-		// Add theme CSS for frontend editor
-		add_action( 'wp_enqueue_scripts', 'us_process_css_for_frontend_js_composer', 15 );
-		function us_process_css_for_frontend_js_composer() {
-			wp_enqueue_style( 'us_js_composer_front', US_CORE_URI . '/plugins-support/js_composer/css/us_frontend_editor.css' );
-		}
 	}
 
 	// Remove "Grid" admin menu item
 	if ( is_admin() AND us_get_option( 'disable_extra_vc', 1 ) ) {
 
-		add_action( 'admin_menu', 'us_remove_vc_grid_elements_submenu' );
-		function us_remove_vc_grid_elements_submenu() {
+		add_action( 'admin_menu', 'us_vc_remove_grid_elements_submenu' );
+		function us_vc_remove_grid_elements_submenu() {
 			remove_submenu_page( VC_PAGE_MAIN_SLUG, 'edit.php?post_type=vc_grid_item' );
 		}
 	}
-
-	// Disable Frontend Editor for Page Blocks and Content Template
-	add_action( 'current_screen', 'us_disable_frontend_for_post_types' );
 
 	// Disable Icon Picker assets
 	if ( us_get_option( 'disable_extra_vc', 1 ) ) {
@@ -181,195 +155,41 @@ function us_vc_after_set_mode() {
 	do_action( 'us_after_js_composer_mappings' );
 }
 
-add_action( 'wp_loaded', 'us_vc_init_shortcodes', 11 );
-function us_vc_init_shortcodes() {
-	if ( ! function_exists( 'vc_mode' ) OR ! function_exists( 'vc_map' ) OR ! function_exists( 'vc_remove_element' ) ) {
-		return;
-	}
-
-	global $pagenow;
-
-	$shortcodes_config = us_config( 'shortcodes', array(), TRUE );
-
-	// Mapping WPBakery Page Builder backend behaviour for used shortcodes
-	if ( vc_mode() != 'page' ) {
-
-		function us_vc_param( $param_name, $param ) {
-			$related_types = array(
-				'text' => 'textfield',
-				'textarea' => 'textarea',
-				'select' => 'dropdown',
-				'radio' => 'dropdown',
-				'color' => 'us_color',
-				'slider' => 'textfield',
-				'link' => 'vc_link',
-				'icon' => 'us_icon',
-				'switch' => 'checkbox',
-				'checkboxes' => 'checkbox',
-				'us_checkboxes' => 'us_checkboxes',
-				'upload' => 'attach_image',
-				'editor' => 'textarea_html',
-				'html' => 'textarea_raw_html',
-				'group' => 'param_group',
-				'wrapper_start' => 'param_to_delete',
-				'wrapper_end' => 'param_to_delete',
-				'heading' => 'param_to_delete',
-				'ult_param_heading' => 'ult_param_heading',
-				'us_autocomplete' => 'us_autocomplete',
-				'us_grid_layout' => 'us_grid_layout',
-				'us_grouped_select' => 'us_grouped_select',
-				'css_editor' => 'css_editor',
-				'design_options' => 'us_design_options',
-			);
-
-			$type = ( isset( $param['type'] ) AND isset( $related_types[ $param['type'] ] ) )
-				? $related_types[ $param['type'] ]
-				: 'textfield';
-
-			if ( $type == 'param_to_delete' ) {
-				return NULL;
-			}
-
-			$attributes_with_prefixes = array(
-				'title',
-				'description',
-				'options',
-				'classes',
-				'cols',
-				'std',
-				'show_if',
-			);
-			foreach ( $attributes_with_prefixes as $attribute ) {
-				if ( isset( $param[ 'shortcode_' . $attribute ] ) ) {
-					$param[ $attribute ] = $param[ 'shortcode_' . $attribute ];
-				}
-			}
-
-			if ( $param['type'] == 'checkboxes' AND ! empty( $param['std'] ) AND is_array( $param['std'] ) ) {
-				$param['std'] = implode( ',', $param['std'] );
-			}
-
-			$vc_param = array(
-				'type' => $type,
-				'param_name' => $param_name,
-				'heading' => isset( $param['title'] ) ? $param['title'] : '',
-				'description' => isset( $param['description'] ) ? $param['description'] : '',
-				'std' => isset( $param['std'] ) ? $param['std'] : '',
-				'holder' => isset( $param['holder'] ) ? $param['holder'] : '',
-				'admin_label' => isset( $param['admin_label'] ) ? $param['admin_label'] : FALSE,
-				'settings' => isset( $param['settings'] ) ? $param['settings'] : NULL,
-				'params' => ( isset( $param['params'] ) AND $param['type'] === 'design_options' ) ? $param['params'] : NULL,
-				'edit_field_class' => ! empty( $param['classes'] ) ? $param['classes'] : NULL,
-			);
-
-			// Add option CSS classes based on "cols" param
-			if ( isset( $param['cols'] ) ) {
-				$_cols_k = 12 / intval( $param['cols'] );
-
-				if ( empty( $vc_param['edit_field_class'] ) ) {
-					$vc_param['edit_field_class'] = 'vc_col-sm-' . $_cols_k;
-				} else {
-					$vc_param['edit_field_class'] .= ' vc_col-sm-' . $_cols_k;
-				}
-			}
-
-			if ( ! empty( $param['group'] ) ) {
-				$vc_param['group'] = $param['group'];
-			}
-
-			if ( $vc_param['type'] == 'attach_image' AND isset( $param['is_multiple'] ) AND $param['is_multiple'] ) {
-				$vc_param['type'] = 'attach_images';
-			}
-
-			if ( in_array(
-					$vc_param['type'], array(
-						'dropdown',
-						'us_autocomplete',
-					)
-				) AND isset( $param['options'] ) ) {
-				$vc_param['value'] = array();
-				foreach ( $param['options'] as $option_val => $option_name ) {
-					$vc_param['value'][ $option_name . ' ' ] = $option_val . '';
-				}
-			}
-
-			// US Checkboxes
-			if ( $vc_param['type'] == 'us_checkboxes' ) {
-				$vc_param['options'] = isset( $param['options'] ) ? ( array ) $param['options'] : NULL;
-			}
-
-			// VC Checkboxes
-			if ( $vc_param['type'] == 'checkbox' ) {
-				if ( isset( $param['options'] ) AND ! empty( $param['options_prepared_for_wpb'] ) ) {
-					$vc_param['value'] = array();
-					foreach ( $param['options'] as $option_val => $option_name ) {
-						$vc_param['value'][ $option_val . '' ] = $option_name . '';
-					}
-				} elseif ( isset( $param['options'] ) ) {
-					$vc_param['value'] = array();
-					foreach ( $param['options'] as $option_val => $option_name ) {
-						$vc_param['value'][ $option_name . ' ' ] = $option_val . '';
-					}
-				} elseif ( isset( $param['switch_text'] ) ) {
-					$vc_param['value'] = array( $param['switch_text'] => TRUE );
-				}
-				if ( is_array( $vc_param['std'] ) ) {
-					$vc_param['std'] = implode( ',', $vc_param['std'] );
-				} elseif ( $vc_param['std'] === TRUE ) {
-					$vc_param['std'] = '1';
-				} elseif ( $vc_param['std'] === FALSE ) {
-					$vc_param['std'] = '';
-				}
-			}
-
-			// Proper dependency rules
-			if ( isset( $param['show_if'] ) AND count( $param['show_if'] ) == 3 ) {
-				$vc_param['dependency'] = array(
-					'element' => $param['show_if'][0],
-				);
-				if ( $param['show_if'][1] == '=' AND $param['show_if'][2] == '' ) {
-					$vc_param['dependency']['is_empty'] = TRUE;
-				} elseif ( $param['show_if'][1] == '!=' AND $param['show_if'][2] == '' ) {
-					$vc_param['dependency']['not_empty'] = TRUE;
-				} elseif ( $param['show_if'][1] == '!=' AND ! empty( $param['show_if'][2] ) ) {
-					$vc_param['dependency']['value_not_equal_to'] = $param['show_if'][2];
-				} else {
-					$vc_param['dependency']['value'] = $param['show_if'][2];
-				}
-			}
-
-			// Proper group rules
-			if ( $vc_param['type'] == 'param_group' ) {
-				if ( isset( $param['params'] ) AND is_array( $param['params'] ) ) {
-					$group_params = $param['params'];
-					$param['params'] = array();
-					foreach ( $group_params as $group_param_name => $group_param ) {
-						$group_vc_param = us_vc_param( $group_param_name, $group_param );
-						if ( $group_vc_param != NULL ) {
-							$vc_param['params'][] = $group_vc_param;
-						}
-					}
-				}
-				if ( isset( $vc_param['std'] ) AND is_array( $vc_param['std'] ) ) {
-					$vc_param['std'] = rawurlencode( wp_json_encode( $vc_param['std'] ) );
-				}
-			}
-
-			// US Color additional params
-			if ( $param['type'] == 'color' ) {
-				if ( isset( $param['clear_pos'] ) ) {
-					$vc_param['clear_pos'] = $param['clear_pos'];
-				}
-				if ( isset( $param['with_gradient'] ) ) {
-					$vc_param['with_gradient'] = FALSE;
-				}
-				if ( ! empty( $param['disable_dynamic_vars'] ) ) {
-					$vc_param['disable_dynamic_vars'] = TRUE;
-				}
-			}
-
-			return $vc_param;
+if ( ! function_exists( 'us_vc_init_shortcodes' ) ) {
+	add_action( 'wp_loaded', 'us_vc_init_shortcodes', 11 );
+	function us_vc_init_shortcodes() {
+		if (
+			! function_exists( 'vc_mode' )
+			OR ! function_exists( 'vc_map' )
+			OR ! function_exists( 'vc_remove_element' )
+		) {
+			return;
 		}
+
+		// Gets configurations for shortcodes
+		$shortcodes_config = us_config( 'shortcodes', array(), TRUE );
+
+		if ( us_get_option( 'disable_extra_vc', 1 ) ) {
+			// Removing the elements that are not supported at the moment by the theme
+			if (
+				is_admin()
+				AND ! empty( $shortcodes_config['disabled'] )
+				AND is_array( $shortcodes_config['disabled'] )
+			) {
+				foreach ( $shortcodes_config['disabled'] as $shortcode ) {
+					vc_remove_element( $shortcode );
+				}
+			} else {
+				add_action( 'template_redirect', 'us_vc_disable_extra_sc', 100 );
+			}
+		}
+
+		if ( vc_mode() === 'page' ) {
+			return;
+		}
+
+		// Mapping WPBakery Page Builder backend behaviour for used shortcodes
+		global $pagenow;
 
 		/**
 		 * If the page for editing roles then the result will be TRUE
@@ -384,28 +204,37 @@ function us_vc_init_shortcodes() {
 		if (
 			wp_doing_ajax()
 			OR in_array( $pagenow, array( 'post.php', 'post-new.php' ) )
-			OR vc_is_page_editable()
 			OR $is_edit_vc_roles
+			OR ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() )
 		) {
 			foreach ( $shortcodes_config['theme_elements'] as $elm_name ) {
-				$shortcode = 'us_' . $elm_name;
-				$elm = us_config( 'elements/' . $elm_name );
+				$is_vc_elm = strpos( $elm_name, 'vc_' ) === 0;
+
+				// Add prefix "us_" for non "vc_" shortcodes
+				$shortcode = us_get_shortcode_full_name( $elm_name );
+				$elm = us_config( "elements/{$elm_name}", array() );
 
 				$vc_elm = array(
 					'name' => isset( $elm['title'] ) ? $elm['title'] : $shortcode,
-					'base' => $shortcode,
 					'description' => isset( $elm['description'] ) ? $elm['description'] : '',
-					'class' => 'elm-' . $shortcode,
-					'category' => isset( $elm['category'] ) ? $elm['category'] : us_translate( 'Content', 'js_composer' ),
+					'base' => $shortcode,
 					'icon' => isset( $elm['icon'] ) ? $elm['icon'] : '',
-					'weight' => 370, // all elements go after "Text Block" element
+					'category' => isset( $elm['category'] ) ? $elm['category'] : us_translate( 'Content' ),
+					'weight' => isset( $elm['weight'] ) ? $elm['weight'] : 380, // elements go after "Text Block", which has the "390" weight
 					'admin_enqueue_js' => isset( $elm['admin_enqueue_js'] ) ? $elm['admin_enqueue_js'] : NULL,
-					'js_view' => isset( $elm['js_view'] ) ? $elm['js_view'] : NULL,
+					'is_container' => isset( $elm['is_container'] ) ? $elm['is_container'] : NULL,
 					'as_parent' => isset( $elm['as_parent'] ) ? $elm['as_parent'] : NULL,
-					'show_settings_on_create' => isset( $elm['show_settings_on_create'] ) ? $elm['show_settings_on_create'] : NULL,
+					'as_child' => isset( $elm['as_child'] ) ? $elm['as_child'] : NULL,
+					'js_view' => isset( $elm['js_view'] ) ? $elm['js_view'] : NULL,
 					'params' => array(),
 				);
 
+				// Global updates for the correct work of the shortcode in all editors
+				if ( isset( $elm['allowed_container_element'] ) ) {
+					vc_map_update( 'vc_column_inner', array( 'allowed_container_element' => $elm['allowed_container_element'] ) );
+				}
+
+				$vc_elm_params_names = array();
 				if ( isset( $elm['params'] ) AND is_array( $elm['params'] ) ) {
 					foreach ( $elm['params'] as $param_name => &$param ) {
 						if (
@@ -419,45 +248,71 @@ function us_vc_init_shortcodes() {
 						) {
 							continue;
 						}
-						$vc_param = us_vc_param( $param_name, $param );
+						$vc_param = _us_vc_param( $param_name, $param );
 						if ( $vc_param != NULL ) {
 							$vc_elm['params'][] = $vc_param;
+							$vc_elm_params_names[] = $param_name;
 						}
 					}
 					unset( $param );
 				}
 
-				if ( isset( $elm['deprecated_params'] ) AND is_array( $elm['deprecated_params'] ) ) {
-					foreach ( $elm['deprecated_params'] as $param_name ) {
+				// Add specified params as hidden fields, so js_composer processes them during fallback
+				if ( ! empty( $elm['fallback_params'] ) ) {
+					foreach ( $elm['fallback_params'] as $param_name ) {
 						$vc_elm['params'][] = array(
 							'type' => 'textfield',
 							'param_name' => $param_name,
 							'std' => '',
 							'edit_field_class' => 'hidden',
 						);
+						$vc_elm_params_names[] = $param_name;
 					}
 				}
 
-				vc_map( $vc_elm );
+				// Adds US shortcode
+				if ( ! $is_vc_elm ) {
+					vc_map( $vc_elm );
+
+					// Adds Visual Composer shortcode
+				} else {
+
+					// Get VC element default param names
+					$original_params = vc_map_get_defaults( $shortcode );
+					$original_params_names = ( ! empty( $original_params ) ) ? array_keys( $original_params ) : array();
+
+					// Get params to remove, which set in config
+					$params_to_remove = ( ! empty( $elm['vc_remove_params'] ) ) ? $elm['vc_remove_params'] : array();
+					$params_to_remove = array_merge( $params_to_remove, array_keys( $elm['params'] ) );
+
+					// Remove params with the same name as original
+					foreach ( $params_to_remove as $param_name ) {
+						if ( in_array( $param_name, $original_params_names ) ) {
+							vc_remove_param( $shortcode, $param_name );
+						}
+					}
+
+					// Add params as new
+					foreach( $vc_elm['params'] as $vc_param ) {
+						vc_add_param( $shortcode, $vc_param );
+					}
+
+					// Update category for VC element
+					// Dev note: vc_map_update should go after vc_update_shortcode_param / vc_add_param here (otherwise WPBakery may glitch)
+					if ( ! empty( $elm[ 'category' ] ) ) {
+						vc_map_update( $shortcode, array( 'category' => $elm[ 'category' ] ) );
+					}
+					if ( ! empty( $elm[ 'weight' ] ) ) {
+						vc_map_update( $shortcode, array( 'weight' => $elm[ 'weight' ] ) );
+					}
+				}
 
 				// This is required for the access edit page on the vc-roles page
-				if ( $is_edit_vc_roles ) {
-					vc_lean_map( 'us_' . $elm_name, function() use( $vc_elm ) {
+				if ( $is_edit_vc_roles AND ! $is_vc_elm ) {
+					vc_lean_map( $shortcode, function() use( $vc_elm ) {
 						return $vc_elm;
 					} );
 				}
-
-			}
-		}
-
-		// Include custom map files based on shortcodes name. Only for vc_ shortcodes
-		global $us_template_directory;
-
-		foreach ( $shortcodes_config['modified'] as $shortcode => $config ) {
-			if ( file_exists( $us_template_directory . '/plugins-support/js_composer/map/' . $shortcode . '.php' ) ) {
-				require $us_template_directory . '/plugins-support/js_composer/map/' . $shortcode . '.php';
-			} elseif ( file_exists( US_CORE_DIR . 'plugins-support/js_composer/map/' . $shortcode . '.php' ) ) {
-				require US_CORE_DIR . 'plugins-support/js_composer/map/' . $shortcode . '.php';
 			}
 		}
 
@@ -476,24 +331,247 @@ function us_vc_init_shortcodes() {
 		}
 	}
 
-	if ( us_get_option( 'disable_extra_vc', 1 ) ) {
+	/**
+	 * Formats US parameter to VC format
+	 *
+	 * @param string $param_name The param name
+	 * @param array $param The params
+	 * @return array
+	 */
+	function _us_vc_param( $param_name, $param ) {
+		// Translation from our builder param types to WPBakery param types
+		$related_types = array(
+			'checkboxes' => 'checkbox',
+			'color' => 'us_color',
+			'css_editor' => 'css_editor',
+			'design_options' => 'us_design_options',
+			'editor' => 'textarea_html',
+			'group' => 'param_group',
+			'heading' => 'param_to_delete',
+			'html' => 'textarea_raw_html',
+			'icon' => 'us_icon',
+			'imgradio' => 'us_imgradio',
+			'link' => 'vc_link',
+			'radio' => 'dropdown',
+			'select' => 'us_select',
+			'slider' => 'textfield',
+			'switch' => 'checkbox',
+			'text' => 'textfield',
+			'textarea' => 'textarea',
+			'upload' => 'attach_image',
+			'wrapper_end' => 'param_to_delete',
+			'wrapper_start' => 'param_to_delete',
+			'us_autocomplete' => 'us_autocomplete',
+		);
 
-		// Removing the elements that are not supported at the moment by the theme
-		if ( is_admin() ) {
-			foreach ( $shortcodes_config['disabled'] as $shortcode ) {
-				vc_remove_element( $shortcode );
-			}
-		} else {
-			add_action( 'template_redirect', 'us_vc_disable_extra_sc', 100 );
+		$param = is_array( $param ) ? $param : array();
+		$param['type'] = isset( $param['type'] ) ? $param['type'] : 'text';
+
+		$type = ( isset( $param['type'] ) AND isset( $related_types[ $param['type'] ] ) )
+			? $related_types[ $param['type'] ]
+			: 'textfield';
+
+		// Check if param is not wanted in WPBakery builder, and if so, return nothing for it
+		if ( $type == 'param_to_delete' ) {
+			return NULL;
 		}
 
+		/**
+		 * Some attributes of params may be set for shortcodes exclusively,
+		 * which is indicated by shortcode_ prefix in their names,
+		 * checking if such attributes are present and adding them to the result array without prefix
+		 */
+		$attributes_with_prefixes = array(
+			'title',
+			'description',
+			'options',
+			'classes',
+			'cols',
+			'std',
+			'show_if',
+		);
+		foreach ( $attributes_with_prefixes as $attribute ) {
+			if ( isset( $param[ 'shortcode_' . $attribute ] ) ) {
+				$param[ $attribute ] = $param[ 'shortcode_' . $attribute ];
+			}
+		}
+
+		// Base structure of a param
+		$vc_param = array(
+			'admin_label' => isset( $param['admin_label'] ) ? $param['admin_label'] : FALSE,
+			'description' => isset( $param['description'] ) ? $param['description'] : '',
+			'edit_field_class' => ! empty( $param['classes'] ) ? $param['classes'] : NULL,
+			'heading' => isset( $param['title'] ) ? $param['title'] : '',
+			'holder' => isset( $param['holder'] ) ? $param['holder'] : NULL,
+			// Important! This attribute must be non-empty
+			'param_name' => $param_name,
+			'params' => ( isset( $param['params'] ) AND $param['type'] === 'design_options' ) ? $param['params'] : NULL,
+			'settings' => isset( $param['settings'] ) ? $param['settings'] : NULL,
+			'std' => isset( $param['std'] ) ? $param['std'] : '',
+			'type' => $type,
+			'weight' => isset( $param['weight'] ) ? $param['weight'] : NULL,
+		);
+
+		// Add option CSS classes based on "cols" param
+		if ( isset( $param['cols'] ) ) {
+			$_cols_k = 12 / (int) $param['cols'];
+			if ( empty( $vc_param['edit_field_class'] ) ) {
+				$vc_param['edit_field_class'] = 'vc_col-sm-' . $_cols_k;
+			} else {
+				$vc_param['edit_field_class'] .= ' vc_col-sm-' . $_cols_k;
+			}
+		}
+
+		// Setting group tab for a param
+		if ( ! empty( $param['group'] ) ) {
+			$vc_param['group'] = $param['group'];
+		}
+
+		// Changing type for attach_image with is_multiple setting to attach_images
+		if ( $vc_param['type'] == 'attach_image' AND isset( $param['is_multiple'] ) AND $param['is_multiple'] ) {
+			$vc_param['type'] = 'attach_images';
+		}
+
+		// Adding is_multiple / is_sortable args for us_autocomplete param if set in our config
+		if ( $vc_param['type'] == 'us_autocomplete' ) {
+			foreach ( array( 'is_multiple', 'is_sortable' ) as $_param_arg ) {
+				if ( isset( $param[ $_param_arg ] ) ) {
+					$vc_param[ $_param_arg ] = $param[ $_param_arg ];
+				}
+			}
+		}
+
+
+		// Translating value options for respective params to WPBakery format
+		$param_types_with_options = array( 'dropdown', 'us_autocomplete', 'us_imgradio', );
+		if (
+			in_array( $vc_param['type'], $param_types_with_options )
+			AND isset( $param['options'] )
+		) {
+			$vc_param['value'] = array();
+			foreach ( $param['options'] as $option_val => $option_name ) {
+				if ( is_string( $option_name ) ) {
+					$vc_param['value'][ $option_name . ' ' ] = $option_val . '';
+				}
+			}
+		}
+
+		// VC Checkboxes
+		if ( $vc_param['type'] == 'checkbox' ) {
+			// For USBuilder and Visual Composer compatibility
+			if ( strpos( $param_name, 'taxonomy_' ) === 0 AND is_array( $param['options'] ) ) {
+				$param['options'] = array_flip( $param['options'] );
+			}
+
+			if ( isset( $param['options'] ) AND ! empty( $param['options_prepared_for_wpb'] ) ) {
+				$vc_param['value'] = array();
+				foreach ( $param['options'] as $option_val => $option_name ) {
+					$vc_param['value'][ $option_val . '' ] = $option_name . '';
+				}
+			} elseif ( isset( $param['options'] ) ) {
+				$vc_param['value'] = array();
+				foreach ( $param['options'] as $option_val => $option_name ) {
+					$vc_param['value'][ $option_name . ' ' ] = $option_val . '';
+				}
+			} elseif ( isset( $param['switch_text'] ) ) {
+				$vc_param['value'] = array( $param['switch_text'] => TRUE );
+			}
+			if ( is_array( $vc_param['std'] ) ) {
+				$vc_param['std'] = implode( ',', $vc_param['std'] );
+			} elseif ( $vc_param['std'] === TRUE ) {
+				$vc_param['std'] = '1';
+			} elseif ( $vc_param['std'] === FALSE ) {
+				$vc_param['std'] = '';
+			}
+		}
+
+		// Proper dependency rules
+		if ( isset( $param['show_if'] ) AND count( $param['show_if'] ) == 3 ) {
+			$vc_param['dependency'] = array(
+				'element' => $param['show_if'][0],
+			);
+			if ( $param['show_if'][1] == '=' AND $param['show_if'][2] == '' ) {
+				$vc_param['dependency']['is_empty'] = TRUE;
+			} elseif ( $param['show_if'][1] == '!=' AND $param['show_if'][2] == '' ) {
+				$vc_param['dependency']['not_empty'] = TRUE;
+			} elseif ( $param['show_if'][1] == '!=' AND ! empty( $param['show_if'][2] ) ) {
+				$vc_param['dependency']['value_not_equal_to'] = $param['show_if'][2];
+			} else {
+				$vc_param['dependency']['value'] = $param['show_if'][2];
+			}
+		}
+
+		// Proper group rules
+		if ( $vc_param['type'] == 'param_group' ) {
+			if ( isset( $param['params'] ) AND is_array( $param['params'] ) ) {
+				$group_params = $param['params'];
+				$param['params'] = array();
+				foreach ( $group_params as $group_param_name => $group_param ) {
+					$group_vc_param = _us_vc_param( $group_param_name, $group_param );
+					if ( $group_vc_param != NULL ) {
+						$vc_param['params'][] = $group_vc_param;
+					}
+				}
+			}
+
+			// Transform the array value to a string
+			if ( isset( $vc_param['std'] ) AND is_array( $vc_param['std'] ) ) {
+				$vc_param['std'] = rawurlencode( json_encode( $vc_param['std'] ) );
+			}
+		}
+
+		// US Color additional params
+		if ( isset( $param['type'] ) and $param['type'] == 'color' ) {
+			if ( isset( $param['clear_pos'] ) ) {
+				$vc_param['clear_pos'] = $param['clear_pos'];
+			}
+			if ( isset( $param['with_gradient'] ) ) {
+				$vc_param['with_gradient'] = FALSE;
+			}
+			if ( ! empty( $param['disable_dynamic_vars'] ) ) {
+				$vc_param['disable_dynamic_vars'] = TRUE;
+			}
+		}
+
+		// US ImgRadio
+		if ( $vc_param['type'] === 'us_imgradio' AND $preview_path = us_arr_path( $param, 'preview_path' ) ) {
+			$vc_param['preview_path'] = $preview_path;
+		}
+
+		// US Select
+		if ( $vc_param['type'] === 'us_select' ) {
+			$vc_param[ 'settings' ] = $param['options'];
+
+			// Add data to support the display if there is `admin_label`
+			if ( TRUE === us_arr_path( $vc_param, 'admin_label', FALSE ) ) {
+				$vc_value = (array) $vc_param[ 'settings' ];
+				// Note: Visual Composer does not support multidimensional arrays,
+				// so if the array is multidimensional, turn it into one-dimensional.
+				if ( count( $vc_value, COUNT_RECURSIVE ) - count( $vc_value ) ) {
+					$_vc_value = array();
+					array_walk_recursive( $vc_value, function ( $value, $key ) use ( &$_vc_value ) {
+						$_vc_value[ $key ] = $value;
+					} );
+					$vc_value = $_vc_value;
+					unset( $_vc_value );
+				}
+				// Visual Composer supports `value => key`.
+				$vc_param[ 'value' ] = array_flip( $vc_value );
+			}
+
+			if ( ! empty( $param['data'] ) ) {
+				$vc_param['data'] = (array) $param['data'];
+			}
+		}
+
+		return $vc_param;
 	}
 }
 
 if ( ! function_exists( 'us_vc_shortcodes_custom_css_class' ) ) {
 	add_filter( VC_SHORTCODE_CUSTOM_CSS_FILTER_TAG, 'us_vc_shortcodes_custom_css_class', 10, 3 );
 	/**
-	 * Adding a unique class for custom styles
+	 * Adding a unique class from Design settings for VC shortcodes, which don't have theme templates
 	 *
 	 * @param string $class
 	 * @param string $shortcode_base
@@ -502,14 +580,14 @@ if ( ! function_exists( 'us_vc_shortcodes_custom_css_class' ) ) {
 	 * @return string
 	 */
 	function us_vc_shortcodes_custom_css_class( $class, $shortcode_base, $atts = array() ) {
-		$shortcodes_config = us_config( 'shortcodes', array(), TRUE );
-		$shortcodes_with_design_options = $shortcodes_config['added_design_options'];
-		if ( in_array( $shortcode_base, $shortcodes_with_design_options )
+		$shortcodes_with_design_options = us_config( 'shortcodes.added_design_options', array(), TRUE );
+		if (
+			in_array( $shortcode_base, $shortcodes_with_design_options )
 			AND function_exists( 'us_get_design_css_class' )
-			AND ( ! empty( $atts['css'] ) ) ) {
+			AND ( ! empty( $atts['css'] ) )
+		) {
 			$class .= ' ' . us_get_design_css_class( $atts['css'] );
 		}
-
 		if ( ! empty( $atts['css'] ) AND us_design_options_has_property( $atts['css'], 'border-radius' ) ) {
 			$class .= ' has_border_radius';
 		}
@@ -518,8 +596,8 @@ if ( ! function_exists( 'us_vc_shortcodes_custom_css_class' ) ) {
 	}
 }
 
-add_action( 'current_screen', 'us_disable_post_type_specific_elements' );
-function us_disable_post_type_specific_elements() {
+add_action( 'current_screen', 'us_wpb_disable_post_type_specific_elements' );
+function us_wpb_disable_post_type_specific_elements() {
 	if ( function_exists( 'get_current_screen' ) ) {
 		global $pagenow;
 		// Receive data only on the edit page or create a record
@@ -531,8 +609,9 @@ function us_disable_post_type_specific_elements() {
 		$shortcodes_config = us_config( 'shortcodes', array(), TRUE );
 
 		foreach ( $shortcodes_config['theme_elements'] as $elm_name ) {
-			$shortcode = 'us_' . $elm_name;
-			$elm = us_config( 'elements/' . $elm_name );
+			// Add prefix "us_" for non "vc_" shortcodes
+			$shortcode = us_get_shortcode_full_name( $elm_name );
+			$elm = us_config( "elements/{$elm_name}", array() );
 
 			if ( isset( $elm['shortcode_post_type'] ) ) {
 				if ( ! empty( $screen->post_type ) AND ! in_array( $screen->post_type, $elm['shortcode_post_type'] ) ) {
@@ -544,25 +623,22 @@ function us_disable_post_type_specific_elements() {
 }
 
 /**
- * Disable VC frontend editing for post types defined in the array $post_types
+ * Disable WPBakery Frontend editor, when Live Editor is enabled
  */
-if ( ! function_exists( 'us_disable_frontend_for_post_types' ) ) {
-	function us_disable_frontend_for_post_types() {
-		if ( function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
-			$post_types = array( 'us_page_block', 'us_content_template' );
-			if ( in_array( $screen->post_type, $post_types ) ) {
-				vc_disable_frontend();
-			}
-		}
-	}
+if ( function_exists( 'vc_disable_frontend' ) AND us_get_option( 'live_builder' ) ) {
+	vc_disable_frontend();
 }
 
-function us_vc_disable_extra_sc() {
-	$disabled_shortcodes = us_config( 'shortcodes.disabled', array() );
+/**
+ * Remove disabled WPB shortcodes
+ */
+if ( ! function_exists( 'us_vc_disable_extra_sc' ) ) {
+	function us_vc_disable_extra_sc() {
+		$disabled_shortcodes = us_config( 'shortcodes.disabled', array() );
 
-	foreach ( $disabled_shortcodes as $shortcode ) {
-		remove_shortcode( $shortcode );
+		foreach ( $disabled_shortcodes as $shortcode ) {
+			remove_shortcode( $shortcode );
+		}
 	}
 }
 
@@ -572,151 +648,6 @@ remove_action( 'init', 'vc_page_welcome_redirect' );
 add_action( 'after_setup_theme', 'us_vc_init_vendor_woocommerce', 99 );
 function us_vc_init_vendor_woocommerce() {
 	remove_action( 'wp_enqueue_scripts', 'vc_woocommerce_add_to_cart_script' );
-}
-
-if ( ! function_exists( 'us_get_post_ids_for_autocomplete' ) ) {
-	/**
-	 * Get a list of records for an us_autocomplete WPB
-	 *
-	 * @param integer $limit The limit
-	 * @return array
-	 */
-	function us_get_post_ids_for_autocomplete( $limit = 50 ) {
-		if ( ! is_admin() ) {
-			return array();
-		} elseif ( ! check_ajax_referer( 'us_ajax_get_post_ids_for_autocomplete', '_nonce', FALSE ) ) {
-			return array();
-		}
-
-		// US Autocomplete options
-		$search = isset( $_GET['search'] ) ? $_GET['search'] : '';
-		$offset = (int) isset( $_GET['offset'] ) ? intval( $_GET['offset'] ) : 0;
-
-		// Remove media from post_type
-		$post_type = array_keys( us_grid_available_post_types() );
-		if ( ( $index = array_search( 'attachment', $post_type ) ) !== FALSE ) {
-			unset( $post_type[ $index ] );
-		}
-
-		$query_args = array(
-			'post_type' => $post_type,
-			'posts_per_page' => $limit,
-			'post_status' => 'any',
-			'suppress_filters' => 0,
-			'offset' => $offset,
-		);
-
-		// Get selected params
-		if ( strpos( $search, 'params:' ) === 0 ) {
-			$params = explode( ',', substr( $search, strlen( 'params:' ) ) );
-			$query_args['post__in'] = array_map( 'intval', $params );
-			$search = '';
-		}
-
-		if ( ! empty( $search ) ) {
-			$query_args['s'] = $search;
-		}
-
-		$results = array();
-		foreach ( get_posts( $query_args ) as $post ) {
-			$results[ $post->ID ] = strlen( $post->post_title ) > 0
-				? esc_attr( $post->post_title )
-				: us_translate( '(no title)' );
-
-			if ( $post_type = get_post_type_object( $post->post_type ) ) {
-				$results[ $post->ID ] .= sprintf( ' <i>%s</i>', $post_type->labels->singular_name );
-			}
-		}
-
-		return $results;
-	}
-
-	/**
-	 * AJAX Request Handler
-	 */
-	function us_ajax_get_post_ids_for_autocomplete() {
-		if ( ! check_ajax_referer( 'us_ajax_get_post_ids_for_autocomplete', '_nonce', FALSE ) ) {
-			wp_send_json_error(
-				array(
-					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
-				)
-			);
-			wp_die();
-		}
-		wp_send_json_success( array( 'items' => us_get_post_ids_for_autocomplete() ) );
-		wp_die();
-	}
-	add_action( 'wp_ajax_us_get_post_ids_for_autocomplete', 'us_ajax_get_post_ids_for_autocomplete', 1 );
-}
-
-if ( ! function_exists( 'us_get_term_ids_for_autocomplete' ) ) {
-	/**
-	 * Get a list of records for an a us_autocomplete WPB
-	 *
-	 * @param integer $limit The limit
-	 * @return array
-	 */
-	function us_get_term_ids_for_autocomplete( $limit = 50 ) {
-		if ( ! is_admin() ) {
-			return array();
-		} elseif ( ! check_ajax_referer( 'us_ajax_get_term_ids_for_autocomplete', '_nonce', FALSE ) ) {
-			return array();
-		}
-
-		// US Autocomplete options
-		$search = isset( $_GET['search'] ) ? $_GET['search'] : '';
-		$offset = isset( $_GET['offset'] ) ? intval( $_GET['offset'] ) : 0;
-
-		$taxonomies = us_get_taxonomies( TRUE, FALSE );
-
-		$query_args = array(
-			'taxonomy' => array_keys( $taxonomies ),
-			'hide_empty' => FALSE,
-			'number' => $limit,
-			'offset' => $offset,
-		);
-
-		// Get selected params
-		if ( strpos( $search, 'params:' ) === 0 ) {
-			$params = explode( ',', substr( $search, strlen( 'params:' ) ) );
-			$query_args['include'] = array_map( 'intval', $params );
-			$search = '';
-		}
-
-		if ( ! empty( $search ) ) {
-			$query_args['name__like'] = $search;
-		}
-
-		$results = array();
-		foreach ( get_terms( $query_args ) as $term ) {
-			$results[ $term->term_id ] = strlen( $term->name ) > 0
-				? esc_attr( $term->name )
-				: us_translate( '(no title)' );
-
-			if ( ! empty( $taxonomies [ $term->taxonomy ] ) ) {
-				$results[ $term->term_id ] .= sprintf( ' <i>%s</i>', $taxonomies [ $term->taxonomy ] );
-			}
-		}
-
-		return $results;
-	}
-
-	/**
-	 * AJAX Request Handler
-	 */
-	function us_ajax_get_term_ids_for_autocomplete() {
-		if ( ! check_ajax_referer( 'us_ajax_get_term_ids_for_autocomplete', '_nonce', FALSE ) ) {
-			wp_send_json_error(
-				array(
-					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
-				)
-			);
-			wp_die();
-		}
-		wp_send_json_success( array( 'items' => us_get_term_ids_for_autocomplete() ) );
-		wp_die();
-	}
-	add_action( 'wp_ajax_us_get_term_ids_for_autocomplete', 'us_ajax_get_term_ids_for_autocomplete', 1 );
 }
 
 if ( ! function_exists( 'us_VC_fixPContent' ) ) {
@@ -750,8 +681,8 @@ if ( ! function_exists( 'us_VC_fixPContent' ) ) {
 }
 
 // Hide activation notice
-add_action( 'admin_notices', 'us_hide_js_composer_activation_notice', 100 );
-function us_hide_js_composer_activation_notice() {
+add_action( 'admin_notices', 'us_wpb_hide_activation_notice', 100 );
+function us_wpb_hide_activation_notice() {
 	?>
 	<script>
 		( function( $ ) {
@@ -769,13 +700,15 @@ function us_hide_js_composer_activation_notice() {
 }
 
 // Set Backend Editor as default for post types
-$list = array(
-	'page',
-	'us_portfolio',
-	'us_page_block',
-	'us_content_template',
-);
-vc_set_default_editor_post_types( $list );
+if ( function_exists( 'vc_set_default_editor_post_types' ) ) {
+	$post_types_list = array(
+		'page',
+		'us_portfolio',
+		'us_page_block',
+		'us_content_template',
+	);
+	vc_set_default_editor_post_types( $post_types_list );
+}
 
 // Remove Backend Editor for Headers & Grid Layouts
 add_filter( 'vc_settings_exclude_post_type', 'us_vc_settings_exclude_post_type' );
@@ -797,8 +730,16 @@ function us_vc_is_valid_post_type_be( $result, $type ) {
 	return $result;
 }
 
-add_action( 'current_screen', 'us_header_vc_check_post_type_validation_fix' );
-function us_header_vc_check_post_type_validation_fix( $current_screen ) {
+// For a text field of `us_text` will replace all hyphenation with tags for correct display in the edit field
+if ( ! function_exists( 'us_vc_form_fields_render_field_us_text_text_param_value' ) ) {
+	add_filter( 'vc_form_fields_render_field_us_text_text_param_value', 'us_vc_form_fields_render_field_us_text_text_param_value', 10, 1 );
+	function us_vc_form_fields_render_field_us_text_text_param_value( $value ) {
+		return nl2br( $value );
+	}
+}
+
+add_action( 'current_screen', 'us_vc_header_check_post_type_validation_fix' );
+function us_vc_header_check_post_type_validation_fix( $current_screen ) {
 	global $pagenow;
 	if ( $pagenow == 'post.php' AND $current_screen->post_type == 'us_header' ) {
 		add_filter( 'vc_check_post_type_validation', '__return_false', 12 );
@@ -841,59 +782,19 @@ if ( ! function_exists( 'us_vc_field_autocomplete' ) ) {
 	function us_vc_field_autocomplete( $settings, $values ) {
 		$output = us_get_template( 'usof/templates/fields/autocomplete', array(
 			'name' => esc_attr( $settings['param_name'] ),
-			'ajax_query_args' => array(
-				'_nonce' => us_arr_path( $settings, 'settings._nonce', '' ),
-				'action' => us_arr_path( $settings, 'settings.action', '' ),
-				'slug' => us_arr_path( $settings, 'settings.slug', '' ),
-			),
-			'classes' => 'wpb_vc_param_value',
-			'multiple' => (bool) us_arr_path( $settings, 'settings.multiple', FALSE ),
-			'sortable' => (bool) us_arr_path( $settings, 'settings.sortable', FALSE ),
-			'options' => array_map( 'trim', array_flip( $settings['value'] ) ),
 			'value' => $values,
+			'field' => array(
+				'classes' => 'wpb_vc_param_value',
+				'is_multiple' => (bool) us_arr_path( $settings, 'is_multiple', FALSE ),
+				'is_sortable' => (bool) us_arr_path( $settings, 'is_sortable', FALSE ),
+				'settings' => us_arr_path( $settings, 'settings', array() ),
+				'options' => array_map( 'trim', array_flip( us_arr_path( $settings, 'value', array() ) ) ),
+			),
+
+
 		) );
 
 		return '<div class="type_autocomplete" data-name="'. esc_attr( $settings['param_name'] ) .'">'. $output .'</div>';
-	}
-}
-
-if ( wp_doing_ajax() AND ! function_exists( 'us_get_taxonomies_autocomplete' ) ) {
-	add_action( 'wp_ajax_us_get_taxonomies_autocomplete', 'us_get_taxonomies_autocomplete', 1 );
-	/**
-	 * Request AJAX handler for us_get_taxonomies_autocomplete
-	 * @return string
-	 */
-	function us_get_taxonomies_autocomplete() {
-		if ( ! check_ajax_referer( 'us_ajax_get_taxonomies_autocomplete', '_nonce', FALSE ) ) {
-			wp_send_json_error(
-				array(
-					'message' => us_translate( 'An error has occurred. Please reload the page and try again.' ),
-				)
-			);
-			wp_die();
-		}
-
-		// Query params
-		if ( ! $slug = trim( $_GET['slug'] ) ) {
-			wp_send_json_error(
-				array(
-					'message' => us_translate( 'Taxonomy cannot be empty' ),
-				)
-			);
-			wp_die();
-		}
-		$offset = intval( $_GET['offset'] );
-		$search_text = trim( $_GET['search'] );
-
-		$response = array(
-			'items' => array(),
-		);
-
-		// The method for obtaining data should be able to receive data in batches,
-		// search the search field and load the list on the search field if it contains a separator `params:name,name2,name3`
-		$response['items'] = us_get_terms_by_slug( $slug, $offset, 15, $search_text );
-
-		wp_send_json_success( $response );
 	}
 }
 
@@ -911,48 +812,6 @@ if ( ! function_exists( 'us_vc_field_icon' ) ) {
 				'input_class' => 'wpb_vc_param_value wpb-textinput ' . $settings['param_name'] . ' ' . $settings['type'] . '_field',
 			)
 		);
-	}
-}
-
-if ( ! function_exists( 'us_vc_field_checkboxes' ) ) {
-	vc_add_shortcode_param( 'us_checkboxes', 'us_vc_field_checkboxes', US_CORE_URI . '/plugins-support/js_composer/js/us_checkboxes.js' );
-	/**
-	 * US Checkboxes
-	 *
-	 * @param array $settings The settings
-	 * @param string $value The value
-	 * @return string
-	 */
-	function us_vc_field_checkboxes( $settings, $value ) {
-		$output = '<div class="us_checkboxes">';
-		if ( isset( $settings['options'] ) AND is_array( $settings['options'] ) ) {
-			$values = explode( ',', $value );
-			$atts = array(
-				'class' => 'wpb_vc_param_value us_checkboxes_value',
-				'name' => esc_attr( $settings['param_name'] ),
-				'type' => 'hidden',
-				'value' => esc_attr( $value ),
-			);
-			$output .= '<input '. us_implode_atts( $atts ) .'>';
-			foreach ( $settings['options'] as $value => $name ) {
-				$output .= '<label class="vc_checkbox-label">';
-				$atts = array(
-					'class' => 'us_checkboxes_checkbox taxonomy_category checkbox',
-					'id' => esc_attr( $value ),
-					'name' => esc_attr( $settings['param_name'] ),
-					'type' => 'checkbox',
-					'value' => esc_attr( $value ),
-				);
-				if ( in_array( $value, $values ) ) {
-					$atts['checked'] = 'checked';
-				}
-				$output .= '<input '. us_implode_atts( $atts ) .'>';
-				$output .= esc_html( $name );
-				$output .= '</label>';
-			}
-		}
-		$output .= '</div>';
-		return $output;
 	}
 }
 
@@ -1004,168 +863,49 @@ if ( ! function_exists( 'us_vc_field_imgradio' ) ) {
 			return;
 		}
 
-		if ( $group = us_arr_path( $settings, 'group', '' ) ) {
-			$group = preg_replace( '/\s+/u', '-', strtolower( $group ) );
-		}
-
-		$output = '';
-		foreach ( us_arr_path( $settings, 'value', array() ) as $name => $param ) {
-
-			// Preview file check
-			$preview_elm = '';
-			if ( $preview_path = us_arr_path( $settings, 'preview_path', FALSE ) AND ! empty( $param ) ) {
-				$preview_path = sprintf( $preview_path, $param );
-				$preview_full_path = realpath( US_CORE_DIR . sprintf( $preview_path, $param ) );
-				if ( file_exists( $preview_full_path ) ) {
-					if ( 'svg' == pathinfo( $preview_full_path, PATHINFO_EXTENSION ) ) {
-						ob_start();
-						require( $preview_full_path );
-						$preview = ob_get_clean();
-					} else {
-						$preview_url = US_CORE_URI . '/' . ltrim( $preview_path, '/' );
-						$preview = '<img src="' . esc_url( $preview_url ) . '" alt="' . esc_attr( $name ) . '">';
-					}
-
-					$preview_elm = '<span class="usof-imgradio-item-image">' . $preview . '</span>';
-				}
-				unset( $preview, $preview_path, $preview_full_path, $preview_url );
-			}
-
-			// Input atts
-			$field_params = array(
-				'class' => 'usof-imgradio-item-image',
-				'id' => sprintf( 'us-%s-%s-%s', $group, $param_name, $param ),
-				'name' => esc_attr( '_' . $param_name . '_' ),
-				'style' => 'display: none',
-				'type' => 'radio',
-				'value' => esc_attr( $param ),
-			);
-
-			if ( $param == $value ) {
-				$field_params['checked'] = 'checked';
-			}
-
-			// Generate output html code
-			$output .= '<div class="usof-imgradio-item ' . us_arr_path( $settings, 'classes', '' ) . '">';
-			$output .= '<input ' . us_implode_atts( $field_params ) . '">';
-			$output .= '<label for="' . esc_attr( $field_params['id'] ) . '" title="' . esc_attr( $name ) . '">';
-			$output .= $preview_elm;
-			$output .= '<span class="usof-imgradio-item-label">' . esc_html( $name ) . '</span>';
-			$output .= '</label>';
-			$output .= '</div>';
-
-			$hidden_field = array(
-				'type' => 'hidden',
-				'name' => esc_attr( $param_name ),
-				'class' => 'wpb_vc_param_value',
-				'value' => esc_attr( $value ),
-			);
-
-			$output .= '<input ' . us_implode_atts( $hidden_field ) . '>';
-		}
-
-		return '<div class="usof-imgradio">' . $output . '</div>';
-	}
-}
-
-// Add parameter for Grid Layout selection
-if ( ! function_exists( 'us_vc_field_grid_layout' ) ) {
-	vc_add_shortcode_param( 'us_grid_layout', 'us_vc_field_grid_layout', US_CORE_URI . '/plugins-support/js_composer/js/us_grid_layout.js' );
-
-	function us_vc_field_grid_layout( $settings, $value ) {
-		$templates_config = us_config( 'grid-templates', array(), TRUE );
-		$custom_layouts = array_flip( us_get_posts_titles_for( 'us_grid_layout' ) );
-
-		ob_start();
-		?>
-		<div class="us-grid-layout">
-			<select name="<?php echo esc_attr( $settings['param_name'] ); ?>"
-					class="wpb_vc_param_value wpb-input wpb-select <?php echo esc_attr( $settings['param_name'] ) ?> dropdown">
-				<optgroup label="<?php _e( 'Grid Layouts', 'us' ); ?>">
-					<?php foreach ( $custom_layouts as $title => $id ) { ?>
-						<option value="<?php echo $id ?>"<?php if ( $value == $id ) {
-							echo ' selected="selected"';
-						} ?>
-								data-edit-url="<?php echo admin_url( '/post.php?post=' . $id . '&action=edit' ); ?>"><?php echo $title; ?></option>
-					<?php }
-					$current_tmpl_group = '';
-					foreach ( $templates_config
-
-					as $template_name => $template ) {
-					if ( ! empty( $template['group'] ) AND $current_tmpl_group != $template['group'] ) {
-					$current_tmpl_group = $template['group'];
-					?>
-				</optgroup>
-				<optgroup label="<?php echo $template['group']; ?>">
-					<?php
-					}
-					?>
-					<option value="<?php echo $template_name ?>"<?php if ( $value == $template_name ) {
-						echo ' selected="selected"';
-					} ?>><?php echo $template['title']; ?></option>
-					<?php
-					}
-					?>
-				</optgroup>
-			</select>
-			<div class="us-grid-layout-desc-edit">
-				<?php echo sprintf( _x( '%sEdit selected%s or %screate a new one%s.', 'Grid Layout', 'us' ), '<a href="#" class="edit-link" target="_blank" rel="noopener">', '</a>', '<a href="' . admin_url() . 'post-new.php?post_type=us_grid_layout" target="_blank" rel="noopener">', '</a>' ); ?>
-			</div>
-			<div class="us-grid-layout-desc-add">
-				<?php echo '<a href="' . admin_url() . 'post-new.php?post_type=us_grid_layout" target="_blank" rel="noopener">' . __( 'Add Grid Layout', 'us' ) . '</a>. ' . sprintf( __( 'See %s', 'us' ), '<a href="http://impreza.us-themes.com/grid-templates/" target="_blank" rel="noopener">' . __( 'Grid Layout Templates', 'us' ) . '</a>.' ); ?>
-			</div>
-		</div>
-		<?php
-		$result = ob_get_clean();
-
-		return $result;
+		return us_get_template( 'usof/templates/fields/imgradio', array(
+			'classes' => 'wpb_vc_param_value',
+			'name' => $param_name,
+			'value' => $value,
+			'field' => array(
+				'group' => us_arr_path( $settings, 'group', '' ),
+				'options' => array_flip( us_arr_path( $settings, 'value', array() ) ),
+				'preview_path' => us_arr_path( $settings, 'preview_path', '' ),
+		) ) );
 	}
 }
 
 // Add parameter for grouped Selection
-if ( ! function_exists( 'us_vc_field_grouped_select' ) ) {
-	vc_add_shortcode_param( 'us_grouped_select', 'us_vc_field_grouped_select' );
+if ( ! function_exists( 'us_vc_field_select' ) ) {
+	vc_add_shortcode_param( 'us_select', 'us_vc_field_select', US_CORE_URI . '/plugins-support/js_composer/js/us_select.js' );
+	/**
+	 * @param array $field The field settings
+	 * @param string $value The value
+	 * @return string
+	 */
+	function us_vc_field_select( $field, $value ) {
+		$param_name = us_arr_path( $field, 'param_name', NULL );
+		if ( empty( $param_name ) ) {
+			return;
+		}
 
-	function us_vc_field_grouped_select( $settings, $value ) {
-		ob_start();
-		?>
-		<div class="us_grouped_select">
-			<select name="<?= esc_attr( $settings['param_name'] ) ?>"
-					class="wpb_vc_param_value wpb-input wpb-select <?php echo esc_attr( $settings['param_name'] ) ?> dropdown">
-				<?php
-				foreach ( $settings['settings'] as $group ) {
-					if ( ! empty( $group['options'] ) ) {
-						if ( ! empty( $group['label'] ) ) {
-							?>
-							<optgroup label="<?= esc_attr( $group['label'] ) ?>">
-							<?php
-						}
-						foreach ( $group['options'] as $option_value => $option_label ) {
-							?>
-							<option <?= $option_value == $value ? 'selected="selected"' : '' ?>
-								class="<?= $option_value ?>"
-								value="<?= $option_value ?>"><?= $option_label ?></option>
-							<?php
-						}
-						if ( ! empty( $group['label'] ) ) {
-							?>
-							</optgroup>
-							<?php
-						}
-					}
-				}
-				?>
-			</select>
-			<span class="vc_description vc_clearfix"></span>
-		</div>
-		<?php
-		return ob_get_clean();
+		$classes = us_arr_path( $field, 'edit_field_class', '' );
+		$output = us_get_template( 'usof/templates/fields/select', array(
+			'name' => $param_name,
+			'value' => $value,
+			'field' => array(
+				'options' => us_arr_path( $field, 'settings', array() ),
+				'data' => (array) us_arr_path( $field, 'data', array() )
+			),
+		));
+
+		return '<div class="us_select_for_vc type_select '. esc_attr( $classes ) .'" data-name="'. esc_attr( $param_name ) .'">'. $output .'</div>';
 	}
 }
 
 // Add script to fill inputs with examples from description
-add_action( 'admin_enqueue_scripts', 'us_input_examples' );
-function us_input_examples() {
+add_action( 'admin_enqueue_scripts', 'us_wpb_input_examples' );
+function us_wpb_input_examples() {
 	global $pagenow;
 	$screen = get_current_screen();
 	$current_post_type = $screen->post_type;
@@ -1183,9 +923,10 @@ function us_input_examples() {
 
 if ( wp_doing_ajax() ) {
 	// AJAX request handler import data for shortcode
-	add_action( 'wp_ajax_us_import_shortcode_data', 'us_ajax_import_shortcode_data' );
-	if ( ! function_exists( 'wp_ajax_us_import_shortcode_data' ) ) {
-		function us_ajax_import_shortcode_data() {
+	// TODO: do we need this in US Builder?
+	add_action( 'wp_ajax_us_import_shortcode_data', 'us_wpb_ajax_import_shortcode_data' );
+	if ( ! function_exists( 'us_wpb_ajax_import_shortcode_data' ) ) {
+		function us_wpb_ajax_import_shortcode_data() {
 			if ( ! check_ajax_referer( 'us_ajax_import_shortcode_data', '_nonce', FALSE ) ) {
 				wp_send_json_error(
 					array(
@@ -1195,178 +936,13 @@ if ( wp_doing_ajax() ) {
 				wp_die();
 			}
 
-			$response = 'blog_1';
-			$post_content = ( isset( $_POST['post_content'] ) OR ! empty( $_POST['post_content'] ) )
-				? $_POST['post_content']
-				: NULL;
-
-			if ( $post_content ) {
-
-				$post_content_data = explode( '|', $post_content );
-				if ( count( $post_content_data ) != 2 ) {
-					wp_send_json_error(
-						array(
-							'message' => us_translate( 'Invalid data provided.' ),
-						)
-					);
-					wp_die();
-				}
-
-				$post_content = base64_decode( $post_content_data[1] );
-				if ( json_decode( $post_content ) === NULL ) {
-					$post_content = NULL;
-				}
-			}
-
-			if ( $post_content AND isset( $post_content_data[0] ) ) {
-				global $wpdb;
-				$_post_type = ( isset( $_POST['post_type'] ) OR ! empty( $_POST['post_type'] ) )
-					? $_POST['post_type']
-					: 'us_grid_layout';
-
-				// Preparing a query to find a duplicate us_grid_layout
-				$sql = $wpdb->prepare( "SELECT id FROM $wpdb->posts WHERE post_type = %s AND TRIM(`post_content`) = %s LIMIT 1 ", $_post_type, $post_content );
-
-				if ( $post_id = $wpdb->get_var( $sql ) ) {
-					// If the record exists, we get the identifier
-					$response = $post_id;
-				} else {
-					$post_id = wp_insert_post(
-						array(
-							'post_type' => $_post_type,
-							'post_content' => $post_content,
-							'post_author' => get_current_user_id(),
-							'post_title' => trim( $post_content_data[0] ),
-							'post_status' => 'publish',
-							'comment_status' => 'closed',
-							'ping_status' => 'closed',
-						)
-					);
-					if ( $post_id > 0 ) {
-						$response = $post_id;
-					}
-				}
-			}
-
-			wp_send_json_success( $response );
+			// The response data
+			wp_send_json_success( us_import_grid_layout(
+				us_arr_path( $_POST, 'post_content' ),
+				us_arr_path( $_POST, 'post_type', /* Default */'us_grid_layout' )
+			) );
 		}
 	}
-}
-
-if ( ! function_exists( 'us_vc_frontend_editor_load_shortcode_ajax_output' ) ) {
-	add_action( 'vc_frontend_editor_load_shortcode_ajax_output', 'us_vc_frontend_editor_load_shortcode_ajax_output' );
-	/**
-	 * Inject custom css for VC FrontEnd Editor
-	 *
-	 * @param string $output
-	 * @return string
-	 */
-	function us_vc_frontend_editor_load_shortcode_ajax_output( $output ) {
-		if ( preg_match( '/(data-model-id="(\w+)")(.*?)(us_custom_(\w+))/', $output, $matches ) ) {
-			$jsoncss_collection = array();
-			foreach ( us_arr_path( $_POST, 'shortcodes', array() ) as $data ) {
-				if (
-					us_arr_path( $data, 'id' ) == $matches[2]
-					AND preg_match( '/\s?css="(.*?)"/i', stripslashes( $data['string'] ), $jsoncss )
-				) {
-					$jsoncss = rawurldecode( $jsoncss[1] );
-					if ( $jsoncss AND $jsoncss = json_decode( $jsoncss, TRUE ) ) {
-						foreach ( array( 'default', 'tablets', 'mobiles' ) as $device_type ) {
-							if ( $css_options = us_arr_path( $jsoncss, $device_type, FALSE ) ) {
-								$jsoncss_collection[ $device_type ][ $matches[4] ] = $css_options;
-							}
-						}
-					}
-				}
-			}
-		}
-		if ( ! empty( $jsoncss_collection ) AND $styles = us_jsoncss_compile( $jsoncss_collection ) ) {
-			$output = str_replace( 'data-type="files">', 'data-type="files"><style>' . $styles . '</style>', $output );
-		}
-
-		return $output;
-	}
-}
-
-// Add design options CSS for shortcodes in custom pages and page blocks
-function us_add_page_shortcodes_custom_css( $id ) {
-	if ( class_exists( 'VC_Base' ) ) {
-		// Output css styles
-		$us_vc = new Us_Vc_Base;
-		$us_vc->addPageCustomCss( $id );
-		$us_vc->addShortcodesCustomCss( $id );
-	}
-}
-
-if ( ! function_exists( 'us_get_post_metadata_for_custom_css' ) ) {
-	/**
-	 * Filter for preventing double output of Page's Custom CSS
-	 *
-	 * @param null $value
-	 * @param int $object_id
-	 * @param string $meta_key
-	 *
-	 * @return mixed
-	 */
-	function us_get_post_metadata_for_custom_css( $value, $object_id, $meta_key, $single ) {
-		// Returning unchanged value for all meta except _wpb_post_custom_css
-		if ( $meta_key !== '_wpb_post_custom_css' ) {
-			return $value;
-		}
-
-		global $us_page_custom_css_ids, $wpdb;
-		if ( ! isset( $us_page_custom_css_ids ) ) {
-			$us_page_custom_css_ids = array();
-		}
-		// Checking if we have already received Custom CSS for this Page by it's ID...
-		// and returning empty value in such case
-		if ( array_key_exists( $object_id, $us_page_custom_css_ids ) ) {
-			if ( $single ) {
-				return '';
-			} else {
-				return array( '' );
-			}
-		}
-		$meta_cache = wp_cache_get( $object_id, 'post_meta' );
-		if ( ! empty( $meta_cache[ $meta_key ] ) ) {
-			$value = $meta_cache[ $meta_key ];
-		} else {
-			// Taking the value of meta directly from database to prevent looping
-			$value = $wpdb->get_col(
-				"
-				SELECT meta_value
-				FROM {$wpdb->postmeta}
-				WHERE
-					post_id = {$object_id}
-					AND meta_key = '{$meta_key}'
-				LIMIT 1;
-			"
-			);
-		}
-		$value = ! empty( $value[0] )
-			? $value[0]
-			: '';
-		// Checking if we have already received same Custom CSS for any other page by hash based on CSS value...
-		// and returning empty value in such case
-		$hash = hash( 'crc32', $value );
-		if ( in_array( $hash, $us_page_custom_css_ids ) ) {
-			if ( $single ) {
-				return '';
-			} else {
-				return array( '' );
-			}
-		}
-		// Adding Page's ID and CSS value hash to our stash
-		$us_page_custom_css_ids[ $object_id ] = $hash;
-		if ( $single ) {
-			return $value;
-		} else {
-			return array( $value );
-		}
-
-	}
-
-	add_filter( 'get_post_metadata', 'us_get_post_metadata_for_custom_css', 1001, 4 );
 }
 
 // Add image preview for Image shortcode
@@ -1406,60 +982,7 @@ if ( ! class_exists( 'WPBakeryShortCode_us_image' ) ) {
 				}
 			}
 			if ( ! empty( $param['admin_label'] ) && $param['admin_label'] === TRUE ) {
-				$output .= '<span class="vc_admin_label admin_label_' . $param['param_name'] . ( empty( $value ) ? ' hidden-label' : '' ) . '"><label>' . __( $param['heading'], 'js_composer' ) . '</label>: ' . $value . '</span>';
-			}
-
-			return $output;
-		}
-
-		protected function outputTitle( $title ) {
-			return '';
-		}
-
-		protected function outputTitleTrue( $title ) {
-			return '<h4 class="wpb_element_title">' . __( $title, 'us' ) . ' ' . $this->settings( 'logo' ) . '</h4>';
-		}
-	}
-}
-
-// Add image preview for Person shortcode
-if ( ! class_exists( 'WPBakeryShortCode_us_person' ) ) {
-	class WPBakeryShortCode_us_person extends WPBakeryShortCode {
-		public function singleParamHtmlHolder( $param, $value ) {
-			$output = '';
-			// Compatibility fixes
-			$param_name = isset( $param['param_name'] ) ? $param['param_name'] : '';
-			$type = isset( $param['type'] ) ? $param['type'] : '';
-			$class = isset( $param['class'] ) ? $param['class'] : '';
-			if ( $type == 'attach_image' AND $param_name == 'image' ) {
-				$output .= '<input type="hidden" class="wpb_vc_param_value ' . $param_name . ' ' . $type . ' ' . $class . '" name="' . $param_name . '" value="' . $value . '" />';
-				$element_icon = $this->settings( 'icon' );
-				$img = wpb_getImageBySize(
-					array(
-						'attach_id' => (int) preg_replace( '/[^\d]/', '', $value ),
-						'thumb_size' => 'thumbnail',
-					)
-				);
-				$logo_html = '';
-				if ( $img ) {
-					$logo_html .= $img['thumbnail'];
-				} else {
-					$logo_html .= '<img width="150" height="150" class="attachment-thumbnail ' . $element_icon . ' vc_element-icon" data-name="' . $param_name . '" alt="' . $param_name . '" style="display: none;" />';
-				}
-				$logo_html .= '<span class="no_image_image vc_element-icon ' . $element_icon . ( $img AND ! empty( $img['p_img_large'][0] ) ? ' image-exists' : '' ) . '" />';
-				$this->setSettings( 'logo', $logo_html );
-				$output .= $this->outputTitleTrue( $this->settings['name'] );
-			} elseif ( ! empty( $param['holder'] ) ) {
-				if ( $param['holder'] == 'input' ) {
-					$output .= '<' . $param['holder'] . ' readonly="true" class="wpb_vc_param_value ' . $param_name . ' ' . $type . ' ' . $class . '" name="' . $param_name . '" value="' . $value . '">';
-				} elseif ( in_array( $param['holder'], array( 'img', 'iframe' ) ) ) {
-					$output .= '<' . $param['holder'] . ' class="wpb_vc_param_value ' . $param_name . ' ' . $type . ' ' . $class . '" name="' . $param_name . '" src="' . $value . '">';
-				} elseif ( $param['holder'] !== 'hidden' ) {
-					$output .= '<' . $param['holder'] . ' class="wpb_vc_param_value ' . $param_name . ' ' . $type . ' ' . $class . '" name="' . $param_name . '">' . $value . '</' . $param['holder'] . '>';
-				}
-			}
-			if ( ! empty( $param['admin_label'] ) AND $param['admin_label'] === TRUE ) {
-				$output .= '<span class="vc_admin_label admin_label_' . $param['param_name'] . ( empty( $value ) ? ' hidden-label' : '' ) . '"><label>' . __( $param['heading'], 'js_composer' ) . '</label>: ' . $value . '</span>';
+				$output .= '<span class="vc_admin_label admin_label_' . $param['param_name'] . ( empty( $value ) ? ' hidden-label' : '' ) . '"><label>' . __( $param['heading'], 'js_composer' ) . '</label>: ' . $value . '</span>'; // TODO: gettext function won't work with variables
 			}
 
 			return $output;
@@ -1487,6 +1010,40 @@ if ( ! class_exists( 'WPBakeryShortCode_us_vwrapper' ) ) {
 	}
 }
 
+/**
+ * Extending shortcode: vc_row
+ */
+if ( ! class_exists( 'Us_WPBakeryShortCode_Vc_Row' ) ) {
+
+	if ( ! class_exists( 'WPBakeryShortCode_Vc_Row' ) ) {
+		require_once vc_path_dir( 'SHORTCODES_DIR', 'vc-row.php' );
+	}
+
+	/**
+	 * Extending the standard WPBakeryShortCode_Vc_Row class
+	 */
+	class Us_WPBakeryShortCode_Vc_Row extends WPBakeryShortCode_Vc_Row {
+		/**
+		 * Generate controls for row
+		 * @param $controls
+		 * @param string $extended_css
+		 * @return string
+		 * @throws \Exception
+		 */
+		public function getColumnControls( $controls, $extended_css = '' ) {
+			$output = parent::getColumnControls( $controls, $extended_css = '' );
+
+			// Adding a new controller to copy the shortcode to the clipboard
+			return str_replace( '<a class="vc_control column_toggle', '<a class="vc_control column_copy_clipboard vc_column-copy-clipboard" href="#" title="' . us_translate( 'Copy' ) . '" data-vc-control="row-copy-clipboard"><i class="fas fa-copy"></i></a><a class="vc_control column_toggle', $output );
+		}
+	}
+
+	vc_map_update( 'vc_row', array(
+		// Assign a custom class to handle shortcode
+		'php_class_name' => 'US_WPBakeryShortCode_Vc_Row'
+	) );
+}
+
 // Add "Paste Copied Section" feature
 add_filter( 'vc_nav_controls', 'us_vc_nav_controls_add_paste_section_btn' );
 add_action( 'admin_enqueue_scripts', 'us_vc_add_paste_section_script', 10, 1 );
@@ -1512,25 +1069,9 @@ function us_vc_add_paste_section_script( $hook ) {
 
 // "Paste Copied Section" window
 function us_vc_add_paste_section_html() {
-
-	// These types shoudn't be replaced to posts
-	$grid_available_post_types = array(
-		'attachment',
-		'related',
-		'current_query',
-		'taxonomy_terms',
-		'current_child_terms',
-		'product_upsells',
-		'product_crosssell',
-	);
-	foreach ( array_keys( us_grid_available_post_types() ) as $post_type ) {
-		if ( wp_count_posts( $post_type )->publish ) {
-			$grid_available_post_types[] = $post_type;
-		}
-	}
 	$data = array(
 		'placeholder' => us_get_img_placeholder( 'full', TRUE ),
-		'grid_post_types' => $grid_available_post_types,
+		'grid_post_types' => us_grid_available_post_types_for_import(),
 		'post_type' => get_post_type(),
 		'errors' => array(
 			'empty' => us_translate( 'Invalid data provided.' ),
@@ -1566,9 +1107,3 @@ function us_vc_add_paste_section_html() {
 	</div>
 	<?php
 }
-
-/**
- * Link "fallback" file for correct work of deprecated shortcodes attributes.
- * This allows to avoid content migration after updates.
- */
-require US_CORE_DIR . 'plugins-support/js_composer/fallback.php';

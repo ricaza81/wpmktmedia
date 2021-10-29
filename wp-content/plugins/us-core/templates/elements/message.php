@@ -18,27 +18,37 @@
  * @param $el_class		 string Extra class name
  */
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= $icon_html = $closer_html = '';
+$_atts['class'] = 'w-message';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+$_atts['class'] .= ' color_' . $color;
 
-$classes .= ' color_' . $color;
+if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
+	$_atts['id'] = $el_id;
+}
 
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
-
+// Add icon
 if ( ! empty( $icon ) ) {
+	$_atts['class'] .= ' with_icon';
 	$icon_html = '<div class="w-message-icon">' . us_prepare_icon_tag( $icon ) . '</div>';
-	$classes .= ' with_icon';
+} else {
+	$icon_html = '';
 }
 
 // Add close button
 if ( $closing AND ! us_amp() ) {
-	$classes .= ' with_close';
+	$_atts['class'] .= ' with_close';
 	$closer_html = '<a class="w-message-close" href="javascript:void(0)" aria-label="' . us_translate( 'Close' ) . '"></a>';
+} else {
+	$closer_html = '';
 }
 
 // Output the element
-$output = '<div class="w-message' . $classes . '"' . $el_id . '>' . $icon_html;
-$output .= '<div class="w-message-body">' . do_shortcode( wpautop( $content ) ) . '</div>' . $closer_html . '</div>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
+$output .= $icon_html;
+$output .= '<div class="w-message-body">';
+$output .= do_shortcode( wpautop( $content ) );
+$output .= '</div>';
+$output .= $closer_html;
+$output .= '</div>';
 
 echo $output;

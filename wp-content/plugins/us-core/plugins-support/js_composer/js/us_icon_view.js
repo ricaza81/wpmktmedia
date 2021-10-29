@@ -23,6 +23,10 @@
 			// Do only for found elements
 			if ( $icon.length || $button.length ) {
 				if ( matchesFa || matchesMa ) {
+					// Remove default icon `fas|star`
+					if ( $icon.is( '.fas.fa-star' ) && ! this.addedClasses.length ) {
+						this.addedClasses = 'fas fa-star';
+					}
 					if ( this.addedClasses.length ) {
 						$icon.removeClass( this.addedClasses ).html( '' );
 					}

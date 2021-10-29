@@ -21,7 +21,7 @@ $output = '<div class="us-bld" data-ajaxurl="' . esc_attr( admin_url( 'admin-aja
 
 // States
 $output .= '<div class="us-bld-states" style="display: none;">';
-$output .= '<div class="us-bld-state for_default active">' . us_translate( 'Default' ) . '</div>';
+$output .= '<div class="us-bld-state ui-icon_devices_default active">' . us_translate( 'Default' ) . '</div>';
 $output .= '</div>';
 
 // Workspace
@@ -47,7 +47,7 @@ if ( ! function_exists( 'usgb_get_elms_placeholders' ) ) {
 		foreach ( $layout[ $place ] as $elm ) {
 			// Checking if the element has absolute position (= at least one design options position is not empty)
 			$is_abs = FALSE;
-			foreach ( array( 'default', 'tablets', 'mobiles' ) as $_state ) {
+			foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $_state ) {
 				$_position_value = us_arr_path( $data, $elm . '.css.' . $_state . '.position', '' );
 				if ( $_position_value == 'absolute' ) {
 					$is_abs = TRUE;
@@ -178,14 +178,13 @@ foreach ( $hb_options_sections as $hb_section => $hb_section_title ) {
 }
 $output .= ' </div ><!-- .us-bld-options -->';
 
-$output .= '<div class="us-bld-params hidden"';
-$output .= us_pass_data_to_js(
-	array(
+// Export data to JS
+$js_data = array(
+	'value' => $value,
+	'params' => array(
 		'navMenus' => us_get_nav_menus(),
-	)
+	),
 );
-$output .= '></div>';
-$output .= '<div class="us-bld-value hidden"' . us_pass_data_to_js( $value ) . '></div>';
 
 // Elements' default values
 $elms_titles = array();
@@ -196,7 +195,8 @@ foreach ( us_config( 'grid-settings.elements', array() ) as $type ) {
 	$elms_titles[ $type ] = isset( $elm['title'] ) ? $elm['title'] : $type;
 	$elms_defaults[ $type ] = us_get_elm_defaults( $type, 'grid' );
 }
-$output .= '<div class="us-bld-defaults hidden"' . us_pass_data_to_js( $elms_defaults ) . '></div>';
+$js_data['defaults'] = $elms_defaults;
+
 $translations = array(
 	'template_replace_confirm' => __( 'Selected template will overwrite all your current elements and settings! Are you sure want to apply it?', 'us' ),
 	'orientation_change_confirm' => __( 'Are you sure want to change the header orientation? Some of your elements\' positions may be changed', 'us' ),
@@ -212,16 +212,15 @@ $translations = array(
 	'post_date_types' => us_config( 'elements/post_date.params.type.options', array() ),
 	'product_field_types' => us_config( 'elements/product_field.params.type.options', array() ),
 );
-
 // Setting elements titles for translations
 $translations['elms_titles'] = array();
 foreach ( us_config( 'grid-settings.elements', array() ) as $elm ) {
 	$elm_config = us_config( 'elements/' . $elm );
 	$translations['elms_titles'][ $elm ] = us_arr_path( $elm_config, 'title', $elm );
 }
+$js_data['translations'] = $translations;
 
-$output .= '<div class="us-bld-translations hidden"' . us_pass_data_to_js( $translations ) . '></div>';
-
+$output .= '<div class="us-bld-data hidden"'. us_pass_data_to_js( $js_data ) .'></div>';
 $output .= '</div>';
 
 // List of elements that can be added

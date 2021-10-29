@@ -8,9 +8,6 @@ $_atts['class'] = 'w-popup';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' align_' . $align;
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -21,7 +18,7 @@ if ( us_amp() ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 
 // Trigger link
 if ( us_amp() ) {
@@ -39,10 +36,10 @@ if ( $show_on == 'image' ) {
 		'class' => 'w-popup-trigger type_image',
 		'aria-label' => __( 'Popup', 'us' ),
 	);
-	$output .= '<a ' . us_implode_atts( $image_atts + $trigger_link ) . '>' . $image_html . '</a>';
+	$output .= '<a' . us_implode_atts( $image_atts + $trigger_link ) . '>' . $image_html . '</a>';
 
 } elseif ( $show_on == 'load' ) {
-	$output .= '<span class="w-popup-trigger type_load" data-delay="' . intval( $show_delay ) . '"></span>';
+	$output .= '<span class="w-popup-trigger type_load" data-delay="' . (int) $show_delay . '"></span>';
 
 } elseif ( $show_on == 'selector' ) {
 	$output .= '<span class="w-popup-trigger type_selector" data-selector="' . esc_attr( $trigger_selector ) . '"></span>';
@@ -52,7 +49,7 @@ if ( $show_on == 'image' ) {
 		'class' => 'w-popup-trigger type_icon',
 		'aria-label' => __( 'Popup', 'us' ),
 	);
-	$output .= '<a ' . us_implode_atts( $icon_atts + $trigger_link ) . '>' . us_prepare_icon_tag( $btn_icon ) . '</a>';
+	$output .= '<a' . us_implode_atts( $icon_atts + $trigger_link ) . '>' . us_prepare_icon_tag( $btn_icon ) . '</a>';
 
 } else/*if ( $show_on == 'btn' )*/ {
 
@@ -78,7 +75,7 @@ if ( $show_on == 'image' ) {
 	}
 
 	$output .= '<div class="w-btn-wrapper">';
-	$output .= '<a ' . us_implode_atts( $btn_atts + $trigger_link ) . '>';
+	$output .= '<a' . us_implode_atts( $btn_atts + $trigger_link ) . '>';
 	if ( is_rtl() ) {
 		$btn_iconpos = ( $btn_iconpos == 'left' ) ? 'right' : 'left';
 	}

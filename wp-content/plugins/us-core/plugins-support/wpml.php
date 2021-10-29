@@ -14,8 +14,6 @@ if ( is_admin() ) {
 	if ( ! function_exists( 'us_dequeue_wpml_select2' ) ) {
 		/**
 		 * Remove select2 CSS to avoid overlapping with theme styles
-		 *
-		 * @return void
 		 */
 		function us_dequeue_wpml_select2() {
 			global $pagenow;
@@ -128,8 +126,8 @@ if ( ! function_exists( 'us_wpml_tr_selected_lang_page' ) ) {
 	 */
 	function us_wpml_tr_selected_lang_page( $default_value = FALSE ) {
 		if ( ! empty( $_REQUEST['lang'] ) ) {
-			return strtolower( $_REQUEST['lang'] ) === 'all';
-		} else if ( ! empty( $_COOKIE[ 'wp-wpml_current_language' ] ) ) {
+			return strtolower( $_REQUEST['lang'] ) !== 'all';
+		} elseif ( ! empty( $_COOKIE[ 'wp-wpml_current_language' ] ) ) {
 			return strtolower( $_COOKIE[ 'wp-wpml_current_language' ] ) !== 'all';
 		}
 		return $default_value;
@@ -276,3 +274,16 @@ if ( ! function_exists( 'us_wpml_tr_setting' ) ) {
 	add_filter( 'us_tr_setting', 'us_wpml_tr_setting', 10, 2 );
 }
 
+/**
+ * Adds multi-currency support for Grid AJAX calls
+ *
+ * https://wpml.org/wcml-hook/wcml_multi_currency_ajax_actions/
+ */
+if ( ! function_exists( 'us_add_grid_to_wpml_ajax_actions' ) ) {
+	add_filter( 'wcml_multi_currency_ajax_actions', 'us_add_grid_to_wpml_ajax_actions' );
+	function us_add_grid_to_wpml_ajax_actions( $ajax_actions ) {
+		$ajax_actions[] = 'us_ajax_grid';
+
+		return $ajax_actions;
+	}
+}

@@ -20,7 +20,7 @@
  */
 
 // Don't output Page Scroller on AMP
-if ( us_amp() ) {
+if ( us_amp() AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
 	return;
 }
 
@@ -31,40 +31,32 @@ $_atts = array(
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' style_' . $dots_style;
 $_atts['class'] .= ' pos_' . $dots_pos;
-
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
+if ( $dots ) {
+	$_atts['class'] .= ' with_dots';
 }
+
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
 
-if ( $speed != '' ) {
-	$_atts['data-speed'] = $speed;
-}
-if ( $disable_width != '' ) {
-	$_atts['data-disablewidth'] = intval( $disable_width );
-}
+$_atts['data-speed'] = (int) $speed;
+$_atts['data-disablewidth'] = (int) $disable_width;
 if ( $include_footer ) {
 	$_atts['data-footer-dots'] = 'true';
 }
 
-$dots_color = us_get_color( $dots_color );
-$dot_inline_css = us_prepare_inline_css(
+$dots_inline_css = us_prepare_inline_css(
 	array(
 		'font-size' => $dots_size,
-		'box-shadow' => empty( $dots_color ) ? '' : '0 0 0 2px ' . $dots_color,
-		'background' => $dots_color,
+		'color' => us_get_color( $dots_color ),
 	)
 );
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
-if ( $dots ) {
-	$output .= '<div class="w-scroller-dots">';
-	$output .= '<a href="javascript:void(0);" tabindex="-1" class="w-scroller-dot"><span' . $dot_inline_css . '></span></a>';
-	$output .= '</div>';
-}
+$output = '<div' . us_implode_atts( $_atts ) . '>';
+$output .= '<div class="w-scroller-dots"' . $dots_inline_css . '>';
+$output .= '<a href="javascript:void(0);" tabindex="-1" class="w-scroller-dot"><span></span></a>';
+$output .= '</div>';
 $output .= '</div>';
 
 echo $output;

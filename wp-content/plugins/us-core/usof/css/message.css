@@ -5,19 +5,16 @@
 	font-size: 15px;
 	line-height: 1.5;
 	padding: 20px 25px;
-	background-color: #e5e5e5;
-	}
-.usof-form-row.type_message.color_blue .usof-form-row-desc {
-	background-color: #e1f5ff;
+	background-color: var(--usof-color-blue-5);
 	}
 .usof-form-row.type_message.color_green .usof-form-row-desc {
-	background-color: #c9f7b2;
+	background-color: var(--usof-color-green-5);
 	}
 .usof-form-row.type_message.color_red .usof-form-row-desc {
-	background-color: #ffd9d9;
+	background-color: var(--usof-color-red-5);
 	}
 .usof-form-row.type_message.color_yellow .usof-form-row-desc {
-	background-color: #fff2b2;
+	background-color: var(--usof-color-yellow-5);
 	}
 
 .usof-form-row.type_message.string {
@@ -28,7 +25,7 @@
 		font-weight: 600;
 		padding: 0;
 		background: none;
-		color: #f90;
+		color: #f90; /* fixed value for Maintenance Mode */
 		}
 
 .usof-form-row[data-name="used_in_locations"] {

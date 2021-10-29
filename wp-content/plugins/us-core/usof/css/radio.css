@@ -1,148 +1,143 @@
 
 /* TYPE Radio like Switchers */
-.usof-radio-list {
+.usof-radio {
 	display: flex;
 	flex-wrap: wrap;
-	margin: 0 !important;
-	padding: 3px;
+	padding: .2em;
 	border-radius: 4px;
-	background-color: #f1f1f1;
-	box-shadow: 0 1px 0 rgba(0,0,0,0.08) inset;
+	background-color: var(--usof-color-gray-2);
+	box-shadow: var(--usof-box-shadow-inset);
 	}
-	.usof-radio {
+	.usof-radio label {
 		flex: 1 0 40px;
-		margin: 0;
-		padding: 0;
 		}
-		.usof-radio > input {
+		.usof-radio input[type=radio] {
 			display: none;
 			}
-		.usof-radio > label {
+		.usof-radio-value {
 			display: block;
 			text-align: center;
-			line-height: 18px;
-			padding: 8px 12px;
+			line-height: 1.2;
+			padding: .6em;
 			height: 100%;
 			border-radius: 1px;
 			}
-		.usof-radio:hover > label {
-			color: #0073aa;
+		.usof-radio-value:hover {
+			color: var(--usof-color-blue-50);
 			}
-		.usof-radio > input:checked + label {
-			background-color: #fff;
-			box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.15);
+		.usof-radio input[type=radio]:checked + .usof-radio-value,
+		/* Fix for Safari, not to lose active button state */
+		.usof-radio input[type=radio][checked] + .usof-radio-value {
+			background-color: var(--usof-color-white);
+			box-shadow: 0 1px 0 rgba(0,0,0,.1);
 			color: inherit;
 			cursor: default;
+			pointer-events: none;
 			}
 
-/* Custom appearance for BG position control */
-.usof-form-row.type_radio.bgpos .usof-radio-list {
-	width: 140px;
+/* Set icon for the "Default" value in Alignment options */
+.fa-align-::before,
+.fa-align-inherit::before, /* Optional value when using responsive */
+.fa-align-none::before {
+	content: '\f05e';
 	}
-.rtl .usof-form-row.type_radio.bgpos .usof-radio-list {
+
+/* Custom appearance for BG position control */
+.usof-form-row.type_radio.bgpos .usof-radio {
+	display: inline-grid;
+	vertical-align: top;
+	grid-template-columns: repeat(3, 1fr);
+	}
+.rtl .usof-form-row.type_radio.bgpos .usof-radio {
 	flex-direction: row-reverse;
 	}
-	.usof-form-row.type_radio.bgpos .usof-radio {
-		width: 33.3333%;
+	.usof-form-row.type_radio.bgpos .usof-radio-value {
+		padding: 1em 1.1em;
 		}
-		.usof-form-row.type_radio.bgpos .usof-radio > label {
-			border-bottom-width: 0;
-			border-radius: 0;
-			padding: 12px 10px;
-			color: #888;
-			}
-		.usof-form-row.type_radio.bgpos .usof-radio:nth-child(7) > label,
-		.usof-form-row.type_radio.bgpos .usof-radio:nth-child(8) > label,
-		.usof-form-row.type_radio.bgpos .usof-radio:nth-child(9) > label {
-			border-bottom-width: 1px;
-			}
-			.usof-form-row.type_radio.bgpos .dashicons {
-				line-height: inherit;
-				}
-			.usof-form-row.type_radio.bgpos .usof-radio:nth-child(1) .dashicons,
-			.usof-form-row.type_radio.bgpos .usof-radio:nth-child(9) .dashicons {
-				transform: rotate(45deg);
-				}
-			.usof-form-row.type_radio.bgpos .usof-radio:nth-child(3) .dashicons,
-			.usof-form-row.type_radio.bgpos .usof-radio:nth-child(7) .dashicons {
-				transform: rotate(-45deg);
-				}
+	.usof-form-row.type_radio.bgpos label:nth-child(1) i {
+		transform: rotate(-45deg);
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(3) i {
+		transform: rotate(45deg);
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(4) i {
+		transform: rotate(-90deg);
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(5) i::before {
+		content: '\f111';
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(6) i {
+		transform: rotate(90deg);
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(7) i {
+		transform: rotate(-135deg);
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(8) i {
+		transform: rotate(180deg);
+		}
+	.usof-form-row.type_radio.bgpos label:nth-child(9) i {
+		transform: rotate(135deg);
+		}
 
 /* TYPE Imgradio */
 .usof-imgradio {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-gap: 1em 1.5em;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 	}
-	.usof-imgradio-item {
-		flex-shrink: 0;
-		box-sizing: border-box;
-		margin: 0;
+	.usof-imgradio label {
+		-webkit-user-select: none;
+		user-select: none;
 		}
-		.usof-imgradio-item input {
+		.usof-imgradio input[type=radio] {
 			display: none;
 			}
-		.usof-imgradio-item label {
-			display: block;
-			border: 3px solid transparent;
-			-webkit-user-select: none;
-			   -moz-user-select: none;
-			    -ms-user-select: none;
-			}
-		.usof-imgradio-item-image {
+		.usof-imgradio-image {
 			display: block;
 			position: relative;
 			overflow: hidden;
-			height: 60px;
-			background: #999;
-			color: #fff;
+			min-height: 60px;
+			background: var(--usof-color-gray-30);
+			color: var(--usof-color-white);
 			}
-		.usof-imgradio-item:hover .usof-imgradio-item-image {
-			background: #666;
+		.usof-imgradio label:hover .usof-imgradio-image {
+			background: var(--usof-color-gray-70);
 			}
-		.usof-imgradio-item input:checked + label {
-			border-color: #0073aa;
+		.usof-imgradio input[type=radio]:checked + .usof-imgradio-image {
+			background: var(--usof-color-blue-50);
 			}
-		.usof-imgradio-item input:checked + label .usof-imgradio-item-image {
-			background: #0473aa;
+		.usof-imgradio input[type=radio]:checked + .usof-imgradio-label {
+			font-weight: 600;
+			color: var(--usof-color-blue-50);
 			}
-		.usof-imgradio-item input:checked + label .usof-imgradio-item-label {
-			color: #0473aa;
-			}
-			.usof-imgradio-item label img {
+			.usof-imgradio label img {
 				display: block;
-				width: 100px;
+				padding: 3px;
+				max-width: 100%;
 				pointer-events: none;
 				}
-			.usof-imgradio-item label:hover img {
-				opacity: 0.75;
-				}
-			.usof-imgradio-item-image svg {
+			.usof-imgradio-image svg {
 				display: block;
 				position: absolute;
+				cursor: pointer;
+				}
+			.us_shape_top .usof-imgradio-image svg {
+				top: 0;
+				height: 25%;
+				width: 101%;
+				transform: rotateX(180deg);
+				}
+			.us_shape_bottom .usof-imgradio-image svg {
 				bottom: 0;
 				height: 25%;
 				width: 101%;
-				cursor: pointer;
 				}
-			.us_shape_top .usof-imgradio-item-image svg {
-				top: 0;
-				bottom: auto;
-				transform: rotateX(180deg);
-				}
-		.usof-imgradio-item-label {
+		.usof-imgradio-label {
 			display: block;
 			text-align: center;
 			padding-top: 5px;
 			}
 
-/* Columns */
-.radio_cols-4 .usof-imgradio {
-	margin: 0 -10px;
+.usof-form-row[data-name="columns"] .usof-imgradio-image {
+	min-height: 30px;
 	}
-	.radio_cols-4 .usof-imgradio-item {
-		width: 25%;
-		padding: 10px;
-		}	
-		.radio_cols-4 .usof-imgradio-item label {
-			border: none;
-			}

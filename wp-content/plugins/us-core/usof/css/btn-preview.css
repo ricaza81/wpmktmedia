@@ -10,12 +10,12 @@
 	.usof-btn {
 		text-align: center;
 		line-height: 1.2; /* fallback value */
-		padding: 0.8em 1.8em; /* fallback value */
+		padding: .8em 1.8em; /* fallback value */
 		position: relative;
 		overflow: hidden;
 		transform: translateZ(0); /* fix fo Safari */
 		transition-property: background, border, box-shadow, color, opacity, transform;
-		transition-duration: 0.3s;
+		transition-duration: .3s;
 		-webkit-tap-highlight-color: rgba(0,0,0,0);
 		}
 		.usof-btn:before {
@@ -40,7 +40,7 @@
 			top: 0;
 			left: 0;
 			right: 0;
-			transition: height 0.3s, opacity 0.3s;
+			transition: height .3s, opacity .3s;
 			}
 		.usof-btn-preview.hov_fade .usof-btn:after {
 			bottom: 0;

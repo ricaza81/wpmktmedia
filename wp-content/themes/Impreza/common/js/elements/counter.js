@@ -243,7 +243,7 @@
 
 	$.fn.wCounter = function( options ) {
 		return this.each( function() {
-			$( this ).data( 'wItext', new USCounter( this, options ) );
+			$( this ).data( 'wCounter', new USCounter( this, options ) );
 		} );
 	};
 

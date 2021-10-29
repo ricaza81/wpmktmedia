@@ -1,21 +1,14 @@
 <?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
 /**
- * Shortcode: Gallery
- *
- * Dev note: if you want to change some of the default values or acceptable attributes, overload the shortcodes config.
- *
- * @var   $shortcode      string Current shortcode name
- * @var   $shortcode_base string The original called shortcode name (differs if called an alias)
- * @var   $content        string Shortcode's inner content
- * @var   $classes        string Extend class names
- *
+ * Shortcode: [gallery]
  */
 
+// TODO: remove OR output as "grid" instead
 $classes = isset( $classes ) ? $classes : '';
 
 // Columns
-$columns = intval( $columns );
+$columns = (int) $columns;
 if ( $columns != 1 ) {
 	$classes .= ' cols_' . $columns;
 }
@@ -60,7 +53,7 @@ $query_args = array(
 	'post_type' => 'attachment',
 	'post_mime_type' => 'image',
 	'orderby' => 'post__in',
-	'numberposts' => empty( $ids ) ? 5 : - 1,
+	'numberposts' => empty( $ids ) ? 5 : -1,
 );
 if ( $orderby == 'rand' ) {
 	$query_args['orderby'] = 'rand';

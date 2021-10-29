@@ -14,28 +14,33 @@
 .w-scroller.pos_right {
 	right: 1%;
 	}
+	.w-scroller:not(.with_dots) .w-scroller-dots {
+		display: none;
+		}
 	.w-scroller-dots {
 		transition: transform 0.3s;
 		}
 	.w-scroller.pos_left .w-scroller-dots {
-		transform: translateX(-50px);
+		transform: translateX(-100%);
 		}
 	.w-scroller.pos_right .w-scroller-dots {
-		transform: translateX(50px);
+		transform: translateX(100%);
 		}
 	.w-scroller-dots.show {
 		transform: none !important;
 		}
-		.w-scroller-dot {
+		a.w-scroller-dot {
 			display: block;
 			overflow: hidden;
+			color: inherit !important;
 			transition: none;
 			}
 			.w-scroller-dot span {
 				display: block;
-				font-size: 10px; /* default value */
 				opacity: 0.4;
 				transition: opacity 0.3s, box-shadow 0.3s, background 0.3s, transform 0.3s;
+				background: currentColor;
+				box-shadow: 0 0 0 2px currentColor;
 				}
 			.w-scroller-dot.active span,
 			.no-touch .w-scroller-dot:hover span {

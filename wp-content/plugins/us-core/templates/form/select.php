@@ -62,7 +62,7 @@ if ( ! empty( $cols ) AND $cols != 1 ) {
 }
 
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<?php if ( ! empty( $label ) ) : ?>
 		<div class="w-form-row-label">
 			<span><?= strip_tags( $label, '<a><br><strong>' ) ?></span>
@@ -71,7 +71,7 @@ if ( ! empty( $cols ) AND $cols != 1 ) {
 	<div class="w-form-row-field">
 		<?php do_action( 'us_form_field_start', $vars ) ?>
 		<?= us_prepare_icon_tag( $icon ) ?>
-		<select <?= us_implode_atts( $field_atts ) ?>>
+		<select<?= us_implode_atts( $field_atts ) ?>>
 			<?php
 			foreach ( $values as $value ) {
 				echo '<option value="' . esc_attr( $value ) . '">' . $value . '</option>';

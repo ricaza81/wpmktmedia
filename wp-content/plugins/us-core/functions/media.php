@@ -161,8 +161,6 @@ function us_save_attachment_compat() {
 if ( ! function_exists( 'us_ajax_media_categories_query_attachments' ) ) {
 	/**
 	 * Ajax handler for querying attachments.
-	 *
-	 * @return void
 	 */
 	function us_ajax_media_categories_query_attachments() {
 
@@ -244,9 +242,25 @@ if ( ! function_exists( 'us_ajax_media_categories_query_attachments' ) ) {
 
 		$posts = array_map( 'wp_prepare_attachment_for_js', $query->posts );
 		$posts = array_filter( $posts );
+		$total_posts = $query->found_posts;
+
+		if ( $total_posts < 1 ) {
+			// Out-of-bounds, run the query again without LIMIT for total count.
+			unset( $query['paged'] );
+
+			$count_query = new WP_Query();
+			$count_query->query( $query );
+			$total_posts = $count_query->found_posts;
+		}
+
+		$max_pages = ceil( $total_posts / (int) $query->query['posts_per_page'] );
+
+		header( 'X-WP-Total: ' . (int) $total_posts );
+		header( 'X-WP-TotalPages: ' . (int) $max_pages );
 
 		wp_send_json_success( $posts );
 	}
+
 	add_action( 'wp_ajax_query-attachments', 'us_ajax_media_categories_query_attachments', 0 );
 }
 
@@ -355,7 +369,7 @@ class US_Walker_Media_Categories_Media_Grid extends Walker_CategoryDropdown {
 add_action( 'wp_ajax_us_ajax_set_category_on_upload', 'us_ajax_media_categories_set_attachment_category' );
 function us_ajax_media_categories_set_attachment_category() {
 
-	$post_ID = intval( $_POST['post_id'] );
+	$post_ID = (int) $_POST['post_id'];
 	$category = $_POST['category'];
 
 	// Check whether this user can edit this post
@@ -364,7 +378,7 @@ function us_ajax_media_categories_set_attachment_category() {
 	}
 
 	if ( $category != 'all' OR $category != 'no_category' ) {
-		$category = intval( $category );
+		$category = (int) $category;
 		wp_set_object_terms( $post_ID, $category, 'us_media_category', TRUE );
 	}
 

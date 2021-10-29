@@ -97,7 +97,7 @@
 	animation-name: fadeOut;
 	}
 .owl-carousel .fadeIn {
-	animation-name: fadeIn;
+	animation-name: fade;
 	}
 
 /* Customs
@@ -125,6 +125,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	font-size: var(--arrows-size, 1.8rem) !important; /* is needed to override button styles */
+	margin-left: var(--arrows-offset, 0);
+	margin-right: var(--arrows-offset, 0);
 	transition-property: background, box-shadow, border, color, opacity, transform;
 	transition-duration: 0.3s;
 	}
@@ -191,18 +194,17 @@
 	bottom: calc(20px + 1rem);
 	}
 
-.navstyle_circle.navpos_inside > .owl-nav div,
-.navstyle_block.navpos_inside > .owl-nav div {
+.owl-carousel.navpos_inside > .owl-nav div {
 	text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 	color: #fff;
 	}
-.no-touch .navstyle_circle.navpos_inside > .owl-nav div:hover,
-.no-touch .navstyle_block.navpos_inside > .owl-nav div:hover {
+.no-touch .owl-carousel.navpos_inside.navstyle_circle > .owl-nav div:hover,
+.no-touch .owl-carousel.navpos_inside.navstyle_block > .owl-nav div:hover {
 	background: rgba(0,0,0,0.5);
 	}
-.no-touch .l-section[class*="color_"] .navstyle_circle.navpos_outside > .owl-nav div:hover,
-.no-touch .l-section[class*="color_"] .navstyle_block.navpos_outside > .owl-nav div:hover {
-	background: rgba(0,0,0,0.2);
+.no-touch .owl-carousel.navpos_outside.navstyle_circle > .owl-nav div:hover,
+.no-touch .owl-carousel.navpos_outside.navstyle_block > .owl-nav div:hover{
+	background: var(--color-content-bg-alt-grad);
 	}
 
 /* Dots */
@@ -218,6 +220,7 @@
 		width: 8px; /* fixed value */
 		height: 8px; /* fixed value */
 		margin: 6px; /* fixed value */
+		color: var(--color-content-primary);
 		}
 	.owl-dot.active span {
 		background: rgba(0,0,0,0) !important;
@@ -228,6 +231,15 @@
 		background: rgba(255,255,255,0.4);
 		color: inherit;
 		}
+
+/* Colors
+   ========================================================================== */
+.no-touch .color_alternate .owl-carousel.navpos_outside > .owl-nav div:hover {
+	background: var(--color-alt-content-bg-alt-grad);
+	}
+.color_alternate .owl-dot span {
+	color: var(--color-alt-content-primary);
+	}
 
 /* Responsive
    ========================================================================== */

@@ -9,10 +9,13 @@
  * @action After the template: 'us_after_template:templates/us_grid/listing'
  * @filter Template variables: 'us_template_vars:templates/us_grid/listing'
  */
-global $us_is_menu_page_block;
+global $us_is_menu_page_block, $us_grid_no_items_message, $us_grid_no_items_action, $us_grid_no_items_page_block;
 
-$us_grid_index = isset( $us_grid_index ) ? intval( $us_grid_index ) : 0;
-$grid_elm_id = isset( $el_id ) ? $el_id : 'us_grid_' . $us_grid_index;
+$us_grid_no_items_message = isset( $no_items_message ) ? $no_items_message : '';
+$us_grid_no_items_action = isset( $no_items_action ) ? $no_items_action : 'message';
+$us_grid_no_items_page_block = isset( $no_items_page_block ) ? $no_items_page_block : '';
+
+$us_grid_index = isset( $us_grid_index ) ? (int) $us_grid_index : 0;
 $post_id = isset( $post_id ) ? $post_id : NULL;
 $is_widget = isset( $is_widget ) ? $is_widget : FALSE;
 $is_menu = ( isset( $us_is_menu_page_block ) AND $us_is_menu_page_block ) ? TRUE : FALSE;
@@ -21,6 +24,18 @@ $filter_taxonomy_name = isset( $filter_taxonomy_name ) ? $filter_taxonomy_name :
 $terms = isset( $terms ) ? $terms : FALSE; // for empty condition
 $_default_query_args = isset( $_default_query_args ) ? $_default_query_args : NULL;
 $query_args = isset( $query_args ) ? $query_args : array();
+
+// Set unique grid ID
+if ( ! empty( $el_id ) ) {
+	$grid_elm_id = $el_id;
+} elseif (
+	apply_filters( 'usb_is_preview_page', NULL )
+	OR ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() )
+) {
+	$grid_elm_id = 'us_grid_' . us_uniqid();
+} else {
+	$grid_elm_id = 'us_grid_' . $us_grid_index;
+}
 
 // For support us_grid_order
 $orderby_query_args = isset( $orderby_query_args ) ? $orderby_query_args : array();
@@ -110,9 +125,9 @@ $grid_layout_settings = apply_filters( 'us_grid_layout_settings', $grid_layout_s
  * Set items offset to WP Query flow
  * Needed both for regular us_grid element on page and it's AJAX pagination.
  */
-if ( $exclude_items == 'offset' AND abs( intval( $items_offset ) ) > 0 ) {
+if ( $exclude_items == 'offset' AND abs( (int) $items_offset ) > 0 ) {
 	global $us_grid_items_offset;
-	$us_grid_items_offset = abs( intval( $items_offset ) );
+	$us_grid_items_offset = abs( (int) $items_offset );
 	$query_args['_id'] = 'us_grid';
 	add_action( 'pre_get_posts', 'us_grid_query_offset', 1 );
 	add_filter( 'found_posts', 'us_grid_adjust_offset_pagination', 1, 2 );
@@ -174,7 +189,7 @@ if ( $use_custom_query ) {
 		$query_args['post_status'] = $matches[1];
 	}
 	// Fetching additional params for WooCommerce Products
-	if ( us_post_type_is_available( $query_args['post_type'], array( 'product' ) ) ) {
+	if ( ! empty( $query_args['post_type'] ) AND us_post_type_is_available( $query_args['post_type'], array( 'product' ) ) ) {
 		if ( ! isset( $query_args['posts_per_page'] ) AND ! empty( $wp_query->query_vars['posts_per_page'] ) ) {
 			$query_args['posts_per_page'] = $wp_query->query_vars['posts_per_page'];
 		}
@@ -204,15 +219,9 @@ if ( us_post_type_is_available( $post_type, array( 'taxonomy_terms', 'current_ch
 	if ( empty( $terms ) ) {
 		$no_results = TRUE;
 	}
+
 } elseif ( ! have_posts() ) {
 	$no_results = TRUE;
-	if ( empty( $no_items_message ) ) {
-		if ( $use_custom_query ) {
-			us_close_wp_query_context();
-		}
-		return;
-	}
-
 }
 
 // Setting global variable for Image size to use in grid elements
@@ -221,8 +230,26 @@ if ( ! empty( $img_size ) AND $img_size != 'default' ) {
 	$us_grid_img_size = $img_size;
 }
 
-// Filter Bar HTML
-$filter_html = $data_atts = '';
+// Get all needed variables to pass into listing-start & listing-end templates
+$template_vars = array(
+	'_default_query_args' => $_default_query_args,
+	'_us_grid_post_type' => ! empty( $_us_grid_post_type ) ? $_us_grid_post_type : NULL,
+	'classes' => $classes,
+	'grid_elm_id' => $grid_elm_id,
+	'grid_layout_settings' => $grid_layout_settings,
+	'ignore_items_size' => $ignore_items_size,
+	'is_widget' => $is_widget,
+	'no_results' => $no_results,
+	'orderby_query_args' => $orderby_query_args,
+	'post_id' => $post_id,
+	'query_args' => $query_args,
+	'us_grid_ajax_indexes' => $us_grid_ajax_indexes,
+	'us_grid_filter_params' => $us_grid_filter_params,
+	'us_grid_index' => $us_grid_index,
+	'wp_query' => $wp_query,
+);
+
+// Generate Filter Bar HTML
 if (
 	! us_amp()
 	AND ! $is_widget
@@ -233,8 +260,7 @@ if (
 ) {
 	// $categories_names already contains only the used categories
 	if ( count( $filter_taxonomies ) > 1 ) {
-		$filter_html .= '<div class="g-filters ' . $filter_style . ' align_' . $filter_align . '">';
-		$filter_html .= '<div class="g-filters-list">';
+		$filter_html = '<div class="g-filters ' . $filter_style . ' align_' . $filter_align . '">';
 
 		$active_item_class = ' active';
 		// Output "All" item
@@ -257,36 +283,20 @@ if (
 			$active_item_class = '';
 		}
 
-		$filter_html .= '</div></div>';
+		$filter_html .= '</div>';
 
-		$data_atts .= ' data-filter_taxonomy_name="' . $filter_taxonomy_name . '"';
+		$data_atts['data-filter_taxonomy_name'] = $filter_taxonomy_name;
 		if ( ! $filter_show_all ) {
 			$filter_default_taxonomies = $filter_taxonomies[0]->slug;
-			$data_atts .= ' data-filter_default_taxonomies="' . $filter_default_taxonomies . '"';
+			$data_atts['data-filter_default_taxonomies'] = $filter_default_taxonomies;
 		} elseif ( ! empty( $filter_default_taxonomies ) ) {
-			$data_atts .= ' data-filter_default_taxonomies="' . $filter_default_taxonomies . '"';
+			$data_atts['data-filter_default_taxonomies'] = $filter_default_taxonomies;
 		}
+
+		$template_vars['filter_html'] = $filter_html;
+		$template_vars['data_atts'] = $data_atts;
 	}
 }
-
-// Get all needed variables to pass into listing-start & listing-end templates
-$template_vars = array(
-	'_default_query_args' => $_default_query_args,
-	'_us_grid_post_type' => ! empty( $_us_grid_post_type ) ? $_us_grid_post_type : NULL,
-	'classes' => $classes,
-	'data_atts' => $data_atts,
-	'filter_html' => $filter_html,
-	'grid_layout_settings' => $grid_layout_settings,
-	'ignore_items_size' => $ignore_items_size,
-	'is_widget' => $is_widget,
-	'orderby_query_args' => $orderby_query_args,
-	'post_id' => $post_id,
-	'query_args' => $query_args,
-	'us_grid_ajax_indexes' => $us_grid_ajax_indexes,
-	'us_grid_filter_params' => $us_grid_filter_params,
-	'us_grid_index' => $us_grid_index,
-	'wp_query' => $wp_query,
-);
 
 // Add default values for unset variables from Grid config
 foreach ( $default_grid_params as $param => $value ) {
@@ -351,16 +361,16 @@ if ( ! $no_results ) {
 							$class_name = us_get_design_css_class( $jsoncss );
 							$jsoncss = rawurldecode( $jsoncss );
 							if ( $jsoncss AND $jsoncss = json_decode( $jsoncss, TRUE ) ) {
-								foreach ( array( 'default', 'tablets', 'mobiles' ) as $device_type ) {
-									if ( $css_options = us_arr_path( $jsoncss, $device_type, FALSE ) ) {
+								foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
+									if ( $css_options = us_arr_path( $jsoncss, $state, FALSE ) ) {
 										if (
-											! empty( $items_jsoncss_collection[ $device_type ] )
-											AND in_array( $class_name, $items_jsoncss_collection[ $device_type ] )
+											! empty( $items_jsoncss_collection[ $state ] )
+											AND in_array( $class_name, $items_jsoncss_collection[ $state ] )
 										) {
 											continue;
 										}
-										$css_options = apply_filters( 'us_output_design_css_options', $css_options, $device_type );
-										$items_jsoncss_collection[ $device_type ][ $class_name ] = $css_options;
+										$css_options = apply_filters( 'us_output_design_css_options', $css_options, $state );
+										$items_jsoncss_collection[ $state ][ $class_name ] = $css_options;
 									}
 								}
 							}
@@ -383,7 +393,7 @@ if ( ! $no_results ) {
 
 	// Fix for multi-filter ajax pagination
 	if ( isset( $paged ) ) {
-		$template_vars['paged'] = intval( $paged );
+		$template_vars['paged'] = (int) $paged;
 	}
 
 	// Unset var, that indicates grid stops displaying its items, for processing in other elements (e.g. Post Title)
@@ -398,7 +408,6 @@ us_load_template( 'templates/us_grid/listing-end', array_merge(
 	array(
 		'grid_orderby' => $grid_orderby,
 		'items_jsoncss_collection' => $items_jsoncss_collection,
-		'no_items_message' => $no_items_message,
 		'no_results' => $no_results,
 		'use_custom_query' => $use_custom_query,
 	)
@@ -408,15 +417,15 @@ if ( $no_results ) {
 	return;
 }
 
-// If we are in front end editor mode, apply JS to the current grid
+// If we are in WPB front end editor mode, apply JS to the current grid
 if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() ) {
 	echo '<script>
-	jQuery(function($){
-		if (typeof $us !== "undefined" && typeof $us.WGrid === "function") {
+	jQuery( function( $ ) {
+		if ( typeof $us !== "undefined" && typeof $us.WGrid === "function" ) {
 			var $gridContainer = $("#' . $grid_elm_id . '");
 			$gridContainer.wGrid();
 		}
-	});
+	} );
 	</script>';
 }
 

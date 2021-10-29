@@ -18,15 +18,16 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 // Force "Simple" layout for shortcode
 if ( $us_elm_context == 'shortcode' ) {
 	$layout = 'simple';
+
+	// Add specific class for header context, needed to correctly apply responsive styles
+} else {
+	$_atts['class'] .= ' elm_in_header';
 }
 
 $_atts['class'] .= ' layout_' . $layout;
 
 if ( us_get_option( 'ripple_effect' ) ) {
 	$_atts['class'] .= ' with_ripple';
-}
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
 }
 
 if ( ! empty( $el_id ) ) {
@@ -37,7 +38,7 @@ if ( us_amp() AND empty( $el_id ) ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 
 // Additional block for Fullscreen layout, when Ripple Effect is enabled
 if ( $layout == 'fullscreen' AND us_get_option( 'ripple_effect' ) ) {
@@ -46,7 +47,7 @@ if ( $layout == 'fullscreen' AND us_get_option( 'ripple_effect' ) ) {
 	$output .= ' style="background:' . (
 		! empty( $field_bg_color )
 			? us_get_color( $field_bg_color, /* Gradient */ TRUE )
-			: us_get_color( 'color_content_bg', /* Gradient */ TRUE )
+			: 'var(--color-content-bg-grad)'
 		) . '">';
 	$output .= '</div>';
 }
@@ -63,7 +64,7 @@ if ( $us_elm_context != 'shortcode' ) {
 		$open_btn_atts['href'] = 'javascript:void(0);';
 	}
 
-	$output .= '<a ' . us_implode_atts( $open_btn_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $open_btn_atts ) . '>';
 	if ( ! empty( $icon ) ) {
 		$output .= us_prepare_icon_tag( $icon );
 	}
@@ -97,11 +98,25 @@ if ( $us_elm_context == 'shortcode' ) {
 	}
 }
 
-$output .= '<input ' . us_implode_atts( $input_atts ) . '/>';
+$output .= '<input' . us_implode_atts( $input_atts ) . '/>';
 
-// Additional hidden input for search Products only
+// Fallback for 'Search Shop Products only' option
 if ( ! empty( $product_search ) ) {
-	$output .= '<input type="hidden" name="post_type" value="product" />';
+	$search_post_type = 'product';
+}
+
+// Additional hidden inputs for specific post types
+if ( ! empty( $search_post_type ) ) {
+
+	$search_post_types = explode( ',', $search_post_type );
+
+	if ( count( $search_post_types ) === 1 ) {
+		$output .= '<input type="hidden" name="post_type" value="' . esc_attr( $search_post_types[0] ) . '" />';
+	} else {
+		foreach ( $search_post_types as $_post_type ) {
+			$output .= '<input type="hidden" name="post_type[]" value="' . esc_attr( $_post_type ) . '" />';
+		}
+	}
 }
 
 // Additional hidden input for Polylang and WPML Language code
@@ -132,7 +147,7 @@ if ( $layout == 'simple' ) {
 		}
 	}
 
-	$output .= '<button ' . us_implode_atts( $button_atts ) . '>';
+	$output .= '<button' . us_implode_atts( $button_atts ) . '>';
 	if ( ! empty( $icon ) ) {
 		$output .= us_prepare_icon_tag( $icon );
 	}
@@ -150,7 +165,7 @@ if ( $us_elm_context != 'shortcode' ) {
 	} elseif ( isset( $open_btn_atts['on'] ) ) {
 		$close_btn_atts['on'] = $open_btn_atts['on'];
 	}
-	$output .= '<a ' . us_implode_atts( $close_btn_atts ) . '></a>';
+	$output .= '<a' . us_implode_atts( $close_btn_atts ) . '></a>';
 }
 
 $output .= '</form></div></div>';

@@ -54,7 +54,7 @@ if ( ! empty( $cols ) AND $cols != 1 ) {
 }
 
 ?>
-<div <?= us_implode_atts( $_atts ) ?>>
+<div<?= us_implode_atts( $_atts ) ?>>
 	<?php if ( ! empty( $label ) ) : ?>
 		<div class="w-form-row-label">
 			<span><?= strip_tags( $label, '<a><br><strong>' ) ?></span>
@@ -70,7 +70,7 @@ if ( ! empty( $cols ) AND $cols != 1 ) {
 			$field_atts['value'] = $value;
 			?>
 			<label>
-				<input <?= us_implode_atts( $field_atts ) ?><?php checked( $key, 0 ) ?>/>
+				<input<?= us_implode_atts( $field_atts ) ?><?php checked( $key, 0 ) ?>/>
 				<span class="w-form-radio"></span>
 				<span><?= strip_tags( $value, '<a><br><strong>' ) ?></span>
 			</label>

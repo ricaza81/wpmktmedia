@@ -21,12 +21,36 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 	return;
 } elseif ( $us_elm_context == 'shortcode' AND is_archive() ) {
 	return;
-} elseif ( empty( $taxonomy_name ) OR ! taxonomy_exists( $taxonomy_name ) OR ! is_object_in_taxonomy( get_post_type(), $taxonomy_name ) ) {
+} elseif (
+	(
+		empty( $taxonomy_name )
+		OR ! taxonomy_exists( $taxonomy_name )
+		OR ! is_object_in_taxonomy( get_post_type(), $taxonomy_name )
+	)
+	AND ! apply_filters( 'usb_is_preview_page', NULL )
+) {
 	return;
 }
 
-$terms = get_the_terms( get_the_ID(), $taxonomy_name );
+// In Live Builder for Page Block / Content template show placeholder for shortcode
+if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+	$terms = get_terms(
+		array(
+			'taxonomy' => $taxonomy_name,
+			'hide_empty' => FALSE,
+			'number' => 1,
+		)
+	);
+} else {
+	$terms = get_the_terms( get_the_ID(), $taxonomy_name );
+}
+
 if ( ! is_array( $terms ) OR count( $terms ) == 0 ) {
+
+	// Output empty container for USBuilder
+	if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+		echo '<div class="w-post-elm"></div>';
+	}
 	return;
 }
 
@@ -50,14 +74,11 @@ if ( $color_link ) {
 	$_atts['class'] .= ' color_link_inherit';
 }
 
-// When text color is set in Design Options, add the specific class
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'color' ) ) {
 	$_atts['class'] .= ' has_text_color';
 }
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 	$_atts['id'] = $el_id;
 }
@@ -86,7 +107,7 @@ if ( $style == 'badge' ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 if ( ! empty( $icon ) ) {
 	$output .= us_prepare_icon_tag( $icon );
 }
@@ -106,7 +127,7 @@ foreach ( $terms as $term ) {
 		}
 	}
 	if ( ! empty( $link_atts['href'] ) ) {
-		$output .= '<a ' . us_implode_atts( $btn_atts + $link_atts ) . '>';
+		$output .= '<a' . us_implode_atts( $btn_atts + $link_atts ) . '>';
 
 		// Span if set button for correct display buttons styles
 		if ( $style == 'badge' ) {
@@ -121,7 +142,7 @@ foreach ( $terms as $term ) {
 		$output .= '</a>';
 
 	} else {
-		$output .= '<span ' . us_implode_atts( $btn_atts ) . '>' . $term->name . '</span>';
+		$output .= '<span' . us_implode_atts( $btn_atts ) . '>' . $term->name . '</span>';
 	}
 	// Output comma after anchor except the last one
 	if ( $style != 'badge' AND $i != count( $terms ) ) {

@@ -17,23 +17,21 @@
  * @var   $value string Current value
  */
 
-if ( ! isset( $field['options'] ) OR empty( $field['options'] ) ) {
-	$field['options'] = array(
-		TRUE => 'On',
-		FALSE => 'Off',
-	);
+$input_atts = array(
+	'type' => 'checkbox',
+	'name' => $name,
+	'value' => (int) $value,
+);
+if ( ! empty( $field['disabled'] ) ) {
+	$input_atts['disabled'] = '';
 }
-$field_keys = array_keys( $field['options'] );
-if ( count( $field_keys ) < 2 ) {
-	return;
+// For control in html output
+if ( ! empty( $input_atts['value'] ) ) {
+	$input_atts['checked'] = 'checked';
 }
 
-$is_disabled = ( ! empty( $field['disabled'] ) ) ? ' disabled' : '';
-
-$output = '<div class="usof-switcher">';
-$output .= '<input type="hidden" name="' . $name . '" value="' . esc_attr( $field_keys[1] ) . '" />';
-$output .= '<input type="checkbox" id="' . $id . '" name="' . $name . '"' . checked( $value, $field_keys[0], FALSE ) . ' value="' . esc_attr( $field_keys[0] ) . '"' . $is_disabled . '>';
-$output .= '<label for="' . $id . '">';
+$output = '<div class="usof-switcher"><label>';
+$output .= '<input' . us_implode_atts( $input_atts ) . checked( $input_atts['value'], 1, FALSE ) . '>';
 $output .= '<span class="usof-switcher-box"><i></i></span>';
 if ( ! empty( $field['switch_text'] ) ) {
 	$output .= '<span class="usof-switcher-text">' . $field['switch_text'] . '</span>';

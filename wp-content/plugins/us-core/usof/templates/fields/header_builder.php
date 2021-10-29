@@ -25,9 +25,17 @@ $output = '<div class="us-bld" data-ajaxurl="' . esc_attr( admin_url( 'admin-aja
 
 // States
 $output .= '<div class="us-bld-states">';
-$output .= '<div class="us-bld-state for_default active">' . us_translate( 'Default' ) . '</div>';
-$output .= '<div class="us-bld-state for_tablets">' . __( 'Tablets', 'us' ) . '</div>';
-$output .= '<div class="us-bld-state for_mobiles">' . __( 'Mobiles', 'us' ) . '</div>';
+
+foreach ( us_get_responsive_states() as $state => $data ) {
+	$state_atts = array(
+		'class' => 'us-bld-state ui-icon_devices_' . $state,
+	);
+	if ( $state === 'default' ) {
+		$state_atts['class'] .= ' active';
+	}
+	$output .= '<div' . us_implode_atts( $state_atts ) . '>' . $data['title'] . '</div>';
+}
+
 $output .= '</div>';
 
 // Workspace
@@ -82,9 +90,9 @@ if ( ! function_exists( 'ushb_get_elms_placeholders' ) ) {
 				} elseif ( $type == 'image' ) {
 					if (
 						! empty( $values['img'] )
-						AND $upload_image = usof_get_image_src( $values['img'] )
+						AND $upload_image = wp_get_attachment_image_url( $values['img'], 'medium' )
 					) {
-						$output .= '<img src="' . esc_url( $upload_image[0] ) . '" loading="lazy" alt="">';
+						$output .= '<img src="' . esc_url( $upload_image ) . '" loading="lazy" alt="">';
 					} elseif ( ! empty( $elm_icon ) ) {
 						$output .= '<i class="' . $elm_icon . '"></i>';
 					}
@@ -244,15 +252,15 @@ foreach ( $hb_options_sections as $hb_section => $hb_section_title ) {
 }
 $output .= ' </div ><!-- .us-bld-options -->';
 
-$output .= '<div class="us-bld-params hidden"';
-$output .= us_pass_data_to_js(
-	array(
+// Export data to JS
+$js_data = array(
+	'value' => $value,
+	'states' => us_get_responsive_states( /* only keys */TRUE ),
+	'params' => array(
 		'navMenus' => us_get_nav_menus(),
 		// TODO Default values
-	)
+	),
 );
-$output .= '></div>';
-$output .= '<div class="us-bld-value hidden"' . us_pass_data_to_js( $value ) . '></div>';
 
 // Elements' default values
 $elms_titles = array();
@@ -262,8 +270,9 @@ foreach ( us_config( 'header-settings.elements', array() ) as $type ) {
 	$elms_titles[ $type ] = isset( $elm['title'] ) ? $elm['title'] : $type;
 	$elms_defaults[ $type ] = us_get_elm_defaults( $type, 'header' );
 }
-$output .= '<div class="us-bld-defaults hidden"' . us_pass_data_to_js( $elms_defaults ) . '></div>';
-$translations = array(
+$js_data['defaults'] = $elms_defaults;
+
+$js_data['translations'] = array(
 	'template_replace_confirm' => __( 'Selected template will overwrite all your current elements and settings! Are you sure want to apply it?', 'us' ),
 	'orientation_change_confirm' => __( 'Are you sure want to change the header orientation? Some of your elements\' positions may be changed', 'us' ),
 	'element_delete_confirm' => __( 'Are you sure want to delete the element?', 'us' ),
@@ -280,7 +289,8 @@ $translations = array(
 	'button' => __( 'Button', 'us' ),
 	'cart' => us_translate( 'Cart', 'woocommerce' ),
 );
-$output .= '<div class="us-bld-translations hidden"' . us_pass_data_to_js( $translations ) . '></div>';
+
+$output .= '<div class="us-bld-data hidden"'. us_pass_data_to_js( $js_data ) .'></div>';
 $output .= '</div>';
 
 // List of elements that can be added

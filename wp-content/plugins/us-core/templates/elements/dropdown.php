@@ -8,7 +8,7 @@
  * @var $link_icon         string
  * @var $sidebar_id        string
  * @var $links             array
- * @var $wpml_switcher     array
+ * @var $wpml_switcher     string / array
  * @var $dropdown_open     string 'click' / 'hover'
  * @var $dropdown_dir      string 'left' / 'right'
  * @var $dropdown_effect   string
@@ -31,9 +31,6 @@ $_atts['class'] .= ' dropdown_' . $dropdown_effect;
 $_atts['class'] .= ' drop_to_' . $dropdown_dir;
 $_atts['class'] .= ' open_on_' . $dropdown_open;
 
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -47,7 +44,17 @@ $data = array(
 );
 
 // Custom Links
-if ( $source == 'own' AND is_array( $links ) ) {
+if ( $source == 'own' ) {
+	// Decoding links in case it is shortcode
+	if ( ! empty( $links ) AND ! is_array( $links ) ) {
+		$links = json_decode( urldecode( $links ), TRUE );
+		if ( ! is_array( $links ) ) {
+			$links = array();
+		}
+	} elseif ( empty( $links ) OR ! is_array( $links ) ) {
+		$links = array();
+	}
+
 	foreach ( $links as $link ) {
 		$data['list'][] = array(
 			'icon' => ! empty( $link['icon'] ) ? us_prepare_icon_tag( $link['icon'] ) : '',
@@ -65,15 +72,20 @@ if ( $source == 'own' AND is_array( $links ) ) {
 			'icon' => '',
 		);
 
-		if ( in_array( 'native_lang', $wpml_switcher ) ) {
+		// Fallback for var type
+		if ( is_array( $wpml_switcher ) ) {
+			$wpml_switcher = implode( ',', $wpml_switcher );
+		}
+
+		if ( strpos( $wpml_switcher, 'native_lang' ) !== FALSE ) {
 			$data_language['title'] = $wpml_lang['native_name'];
-			if ( in_array( 'display_lang', $wpml_switcher ) AND $wpml_lang['native_name'] != $wpml_lang['translated_name'] ) {
+			if ( strpos( $wpml_switcher, 'display_lang' ) !== FALSE AND $wpml_lang['native_name'] != $wpml_lang['translated_name'] ) {
 				$data_language['title'] .= ' (' . $wpml_lang['translated_name'] . ')';
 			}
-		} elseif ( in_array( 'display_lang', $wpml_switcher ) ) {
+		} elseif ( strpos( $wpml_switcher, 'display_lang' ) !== FALSE ) {
 			$data_language['title'] = $wpml_lang['translated_name'];
 		}
-		if ( in_array( 'flag', $wpml_switcher ) ) {
+		if ( strpos( $wpml_switcher, 'flag' ) !== FALSE ) {
 			$data_language['flag'] = '<img src="' . $wpml_lang['country_flag_url'] . '" alt="' . $wpml_lang['language_code'] . '" />';
 		}
 
@@ -90,10 +102,21 @@ if ( $source == 'own' AND is_array( $links ) ) {
 	$pll_langs = pll_the_languages( array( 'raw' => 1 ) );
 	foreach ( $pll_langs as $pll_lang ) {
 		$data_language = array(
-			'title' => in_array( 'full_name', $polylang_switcher ) ? $pll_lang['name'] : '',
-			'flag' => in_array( 'flag', $polylang_switcher ) ? '<img src="' . $pll_lang['flag'] . '" alt="' . $pll_lang['name'] . '" />' : '',
-			'icon' => '', // set empty icon
+			'title' => '',
+			'icon' => '',
 		);
+
+		// Fallback for var type
+		if ( is_array( $polylang_switcher ) ) {
+			$polylang_switcher = implode( ',', $polylang_switcher );
+		}
+
+		if ( strpos( $polylang_switcher, 'full_name' ) !== FALSE ) {
+			$data_language['title'] = $pll_lang['name'];
+		}
+		if ( strpos( $polylang_switcher, 'flag' ) !== FALSE ) {
+			$data_language['flag'] = '<img src="' . $pll_lang['flag'] . '" alt="' . $pll_lang['name'] . '" />';
+		}
 
 		if ( $pll_lang['current_lang'] ) {
 			$data['current'] = $data_language;
@@ -109,7 +132,7 @@ if ( in_array( $source, array( 'sidebar', 'own' ) ) ) {
 }
 
 // Output the element
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="w-dropdown-h">';
 if ( ! empty( $data['current'] ) ) {
 	$output .= '<div class="w-dropdown-current">';
@@ -124,12 +147,18 @@ if ( ! empty( $data['current'] ) ) {
 		$current_anchor_atts['href'] = 'javascript:void(0)';
 	}
 
-	$output .= '<a ' . us_implode_atts( $current_anchor_atts ) . '>';
+	$output .= '<a' . us_implode_atts( $current_anchor_atts ) . '>';
 	if ( ! empty( $data['current']['flag'] ) ) {
 		$output .= $data['current']['flag'];
 	}
 	$output .= $data['current']['icon'];
-	$output .= '<span class="w-dropdown-item-title">' . strip_tags( $data['current']['title'] ) . '</span>';
+
+	// Apply filters to title
+	$title = us_replace_dynamic_value( $data['current']['title'] );
+	$title = strip_tags( $title );
+	$title = wptexturize( $title );
+
+	$output .= '<span class="w-dropdown-item-title">' . $title . '</span>';
 	$output .= '</a></div>';
 }
 $output .= '<div class="w-dropdown-list">';
@@ -141,12 +170,18 @@ if ( $source == 'sidebar' ) {
 } else {
 	foreach ( $data['list'] as $link ) {
 		$link['link_atts']['class'] = 'w-dropdown-item smooth-scroll';
-		$output .= '<a ' . us_implode_atts( $link['link_atts'] ) . '>';
+		$output .= '<a' . us_implode_atts( $link['link_atts'] ) . '>';
 		if ( ! empty( $link['flag'] ) ) {
 			$output .= $link['flag'];
 		}
 		$output .= $link['icon'];
-		$output .= '<span class="w-dropdown-item-title">' . strip_tags( $link['title'] ) . '</span>';
+
+		// Apply filters to title
+		$title = us_replace_dynamic_value( $link['title'] );
+		$title = strip_tags( $title );
+		$title = wptexturize( $title );
+
+		$output .= '<span class="w-dropdown-item-title">' . $title . '</span>';
 		$output .= '</a>';
 	}
 }

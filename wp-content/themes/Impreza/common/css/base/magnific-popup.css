@@ -53,7 +53,7 @@
 	width: 100vh;
 	}
 .mfp-figure:after {
-	box-shadow: 0 3px 3px rgba(0,0,0,0.1), 0 5px 8px rgba(0,0,0,0.16), 0 9px 20px rgba(0,0,0,0.16);
+	box-shadow: var(--box-shadow);
 	}
 .mfp-preloader {
 	font-size: 0;

@@ -10,6 +10,17 @@ AND ANY CHANGES MADE HERE WILL BE OVERWRITTEN.
 ----------------------------------------------------------------
 */
 
+#bbpress-forums .bbp-body > ul,
+#bbpress-forums li.bbp-header,
+.bbp-replies .bbp-body,
+div.bbp-forum-header,
+div.bbp-topic-header,
+div.bbp-reply-header,
+.bbp-pagination-links a,
+.bbp-pagination-links span {
+	border-color: var(--color-content-border);
+	}
+
 #bbpress-forums {
 	position: relative;
 	}
@@ -22,7 +33,7 @@ AND ANY CHANGES MADE HERE WILL BE OVERWRITTEN.
 #bbpress-forums fieldset,
 .bbp-login-form fieldset {
 	border-radius: 0.3rem;
-	box-shadow: 0 5px 15px 0 rgba(0,0,0,0.15);
+	box-shadow: var(--box-shadow);
 	}
 
 #bbpress-forums ul.bbp-threaded-replies {
@@ -206,7 +217,7 @@ li.bbp-forum-freshness {
 		content: '\f005';
 		font-weight: 900;
 		opacity: 1;
-		color: #fb0;
+		color: var(--color-content-primary);
 		}
 		.bbp-topics-front ul.topic.super-sticky .bbp-topic-permalink,
 		.bbp-topics ul.topic.super-sticky .bbp-topic-permalink {
@@ -257,6 +268,7 @@ li.bbp-topic-freshness {
 	line-height: 1.5;
 	margin: 2px 0 0;
 	word-wrap: break-word;
+	color: var(--color-content-faded);
 	}
 	p.bbp-topic-meta a {
 		color: inherit;
@@ -294,6 +306,7 @@ li.bbp-topic-freshness {
 			padding: 0.2rem 1rem;
 			border-radius: 0.3rem;
 			margin-bottom: 0.6rem;
+			background: var(--color-content-bg-alt-grad);
 			}
 			#subscription-toggle span.is-subscribed:before,
 			#favorite-toggle span.is-favorite:before {
@@ -302,6 +315,7 @@ li.bbp-topic-freshness {
 				font-weight: 900;
 				vertical-align: top;
 				margin-right: 0.4rem;
+				color: var(--color-content-primary);
 				}
 			#subscription-toggle span.is-subscribed:before {
 				content: '\f00c';
@@ -580,6 +594,7 @@ span.bbp-admin-links {
 			}
 			.no-touch .bbp-pagination-links a:hover,
 			.bbp-pagination-links span.current {
+				background: var(--color-content-primary-grad);
 				color: #fff;
 				}
 		.bbp-pagination-links span.dots {
@@ -742,12 +757,16 @@ div.bbp-reply-form {
 	#bbp-user-navigation {
 		margin: 15px 0 0 15px;
 		padding-left: 80px;
+		background: var(--color-content-bg-alt-grad);
 		}
 		#bbp-user-navigation li {
 			display: inline-block;
 			vertical-align: top;
 			line-height: 30px;
 			padding: 10px 15px;
+			}
+		#bbp-user-navigation li.current {
+			background: var(--color-content-bg-grad);
 			}
 			#bbp-user-navigation li.current a {
 				border: none !important;
@@ -807,26 +826,11 @@ div.indicator-hint {
 	clear: both;
 	padding: 1rem 1.3rem;
 	margin: 0 0 1rem;
-	background: #e6f3fa;
-	color: #3A648E;
+	background: var(--color-content-primary-faded);
 	}
 div.bbp-template-notice a {
 	border-bottom: 1px dotted;
-	color: inherit;
 	}
-	div.bbp-template-notice.info {
-		background: #cef;
-		color: #3A648E;
-		}
-	div.bbp-template-notice.important {
-		background: #FFD9D9;
-		color: #A24141;
-		}
-	div.bbp-template-notice.error,
-	div.bbp-template-notice.warning {
-		background: #FFD9D9;
-		color: #A24141;
-		}
 	div.bbp-template-notice p {
 		font-size: 0.9rem;
 		line-height: 1.6;
@@ -914,7 +918,7 @@ div.bbp-template-notice a {
 	padding: 1.5rem;
 	overflow: hidden;
 	position: relative;
-	box-shadow: 0 5px 15px 0 rgba(0,0,0,0.15);
+	box-shadow: var(--box-shadow);
 	border-radius: 0.3rem;
 	}
 	.bbp-logged-in img.avatar {

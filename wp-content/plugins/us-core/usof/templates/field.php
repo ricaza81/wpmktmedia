@@ -21,14 +21,14 @@ if ( ! isset( $field['type'] ) ) {
 
 	return;
 }
-$show_field = ( ! isset( $field['show_if'] ) OR usof_execute_show_if( $field['show_if'], $values ) );
 
-// Change WPBakery "editor" field type to simple textarea, because TinyMCE is not yet supported in USOF fields
-if ( $field['type'] == 'editor' ) {
-	$field['type'] = 'textarea';
-}
+$context = isset( $context ) ? $context : 'header';
 
-// Options Wrapper
+$show_field = isset( $show_field )
+	? $show_field
+	: ( ! isset( $field['show_if'] ) OR usof_execute_show_if( $field['show_if'], $values ) );
+
+// Output Wrapper
 if ( $field['type'] == 'wrapper_start' ) {
 	$row_classes = '';
 	if ( ! empty( $field['classes'] ) ) {
@@ -55,34 +55,50 @@ if ( $field['type'] == 'wrapper_start' ) {
 $field['std'] = isset( $field['std'] ) ? $field['std'] : NULL;
 $value = isset( $values[ $name ] ) ? $values[ $name ] : $field['std'];
 
-// Options Group
+$usb_is_builder_page = apply_filters( 'usb_is_builder_page', NULL );
+$usb_preview = $usb_is_builder_page
+	? us_arr_path( $field, 'usb_preview' )
+	: '';
+
+// Output Group params
 if ( $field['type'] == 'group' ) {
-	$group_classes = ! empty( $field['classes'] ) ? ' ' . $field['classes'] : '';
-
+	$atts_group = array(
+		'class' => 'usof-form-group',
+		'data-name' => $name,
+		'style' => 'display:' . ( $show_field ? 'block' : 'none' ),
+	);
+	if ( ! empty( $field['classes'] ) ) {
+		$atts_group['class'] .= ' ' . $field['classes'];
+	}
 	if ( ! empty( $field['is_accordion'] ) ) {
-		$group_classes .= ' type_accordion';
+		$atts_group['class'] .= ' type_accordion';
+
+		// Add data which param value use as accordions title
+		if ( ! empty( $field['accordion_title'] ) ) {
+			$atts_group['data-accordion-title'] = rawurlencode( $field['accordion_title'] );
+		}
 	} else {
-		$group_classes .= ' type_simple';
+		$atts_group['class'] .= ' type_simple';
 	}
-
 	if ( ! empty( $field['is_sortable'] ) ) {
-		$group_classes .= ' sortable';
+		$atts_group['class'] .= ' sortable';
 	}
-
 	if ( ! empty( $field['preview'] ) ) {
-		$group_classes .= ' preview_' . $field['preview'];
+		$atts_group['class'] .= ' preview_' . $field['preview'];
 	}
 
-	echo '<div class="usof-form-group' . $group_classes . '" data-name="' . $name . '"';
-	if ( ! empty( $field['title'] ) ) {
-		echo ' data-params_title="' . rawurlencode( $field['title'] ) . '"';
+	// Parameters for USBuilder (display only on the USBuilder page)
+	if ( $usb_is_builder_page AND $usb_preview ) {
+		$atts_group['data-usb-preview'] = us_json_encode( $usb_preview );
 	}
-	echo 'style="display: ' . ( $show_field ? 'block' : 'none' ) . '">';
+
+	echo '<div' . us_implode_atts( $atts_group ) . '>';
 	echo '<div class="usof-form-group-prototype hidden">';
 	us_load_template(
 		'usof/templates/fields/group_param', array(
 			'params_values' => array(),
 			'field' => $field,
+			'context' => $context,
 		)
 	);
 	echo '</div>';
@@ -93,6 +109,7 @@ if ( $field['type'] == 'group' ) {
 				'usof/templates/fields/group_param', array(
 					'params_values' => $params_values,
 					'field' => $field,
+					'context' => $context,
 				)
 			);
 		}
@@ -132,6 +149,9 @@ if ( ! in_array(
 if ( isset( $field['cols'] ) ) {
 	$row_classes .= ' cols_' . $field['cols'];
 }
+if ( isset( $field['title_pos'] ) AND $context !== 'usb_metabox' ) {
+	$row_classes .= ' titlepos_' . $field['title_pos'];
+}
 if ( ! empty( $field['classes'] ) ) {
 	$row_classes .= ' ' . $field['classes'];
 }
@@ -140,13 +160,30 @@ if ( ! empty( $field['disabled'] ) ) {
 }
 
 // Output option row
-echo '<div class="usof-form-row' . $row_classes . '" data-name="' . $name . '" ';
+$atts_row = array(
+	'class' => 'usof-form-row' . $row_classes,
+	'data-name' => $name,
+	'style' => sprintf( 'display: %s', $show_field ? 'block' : 'none' ),
+);
+
+// Add the output of the default value for `type=select`
+// TODO: After refactoring `$usof`, we need to get rid of this
+if ( us_arr_path( $field, 'type' ) === 'select' AND isset( $field['std'] ) ) {
+	$atts_row['data-std'] = $field['std'];
+}
+
+// Parameters for USBuilder (display only on the USBuilder page)
+if ( $usb_is_builder_page AND $usb_preview ) {
+	$atts_row['data-usb-preview'] = us_json_encode( $usb_preview );
+}
 
 // HTML data output for js
 if ( isset( $field['html-data'] ) ) {
-	echo us_pass_data_to_js( $field['html-data'] );
+	$atts_row['onclick'] = us_pass_data_to_js( $field['html-data'], /* onclick  */FALSE );
 }
-echo 'style="display: ' . ( $show_field ? 'block' : 'none' ) . '">';
+
+echo '<div'. us_implode_atts( $atts_row ) .'>';
+
 if ( ! empty( $field['title'] ) ) {
 	echo '<div class="usof-form-row-title"><span>' . $field['title'] . '</span>';
 	if ( ! empty( $field['description'] ) AND ( ! empty( $field['classes'] ) AND strpos( $field['classes'], 'desc_4' ) !== FALSE ) ) {
@@ -158,17 +195,20 @@ if ( ! empty( $field['title'] ) ) {
 	echo '</div>';
 }
 echo '<div class="usof-form-row-field"><div class="usof-form-row-control">';
-// Including the field control itself
+
+// Include the field control itself
 us_load_template(
 	'usof/templates/fields/' . $field['type'], array(
 		'name' => $name,
 		'id' => $id,
 		'field' => $field,
 		'value' => $value,
-		'is_metabox' => ( isset( $is_metabox ) ) ? $is_metabox : FALSE,
+		'context' => $context,
 	)
 );
 echo '</div>';
+
+// Add the description html
 if ( ! empty( $field['description'] ) AND ( empty( $field['classes'] ) OR strpos( $field['classes'], 'desc_4' ) === FALSE ) ) {
 	echo '<div class="usof-form-row-desc">';
 	echo '<div class="usof-form-row-desc-icon"></div>';
@@ -184,20 +224,45 @@ if ( isset( $field['hints_for'] ) ) {
 
 		$hint_text = '';
 
+		// Check if 'Edit selected' links should lead to a Live Builder page
+		global $pagenow;
+		$show_live_builder_links = (
+
+			// Headers and Grid Layouts always being edited in backend
+			! in_array( $field['hints_for'], array( 'us_header', 'us_grid_layout' ) )
+			AND (
+
+				// Builder elements panel
+				apply_filters( 'usb_is_builder_page', FALSE )
+
+				// Theme options, if the live builder is ON
+				OR (
+					$pagenow == 'admin.php'
+					AND $_GET['page'] == 'us-theme-options'
+					AND us_get_option( 'live_builder', 1 )
+				)
+			)
+		);
+
+		$edit_link = $show_live_builder_links
+			? admin_url( 'post.php?post={{post_id}}&action=' . USBuilder::get_slug() )
+			: admin_url( 'post.php?post={{post_id}}&action=edit' );
+
 		// Get post labels for hints
 		$hints = array(
-			'edit_url' => '<a href="' . admin_url( 'post.php?post={{post_id}}&action=edit' ) . '" target="_blank" rel="noopener">{{hint}}</a>',
+			'edit_url' => '<a href="' . $edit_link . '" target="_blank" rel="noopener">{{hint}}</a>',
 			// for JS
 			'add' => $post_type_obj->labels->add_new,
 			'edit' => __( 'Edit selected', 'us' ),
+			'edit_specific' => us_translate( 'Edit' ),
 		);
 
 		// Count published posts
-		$count_posts = wp_count_posts( $field['hints_for'] );
-		$published_posts = $count_posts->publish;
-		if ( $published_posts ) {
+		if ( wp_count_posts( $field['hints_for'] )->publish ) {
 
-			$edit_link = get_edit_post_link( $value );
+			$edit_link = $show_live_builder_links
+				? USBuilder::get_edit_permalink( $value )
+				: get_edit_post_link( $value );
 
 			// Output "Edit" link if post exists and assigned
 			if ( $edit_link AND $value ) {

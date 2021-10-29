@@ -222,7 +222,7 @@ return array(
 		/**
 		 * @var array | string
 		 */
-		'dependencies' => 'grid',
+		'dependencies' => array( 'animation', 'grid' ),
 	),
 	'charts' => array(
 		'title' => __( 'Charts', 'us' ),
@@ -310,6 +310,7 @@ return array(
 				return strpos( $post->post_content, '[us_counter' ) !== FALSE;
 			},
 		),
+		'dependencies' => 'scroll',
 	),
 	'dropdown' => array(
 		'title' => __( 'Dropdown', 'us' ),
@@ -362,14 +363,19 @@ return array(
 	),
 	'gmaps' => array(
 		'title' => sprintf( __( '%s Maps', 'us' ), 'Google' ),
-		'css' => '/common/css/elements/gmaps.css',
+		'css' => '/common/css/elements/maps.css',
 		'js' => '/common/js/elements/gmaps.js',
 		'auto_optimize_callback' => array(
 			/**
 			 * @return bool
 			 */
 			'shortcodes' => function ( $shortcode_name, $atts, $post ) {
-				return strpos( $post->post_content, '[us_gmaps' ) !== FALSE;
+				// Make sure that attribute isn't set to catch Google provider
+				if ( $shortcode_name === 'us_gmaps' ) {
+					return empty( $atts['provider'] );
+				}
+
+				return FALSE;
 			},
 		),
 	),
@@ -773,8 +779,9 @@ return array(
 	),
 	'lmaps' => array(
 		'title' => sprintf( __( '%s Maps', 'us' ), 'OpenStreetMap' ),
-		'css' => '/common/css/vendor/leaflet.css',
+		'css' => '/common/css/elements/maps.css',
 		'js' => '/common/js/elements/lmaps.js',
+		'dependencies' => array( 'leaflet' ),
 		'auto_optimize_callback' => array(
 			/**
 			 * @return bool
@@ -949,6 +956,12 @@ return array(
 					AND $element_name === 'search'
 				);
 			},
+			/**
+			 * @return bool
+			 */
+			'sidebars_widgets' => function ( $widget_name, $atts, $widget_id ) {
+				return $widget_name === 'search';
+			},
 		),
 		'dependencies' => 'buttons',
 	),
@@ -1026,7 +1039,7 @@ return array(
 		),
 	),
 	'tabs' => array(
-		'title' => us_translate( 'Tabs', 'js_composer' ) . ', ' . __( 'Vertical Tabs', 'us' ) . ', ' . us_translate( 'Accordion', 'js_composer' ),
+		'title' => __( 'Tabs', 'us' ) . ', ' . __( 'Vertical Tabs', 'us' ) . ', ' . us_translate( 'Accordion', 'js_composer' ),
 		'css' => '/common/css/elements/tabs.css',
 		'js' => '/common/js/elements/tabs.js',
 		'auto_optimize_callback' => array(
@@ -1061,7 +1074,7 @@ return array(
 		),
 	),
 	'video' => array(
-		'title' => us_translate( 'Video Player', 'js_composer' ),
+		'title' => __( 'Video Player', 'us' ),
 		'css' => '/common/css/elements/video.css',
 		'js' => '/common/js/elements/video.js',
 		'auto_optimize_callback' => array(
@@ -1141,6 +1154,13 @@ return array(
 				return TRUE;
 			},
 		),
+	),
+	
+	// Vendor scripts
+	'leaflet' => array(
+		'title' => '',
+		'css' => '/common/css/vendor/leaflet.css',
+		'hidden' => TRUE,
 	),
 
 	// Plugins

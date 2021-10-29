@@ -14,14 +14,18 @@ $_atts['class'] = 'w-slider';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' style_' . $style;
 $_atts['class'] .= ' fit_' . $img_fit;
+
+// When some values are set in Design options, add the specific classes
 if ( us_design_options_has_property( $css, 'border-radius' ) ) {
 	$_atts['class'] .= ' has_border_radius';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
+
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
+}
+// If we are in WPB front end editor mode, make sure the slider has an ID
+if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() AND empty( $_atts['id'] ) ) {
+	$_atts['id'] = us_uniqid();
 }
 
 // Royal Slider options
@@ -34,7 +38,7 @@ $js_options = array(
 	'arrowsNav' => ( $arrows != 'hide' ),
 	'arrowsNavAutoHide' => ( $arrows == 'hover' ),
 	'transitionType' => ( $transition == 'crossfade' ) ? 'fade' : 'move',
-	'transitionSpeed' => intval( $transition_speed ),
+	'transitionSpeed' => (int) $transition_speed,
 	'block' => array(
 		'moveEffect' => 'none',
 		'speed' => 300,
@@ -51,7 +55,7 @@ if ( $autoplay AND $autoplay_period ) {
 	$js_options['autoplay'] = array(
 		'enabled' => TRUE,
 		'pauseOnHover' => $pause_on_hover ? TRUE : FALSE,
-		'delay' => intval( $autoplay_period * 1000 ),
+		'delay' => (float) $autoplay_period * 1000,
 	);
 }
 if ( $fullscreen ) {
@@ -199,28 +203,33 @@ foreach ( $attachments as $index => $attachment ) {
 if ( us_get_option( 'ajax_load_js', 0 ) == 0 ) {
 	wp_enqueue_script( 'us-royalslider' );
 }
-$output = '<div ' . us_implode_atts( $_atts ) . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="w-slider-h">';
 if ( ! us_amp() ) {
 	$output .= '<div class="royalSlider">' . $images_html . '</div>';
 }
 // Output first image as fallback on page load
 if ( ! empty( $first_image_atts ) ) {
-	$output .= '<img ' . us_implode_atts( $first_image_atts ) . '></div>';
+	$output .= '<img' . us_implode_atts( $first_image_atts ) . '></div>';
 }
 if ( ! us_amp() ) {
 	$output .= '<div class="w-slider-json"' . us_pass_data_to_js( $js_options ) . '></div>';
 }
 $output .= '</div>';
 
-// If we are in front end editor mode, apply JS to logos
+// If we are in WPB front end editor mode, apply JS to the slider
 if ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() ) {
 	$output .= '<script>
-	jQuery(function($){
-		if (typeof $.fn.wSlider === "function") {
-			jQuery(".w-slider").wSlider();
+	jQuery( function( $ ) {
+		if ( typeof $us !== "undefined" && typeof $.fn.wSlider === "function" ) {
+			$us.getScript( $us.templateDirectoryUri + \'/common/js/vendor/royalslider.js\', function() {
+				var $elm = jQuery( "#' . $_atts['id'] . '" );
+				if ( $elm.data( "sliderInit" ) === undefined ) {
+					$elm.wSlider();
+				}	
+			} );
 		}
-	});
+	} );
 	</script>';
 }
 

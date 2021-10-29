@@ -24,9 +24,6 @@ if ( $hide_empty ) {
 if ( $vstretch ) {
 	$_atts['class'] .= ' height_full';
 }
-if ( ! empty( $el_class ) ) {
-	$_atts['class'] .= ' ' . $el_class;
-}
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -45,7 +42,7 @@ if ( ! $quantity ) {
 	$_atts['class'] .= ' empty';
 }
 
-echo '<div ' . us_implode_atts( $_atts ) . '>';
+echo '<div' . us_implode_atts( $_atts ) . '>';
 echo '<div class="w-cart-h">';
 echo '<a class="w-cart-link" href="' . esc_url( wc_get_cart_url() ) . '" aria-label="' . us_translate( 'Cart', 'woocommerce' ) . '">';
 echo '<span class="w-cart-icon">';

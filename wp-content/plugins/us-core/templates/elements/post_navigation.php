@@ -19,15 +19,17 @@ if ( empty( $prevnext ) ) {
 	return;
 }
 
-$classes = isset( $classes ) ? $classes : '';
-$classes .= ' layout_' . $layout;
-$classes .= ( $invert ) ? ' inv_true' : ' inv_false';
+$_atts['class'] = 'w-post-elm post_navigation';
+$_atts['class'] .= isset( $classes ) ? $classes : '';
+$_atts['class'] .= ' layout_' . $layout;
+$_atts['class'] .= ( $invert ) ? ' inv_true' : ' inv_false';
 
-$classes .= ( ! empty( $el_class ) ) ? ( ' ' . $el_class ) : '';
-$el_id = ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) ? ( ' id="' . esc_attr( $el_id ) . '"' ) : '';
+if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
+	$_atts['id'] = $el_id;
+}
 
 // Output the element
-$output = '<div class="w-post-elm post_navigation' . $classes . '"' . $el_id . '>';
+$output = '<div' . us_implode_atts( $_atts ) . '>';
 
 $item_order = 'first';
 
@@ -53,7 +55,7 @@ foreach ( $prevnext as $key => $item ) {
 		}
 		$output .= '<div class="post_navigation-item-title"><span>' . $item['title'] . '</span></div>';
 		$output .= '</a>';
-	} else {
+	} else if( ! apply_filters( 'usb_is_preview_page', NULL ) ) {
 		$output .= '<div class="post_navigation-item order_' . $item_order . ' to_' . $key . '"></div>';
 	}
 

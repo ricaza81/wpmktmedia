@@ -85,9 +85,7 @@ if ( ! function_exists( 'us_config' ) ) {
 	 * Load and return some specific config or it's part
 	 *
 	 * @param string $path <config_name>[.<key1>[.<key2>[...]]]
-	 *
-	 * @oaram mixed $default Value to return if no data is found
-	 *
+	 * @param mixed $default Value to return if no data is found
 	 * @return mixed
 	 */
 	function us_config( $path, $default = NULL, $reload = FALSE ) {

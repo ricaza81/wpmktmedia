@@ -14,11 +14,11 @@
 
 		init: function( container, options ) {
 			// Setting options
-			var defaults = {
+			var _defaults = {
 				duration: 300,
 				easing: 'cubic-bezier(.78,.13,.15,.86)'
 			};
-			this.options = $.extend( {}, defaults, options );
+			this.options = $.extend( {}, _defaults, options );
 			this.isRtl = $( '.l-body' ).hasClass( 'rtl' );
 
 			// Commonly used dom elements
@@ -26,14 +26,13 @@
 			this.$tabsList = this.$container.find( '> .w-tabs-list:first' );
 			this.$tabs = this.$tabsList.find( '.w-tabs-item' );
 			this.$sectionsWrapper = this.$container.find( '> .w-tabs-sections:first' );
-			this.$sectionsHelper = this.$sectionsWrapper.children();
-			this.$sections = this.$sectionsHelper.find( '> .w-tabs-section' );
+			this.$sections = this.$sectionsWrapper.find( '> .w-tabs-section' );
 			this.$headers = this.$sections.children( '.w-tabs-section-header' );
 			this.$contents = this.$sections.children( '.w-tabs-section-content' );
 			this.$line_charts = this.$container.find( ".vc_line-chart" );
 			this.$round_charts = this.$container.find( ".vc_round-chart" );
 
-			// Overriding specific to Web Accessibility, it is not allowed to have several identical id and aria-content, aria-control
+			// Overriding specific to Web Accessibility, it is not allowed to have several identical id and aria-content, aria-control.
 			// http://web-accessibility.carnegiemuseums.org/code/accordions/
 			if ( this.$container.hasClass( 'accordion' ) ) {
 				this.$tabs = this.$headers;
@@ -41,6 +40,9 @@
 
 			// Class variables
 			this.width = 0;
+			this.minWidth = 0; // Container width at which we should switch to accordion layout.
+			this.accordionAtWidth = this.$container.data( 'accordion-at-width' );
+			this.isAccordionAtWidth = $.isNumeric( parseInt( this.accordionAtWidth ) );
 			this.tabWidths = [];
 			this.tabHeights = [];
 			this.tabTops = [];
@@ -48,11 +50,9 @@
 			this.isScrolling = false;
 			this.hasScrolling = this.$container.hasClass( 'has_scrolling' ) || false;
 			this.isTogglable = ( this.$container.usMod( 'type' ) === 'togglable' );
-			this.isStretched = this.$tabsList.hasClass( 'stretch' );
-			this.minWidth = 0; // Container width at which we should switch to accordion layout
 			this.count = this.$tabs.length;
 
-			// If there are no tabs, abort further execution
+			// If there are no tabs, abort further execution.
 			if ( this.count === 0 ) {
 				return;
 			}
@@ -62,27 +62,27 @@
 				? 'accordion'
 				: ( this.$container.usMod( 'layout' ) || 'hor' );
 
-			// Current active layout (may be switched to 'accordion')
+			// Current active layout (may be switched to 'accordion').
 			this.curLayout = this.basicLayout;
 
-			// Array of active tabs indexes
+			// Array of active tabs indexes.
 			this.active = [];
 			this.activeOnInit = [];
 			this.definedActive = [];
 
-			// Material style bar for Trendy tabs
+			// Material style bar for Trendy tabs.
 			this.isTrendy = this.$container.hasClass( 'style_trendy' );
 			if ( this.isTrendy ) {
 				this.$tabsBar = $();
 			}
 
-			// Preparing arrays of jQuery objects for easier manipulating in future
+			// Preparing arrays of jQuery objects for easier manipulating in future.
 			this.tabs = $.map( this.$tabs.toArray(), $ );
 			this.sections = $.map( this.$sections.toArray(), $ );
 			this.headers = $.map( this.$headers.toArray(), $ );
 			this.contents = $.map( this.$contents.toArray(), $ );
 
-			// Do nothing it there are no sections
+			// Do nothing it there are no sections.
 			if ( ! this.sections.length ) {
 				return;
 			}
@@ -126,12 +126,12 @@
 						) {
 							return;
 						}
-						// Toggling accordion sections
+						// Toggling accordion sections.
 						if ( this.curLayout === 'accordion' && this.isTogglable ) {
-							// Cannot toggle the only active item
+							// Cannot toggle the only active item.
 							this.toggleSection( index );
 						}
-						// Setting tabs active item
+						// Setting tabs active item.
 						else {
 							if ( index != this.active[ 0 ] ) {
 								this.headerClicked = true;
@@ -166,14 +166,14 @@
 					this.$round_charts.length && jQuery.fn.vcRoundChart && this.$round_charts.vcRoundChart( { reload: ! 1 } );
 				}.bind( this ),
 				wheel: function() {
-					// Stop animation when scrolling wheel
+					// Stop animation when scrolling wheel.
 					if ( this.isScrolling ) {
 						$us.$htmlBody.stop( true, false );
 					}
 				}
 			};
 
-			// Starting everything
+			// Starting everything.
 			this.switchLayout( this.curLayout );
 
 			$us.$window
@@ -185,8 +185,8 @@
 				this.resize();
 				$us.timeout( this._events.resize, 50 );
 				$us.timeout( function() {
-					// TODO: move to a class function for code reading improvement
-					// Open tab on page load by hash
+					// TODO: move to a class function for code reading improvement.
+					// Open tab on page load by hash.
 					if ( window.location.hash ) {
 						var hash = window.location.hash.substr( 1 ),
 							$linkedSection = this.$sectionsWrapper.find( '.w-tabs-section[id="' + hash + '"]' );
@@ -199,7 +199,7 @@
 				}.bind( this ), 150 );
 			}.bind( this ) );
 
-			// Support for external links to tabs
+			// Support for external links to tabs.
 			$.each( this.tabs, function( index ) {
 				if ( this.headers.length && this.headers[ index ].attr( 'href' ) != undefined ) {
 					var tabHref = this.headers[ index ].attr( 'href' ),
@@ -218,7 +218,7 @@
 
 			this.$container.addClass( 'initialized' );
 
-			// Gets the height of the header after animation
+			// Gets the height of the header after animation.
 			this.headerHeight = 0;
 			$us.header.on( 'transitionEnd', function( header ) {
 				this.headerHeight = header.getCurrentHeight();
@@ -243,20 +243,15 @@
 		},
 
 		/**
-		 * Clean up layout's special inline styles and/or dom elements
+		 * Clean up layout's special inline styles and/or dom elements.
+		 *
 		 * @param from
 		 */
 		cleanUpLayout: function( from ) {
-			if ( from === 'hor' ) {
-				this.$sectionsWrapper.clearPreviousTransitions().resetInlineCSS( 'width', 'height' );
-				this.$sectionsHelper.clearPreviousTransitions().resetInlineCSS( 'position', 'width', 'left' );
-				this.$sections.resetInlineCSS( 'width', 'display' );
-				this.$container.removeClass( 'autoresize' );
-			} else if ( from === 'accordion' ) {
+			this.$sections.resetInlineCSS( 'display' );
+
+			if ( from === 'accordion' ) {
 				this.$container.removeClass( 'accordion' );
-				this.$sections.resetInlineCSS( 'display' );
-				this.$contents.resetInlineCSS( 'height', 'padding-top', 'padding-bottom', 'display', 'opacity' );
-			} else if ( from === 'ver' ) {
 				this.$contents.resetInlineCSS( 'height', 'padding-top', 'padding-bottom', 'display', 'opacity' );
 			}
 
@@ -266,7 +261,8 @@
 		},
 
 		/**
-		 * Apply layout's special inline styles and/or dom elements
+		 * Apply layout's special inline styles and/or dom elements.
+		 *
 		 * @param to
 		 */
 		prepareLayout: function( to ) {
@@ -280,14 +276,12 @@
 				}
 			}
 
-			if ( to === 'hor' ) {
-				this.$container.addClass( 'autoresize' );
-				this.$sectionsHelper.css( 'position', 'absolute' );
-
-			} else if ( to === 'accordion' ) {
+			if ( to === 'accordion' ) {
 				this.$container.addClass( 'accordion' );
 				this.$contents.hide();
 				if ( this.curLayout !== 'accordion' && this.active[ 0 ] !== undefined && this.active[ 0 ] !== this.definedActive[ 0 ] ) {
+					this.headers[ this.active[ 0 ] ]
+						.removeClass( 'active' );
 					this.tabs[ this.active[ 0 ] ]
 						.removeClass( 'active' );
 					this.sections[ this.active[ 0 ] ]
@@ -321,28 +315,26 @@
 		},
 
 		/**
-		 * Measure needed sizes
+		 * Measure needed sizes.
 		 */
 		measure: function() {
 			if ( this.basicLayout === 'ver' ) {
-				// Measuring minimum tabs width
-				this.$tabsList.css( 'width', 0 );
-				var minTabWidth = this.$tabsList.outerWidth( true );
-				this.$tabsList.css( 'width', '' );
-				// Measuring the mininum content width
-				this.$container.addClass( 'measure' );
-				var minContentWidth = this.$sectionsWrapper.outerWidth( true );
-				this.$container.removeClass( 'measure' );
-				// Measuring minimum tabs width for percent-based sizes
-				var navWidth = this.$container.usMod( 'navwidth' );
-				if ( navWidth !== 'auto' ) {
-					// Percent-based measure
-					minTabWidth = Math.max( minTabWidth, minContentWidth * parseInt( navWidth ) / ( 100 - parseInt( navWidth ) ) );
+				// Get the specified minimum width or determine automatically
+				if ( this.isAccordionAtWidth ) {
+					this.minWidth = this.accordionAtWidth;
+				} else {
+					var // Measuring minimum tabs width.
+						minTabWidth = this.$tabsList.outerWidth( true ),
+						// Static value fo min content width
+						minContentWidth = 300,
+						// Measuring minimum tabs width for percent-based sizes.
+						navWidth = this.$container.usMod( 'navwidth' );
+
+					if ( navWidth !== 'auto' ) {
+						minTabWidth = Math.max( minTabWidth, minContentWidth * parseInt( navWidth ) / ( 100 - parseInt( navWidth ) ) );
+					}
+					this.minWidth = Math.max( 480, minContentWidth + minTabWidth + 1 )
 				}
-				var width = ( ! window.ontouchstart && this.$container.closest('.vc_col-sm-6').parent('.type_boxes').length )
-					? 480 - ( parseInt( this.$container.closest('.vc_col-sm-6').width() ) - this.$container.width() )
-					: 480;
-				this.minWidth = Math.max( width, minContentWidth + minTabWidth + 1 );
 
 				if ( this.isTrendy ) {
 					this.tabHeights = [];
@@ -356,9 +348,14 @@
 			} else {
 				if ( this.basicLayout === 'hor' ) {
 					this.$container.addClass( 'measure' );
-					this.minWidth = 0;
-					for ( var index = 0; index < this.tabs.length; index ++ ) {
-						this.minWidth += this.tabs[ index ].outerWidth( true );
+					// Get the specified minimum width or determine automatically
+					if ( this.isAccordionAtWidth ) {
+						this.minWidth = this.accordionAtWidth;
+					} else {
+						this.minWidth = 0;
+						for ( var index = 0; index < this.tabs.length; index ++ ) {
+							this.minWidth += this.tabs[ index ].outerWidth( true );
+						}
 					}
 					this.$container.removeClass( 'measure' );
 				}
@@ -375,7 +372,7 @@
 		},
 
 		/**
-		 * Counts bar position for certain element index and current layout
+		 * Counts bar position for certain element index and current layout.
 		 *
 		 * @param index
 		 */
@@ -397,7 +394,7 @@
 		},
 
 		/**
-		 * Open tab section
+		 * Open tab section.
 		 *
 		 * @param index int
 		 */
@@ -406,7 +403,6 @@
 				return;
 			}
 			if ( this.curLayout === 'hor' ) {
-				this.$container.addClass( 'autoresize' );
 				this.$sections
 					.removeClass( 'active' )
 					.css( 'display', 'none' );
@@ -429,11 +425,7 @@
 					.stop( true, false )
 					.slideDown( this.options.duration, function() {
 						this._events.contentChanged.call( this );
-						// If the basic layout for current element is not accordion, but the current layout is accordion,
-						// then we will allow scrolling by opening tabs for mobile devices
-						if ( this.basicLayout != 'accordion' && this.curLayout == 'accordion' ) {
-							this.hasScrolling = true;
-						}
+
 						// Scrolling to the opened section
 						if ( this.hasScrolling && this.curLayout === 'accordion' && this.headerClicked == true ) {
 							var top = this.headers[ index ].offset().top;
@@ -441,7 +433,7 @@
 								top -= $us.$canvas.offset().top || 0;
 							}
 							// If there is a sticky section in front of the current section,
-							// then take into account the position this section
+							// then take into account the position this section.
 							var $prevStickySection = this.$container
 								.closest('.l-section')
 								.prevAll( '.l-section.type_sticky' );
@@ -454,28 +446,22 @@
 							var animateOptions = {
 								duration: $us.canvasOptions.scrollDuration,
 								easing: $us.getAnimationName( 'easeInOutExpo' ),
-								/**
-								 * @return void
-								 */
 								start: function() {
 									this.isScrolling = true;
 								}.bind( this ),
-								/**
-								 * @return void
-								 */
 								always: function() {
 									this.isScrolling = false;
 								}.bind( this ),
 								/**
-								 * Get and applying new values during animation
+								 * Get and applying new values during animation.
+								 *
 								 * @param number now
 								 * @param object fx
-								 * @return void
 								 */
 								step: function( now, fx ) {
 									var newTop = top;
 									// Since the header at the moment of scrolling the scroll can change the height,
-									// we will correct the position of the element
+									// we will correct the position of the element.
 									if ( $us.header.isStickyEnabled() ) {
 										newTop -= this.headerHeight;
 									}
@@ -526,7 +512,7 @@
 		},
 
 		/**
-		 * Toggle some togglable accordion section
+		 * Toggle some togglable accordion section.
 		 *
 		 * @param index
 		 */
@@ -560,10 +546,11 @@
 		 * Resize-driven logics
 		 */
 		resize: function() {
-			this.width = this.$container.innerWidth();
-			this.$tabsList.removeClass( 'hidden' );
+			this.width = this.isAccordionAtWidth
+				? $us.$window.outerWidth()
+				: this.$container.width();
 
-			// Tabs in navigation appear as tabs
+			// Skip changing Tabs into Accordion inside header menu on Mobiles
 			if (
 				this.curLayout !== 'accordion'
 				&& ! this.width
@@ -573,8 +560,7 @@
 				return;
 			}
 
-			// Basic layout maybe overriden
-			var nextLayout = ( this.width < this.minWidth )
+			var nextLayout = ( this.width <= this.minWidth )
 				? 'accordion'
 				: this.basicLayout;
 			if ( nextLayout !== this.curLayout ) {
@@ -584,18 +570,6 @@
 				this.measure();
 			}
 
-			// Fixing tabs display
-			if ( this.curLayout === 'hor' ) {
-				this.$container.addClass( 'autoresize' );
-				this.$sectionsWrapper.css( 'width', this.width );
-				this.$sectionsHelper.css( 'width', this.count * this.width );
-				this.$sections.css( 'width', this.width );
-				if ( this.contents[ this.active[ 0 ] ] !== undefined ) {
-					this.$sectionsHelper.css( 'left', - this.width * ( this.isRtl ? ( this.count - this.active[ 0 ] - 1 ) : this.active[ 0 ] ) );
-					var height = this.sections[ this.active[ 0 ] ].height();
-					this.$sectionsWrapper.css( 'height', height );
-				}
-			}
 			this._events.contentChanged();
 
 			if ( this.isTrendy && ( this.curLayout === 'hor' || this.curLayout === 'ver' ) ) {
