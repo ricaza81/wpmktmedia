@@ -165,8 +165,9 @@
 
 			this.blocks[ hash ].top = Math.ceil( targetTop - this._canvasTopOffset );
 		},
+
 		/**
-		 * Count all targets' positions for proper scrolling.
+		 * Count all targets' positions for proper scrolling
 		 *
 		 * @private
 		 */
@@ -353,11 +354,11 @@
 					}
 				}
 				// Get the Y position, taking into account the height of the header, adminbar and sticky elements.
-				data.newY = Math.floor( place.offset().top - this._canvasTopOffset );
+				data.newY = Math.ceil( place.offset().top - this._canvasTopOffset );
 				data.placeType = 'element';
 			} else {
 				// Get the Y position, taking into account the height of the header, adminbar and sticky elements.
-				data.newY = Math.floor( place - this._canvasTopOffset );
+				data.newY = Math.ceil( place - this._canvasTopOffset );
 			}
 
 			// If the page has a sticky section, then consider the height of the sticky section.
@@ -375,7 +376,6 @@
 		 * @param {Boolean} animate
 		 */
 		scrollTo: function( place, animate ) {
-
 			if ( $( place ).closest( '.w-popup-wrap' ).length ) {
 				this.scrollToPopupContent( place );
 				return true;
@@ -396,7 +396,7 @@
 					$( place )[ 0 ].scrollIntoView( { behavior: "smooth", block: "start" } );
 				}
 
-				var scrollTop = parseInt( $us.$window.scrollTop() ),
+				var scrollTop = $us.$window.scrollTop(),
 					// Determining the direction of scrolling - up or down.
 					scrollDirections = scrollTop < offset.newY
 						? 'down'
@@ -545,6 +545,7 @@
 							top -= $us.canvas.getHeightStickySection();
 						}
 					}
+					top = parseInt( top.toFixed( 0 ) );
 					if ( scrollTop >= top && scrollTop <= ( /* block bottom */top + $target.outerHeight( false ) ) ) {
 						activeHash = hash;
 					}

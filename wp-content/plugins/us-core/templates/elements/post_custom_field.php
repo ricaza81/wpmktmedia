@@ -21,7 +21,6 @@ if ( $us_elm_context == 'grid' ) {
 
 } else { /* elseif $us_elm_context == 'shortcode' */
 
-	// TODO, maybe we should replace $us_elm_context with $us_grid_listing_outputs_items
 	global $us_grid_listing_outputs_items;
 
 	// Shortcodes in full content element inside grid
@@ -71,7 +70,7 @@ if ( in_array( $key, array( 'us_tile_icon', 'us_testimonial_rating' ) ) ) {
 
 // Get the value from custom field
 if ( $key == 'custom' AND ! empty( $custom_key ) ) {
-	if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+	if ( usb_is_preview_page_for_template() AND $us_elm_context == 'shortcode' ) {
 		$value = $custom_key;
 	} elseif ( $postID ) {
 		$value = get_post_meta( $postID, $custom_key, TRUE );
@@ -80,7 +79,7 @@ if ( $key == 'custom' AND ! empty( $custom_key ) ) {
 	}
 
 	// In Live Builder for Page Block / Content template show placeholder for shortcode
-} elseif ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+} elseif ( usb_is_preview_page_for_template() AND $us_elm_context == 'shortcode' ) {
 	$image_fields = us_config( 'elements/post_custom_field.params.thumbnail_size.show_if.2', array() );
 	if ( in_array( $key, $image_fields ) ) {
 		$type = 'image';
@@ -102,11 +101,11 @@ if ( $key == 'custom' AND ! empty( $custom_key ) ) {
 		// Force "image" type
 		if ( isset( $acf_obj['type'] ) AND $acf_obj['type'] === 'image' ) {
 			$type = 'image';
-		}
 
-		// Transform array into string
-		if ( is_array( $value ) ) {
-			$value = implode( ', ', $value );
+			// Get image ID, if return format set as "array"
+			if ( isset( $value[ 'id' ] ) ) {
+				$value = (string) $value['id'];
+			}
 		}
 	}
 
@@ -117,27 +116,40 @@ if ( $key == 'custom' AND ! empty( $custom_key ) ) {
 		$value = get_term_meta( $term->term_id, $key, TRUE );
 	}
 
-	// Format the value
-	if ( is_array( $value ) ) {
-		$value = implode( ', ', $value );
-	} elseif ( $type == 'text' ) {
-		$value = wpautop( $value ); // add <p> and <br> if custom field has WYSIWYG
+	// Add <p> and <br> if custom field has WYSIWYG
+	if ( is_string( $value ) AND $type == 'text' ) {
+		$value = wpautop( $value );
 	}
+}
+
+// At this point the $value can contain an array, so we need to transform it to a string
+if ( is_array( $value ) ) {
+	$_has_array = array_filter( $value, 'is_array' );
+	$_has_object = array_filter( $value, 'is_object' );
+
+	// If array contain arrays or objects inside, output specified notification
+    if ( $_has_array OR $_has_object ) {
+		$value = 'Unsupported format';
+
+		// in other cases separate values by comma
+	} else {
+		$value = implode( ', ', $value );
+	}
+}
+
+// In case the value is an object output specified notification
+if ( is_object( $value ) ) {
+	$value = 'Unsupported format';
 }
 
 // Don't output the element, when it's an object OR its value is empty
 if (
-	! apply_filters( 'usb_is_preview_page', NULL )
+	! usb_is_preview_page()
+	AND $hide_empty
 	AND (
-		is_object( $value )
-		OR (
-			$hide_empty
-			AND (
-				$value === ''
-				OR $value === FALSE
-				OR $value === NULL
-			)
-		)
+		$value === ''
+		OR $value === FALSE
+		OR $value === NULL
 	)
 ) {
 	return;
@@ -152,9 +164,6 @@ if ( $link != 'none' AND $color_link ) {
 }
 
 // When some values are set in Design Options, add the specific class
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
 if ( us_design_options_has_property( $css, 'border-radius' ) ) {
 	$_atts['class'] .= ' has_border_radius';
 }
@@ -170,10 +179,12 @@ if ( $type == 'image' ) {
 		$thumbnail_size = $us_grid_img_size;
 	}
 
-	// Format the value to get image ID
-	$value_image_ID = is_array( $value ) ? $value['id'] : (int) $value;
+	// Get image by ID
+	if ( is_numeric( $value ) ) {
+		$value = wp_get_attachment_image( $value, $thumbnail_size );
+	}
 
-	$value = wp_get_attachment_image( $value_image_ID, $thumbnail_size );
+	// If there is no image, display the placeholder
 	if ( empty( $value ) ) {
 		$value = us_get_img_placeholder( $thumbnail_size );
 	}

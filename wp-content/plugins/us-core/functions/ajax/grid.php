@@ -110,16 +110,8 @@ function us_ajax_grid() {
 		$shortcode_atts_string = $matches[3][ $us_grid_ajax_index - 1 ];
 		$shortcode_atts = shortcode_parse_atts( $shortcode_atts_string );
 
-		$shortcode_atts = shortcode_atts(
-			array(
-				'post_type' => '',
-				'pagination_style' => '',
-				'events_calendar_show_past' => '',
-				'no_items_action' => '',
-				'no_items_page_block' => '',
-				'no_items_message' => '',
-			), $shortcode_atts
-		);
+		// Get default and set attributes for a grid
+		$shortcode_atts = us_shortcode_atts( $shortcode_atts, 'us_grid' );
 
 		if ( $shortcode_atts['post_type'] == 'current_query' ) {
 			$allowed_post_types = NULL;
@@ -327,7 +319,6 @@ function us_ajax_grid() {
 		}
 	}
 
-
 	// Applying orderby options
 	if (
 		NULL !== ( $grid_orderby = us_arr_path( $template_vars, 'grid_orderby' ) )
@@ -364,7 +355,18 @@ function us_ajax_grid() {
 				$_GET[ $param ] = (string) $template_vars['query_args'][ $param ];
 			}
 		}
-		add_action( 'pre_get_posts', array( wc()->query, 'product_query' ) );
+		/**
+		 * Handler for applying WC sort filters for AJAX requests
+		 *
+		 * @param WP_Query $query The query
+		 */
+		function us_ajax_pre_get_posts( $query ) {
+			global $us_is_nested_grid; // The constant defining nested grid or not
+			if ( is_null( $us_is_nested_grid ) AND method_exists( wc()->query, 'product_query' ) ) {
+				wc()->query->product_query( $query );
+			}
+		}
+		add_action( 'pre_get_posts', 'us_ajax_pre_get_posts' );
 	}
 
 	if ( ! function_exists( 'us_woocommerce_get_catalog_ordering_args' ) ) {
@@ -435,6 +437,22 @@ function us_ajax_grid() {
 		}
 
 		add_filter( 'posts_orderby', 'us_posts_orderby_for_search', 10, 2 );
+	}
+
+	if ( ! function_exists( 'us_woocommerce_page_title' ) ) {
+		/**
+		 * Handler for redefining the page name in AJAX requests
+		 *
+		 * @param string $page_title The page title
+		 * @return string
+		 */
+		function us_woocommerce_page_title( $page_title ) {
+			if ( is_tax() ) {
+				return get_the_title( wc_get_page_id( 'shop' ) );
+			}
+			return $page_title;
+		}
+		add_filter( 'woocommerce_page_title', 'us_woocommerce_page_title', 501, 1 );
 	}
 
 	us_load_template( 'templates/us_grid/listing', $template_vars );

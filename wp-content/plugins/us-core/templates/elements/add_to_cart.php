@@ -17,7 +17,7 @@ $classes = isset( $classes ) ? $classes : '';
 if ( $us_elm_context == 'shortcode' ) {
 
 	// Do not output this shortcode on the front-end of non-product pages
-	if ( ! $product AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+	if ( ! $product AND ! usb_is_preview_page() ) {
 		return;
 	}
 
@@ -44,7 +44,7 @@ if ( $us_elm_context == 'shortcode' ) {
 		}
 
 		// Output placeholder for Live Builder for Content Template / Page Block
-	} elseif ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+	} elseif ( usb_is_preview_page_for_template() ) {
 		echo '<div class="w-btn us-btn-style_1">' . us_translate( 'Add to cart', 'woocommerce' ) . '</div>';
 	}
 	echo '</div>';

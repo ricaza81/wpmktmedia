@@ -3,8 +3,10 @@
  *
  * @requires $us.canvas
  */
-! function( $ ) {
+! function( $, undefined ) {
 	"use strict";
+
+	var _undefined = undefined;
 
 	$us.WTabs = function( container, options ) {
 		this.init( container, options );
@@ -23,14 +25,15 @@
 
 			// Commonly used dom elements
 			this.$container = $( container );
-			this.$tabsList = this.$container.find( '> .w-tabs-list:first' );
-			this.$tabs = this.$tabsList.find( '.w-tabs-item' );
-			this.$sectionsWrapper = this.$container.find( '> .w-tabs-sections:first' );
-			this.$sections = this.$sectionsWrapper.find( '> .w-tabs-section' );
+			this.$tabsList = $( '> .w-tabs-list:first',  this.$container );
+			this.$tabs = $( '.w-tabs-item', this.$tabsList );
+			this.$sectionsWrapper = $( '> .w-tabs-sections:first', this.$container );
+			this.$sections = $( '> .w-tabs-section', this.$sectionsWrapper );
 			this.$headers = this.$sections.children( '.w-tabs-section-header' );
 			this.$contents = this.$sections.children( '.w-tabs-section-content' );
-			this.$line_charts = this.$container.find( ".vc_line-chart" );
-			this.$round_charts = this.$container.find( ".vc_round-chart" );
+			this.$line_charts = $( '.vc_line-chart', this.$container );
+			this.$round_charts = $( '.vc_round-chart', this.$container );
+			this.$tabsBar = $();
 
 			// Overriding specific to Web Accessibility, it is not allowed to have several identical id and aria-content, aria-control.
 			// http://web-accessibility.carnegiemuseums.org/code/accordions/
@@ -39,18 +42,19 @@
 			}
 
 			// Class variables
-			this.width = 0;
-			this.minWidth = 0; // Container width at which we should switch to accordion layout.
 			this.accordionAtWidth = this.$container.data( 'accordion-at-width' );
-			this.isAccordionAtWidth = $.isNumeric( parseInt( this.accordionAtWidth ) );
-			this.tabWidths = [];
-			this.tabHeights = [];
-			this.tabTops = [];
-			this.tabLefts = [];
-			this.isScrolling = false;
-			this.hasScrolling = this.$container.hasClass( 'has_scrolling' ) || false;
-			this.isTogglable = ( this.$container.usMod( 'type' ) === 'togglable' );
+			this.align = this.$tabsList.usMod( 'align' );
 			this.count = this.$tabs.length;
+			this.hasScrolling = this.$container.hasClass( 'has_scrolling' ) || false;
+			this.isAccordionAtWidth = $.isNumeric( parseInt( this.accordionAtWidth ) );
+			this.isScrolling = false;
+			this.isTogglable = ( this.$container.usMod( 'type' ) === 'togglable' );
+			this.minWidth = 0; // Container width at which we should switch to accordion layout.
+			this.tabHeights = [];
+			this.tabLefts = [];
+			this.tabTops = [];
+			this.tabWidths = [];
+			this.width = 0;
 
 			// If there are no tabs, abort further execution.
 			if ( this.count === 0 ) {
@@ -69,12 +73,6 @@
 			this.active = [];
 			this.activeOnInit = [];
 			this.definedActive = [];
-
-			// Material style bar for Trendy tabs.
-			this.isTrendy = this.$container.hasClass( 'style_trendy' );
-			if ( this.isTrendy ) {
-				this.$tabsBar = $();
-			}
 
 			// Preparing arrays of jQuery objects for easier manipulating in future.
 			this.tabs = $.map( this.$tabs.toArray(), $ );
@@ -145,7 +143,7 @@
 									.removeClass( 'active' );
 								this.sections[ index ]
 									.removeClass( 'active' );
-								this.active[ 0 ] = undefined;
+								this.active[ 0 ] = _undefined;
 							}
 						}
 					}.bind( this ) );
@@ -179,7 +177,7 @@
 			$us.$window
 				.on( 'resize', $us.debounce( this._events.resize, 5 ) )
 				.on( 'hashchange', this._events.hashchange )
-				.on( 'wheel', $us.debounce( this._events.wheel.bind( this ), 5 ) )
+				.on( 'wheel', $us.debounce( this._events.wheel.bind( this ), 5 ) );
 
 			$us.$document.ready( function() {
 				this.resize();
@@ -201,7 +199,7 @@
 
 			// Support for external links to tabs.
 			$.each( this.tabs, function( index ) {
-				if ( this.headers.length && this.headers[ index ].attr( 'href' ) != undefined ) {
+				if ( this.headers.length && this.headers[ index ].attr( 'href' ) != _undefined ) {
 					var tabHref = this.headers[ index ].attr( 'href' ),
 						tabHeader = this.headers[ index ];
 					$( 'a[href="' + tabHref + '"]', this.$container ).on( 'click', function( e ) {
@@ -223,6 +221,31 @@
 			$us.header.on( 'transitionEnd', function( header ) {
 				this.headerHeight = header.getCurrentHeight();
 			}.bind( this ) );
+
+			if ( $us.usbPreview ) {
+				/**
+				 * Change handler via builder
+				 */
+				var usbContentChange = function() {
+					if ( ! this.isTrendy() || this.curLayout == 'accordion') {
+						return;
+					}
+					this.measure();
+					// Set bar position for certain element index and current layout
+					this.setBarPosition( this.active[ 0 ] || 0 );
+				}.bind( this );
+				this.$container // Watches changes in the builder
+					.on( 'usb.contentChange', $us.debounce( usbContentChange, 1 ) );
+			}
+		},
+
+		/**
+		 * Determines if trendy style (Material style)
+		 *
+		 * @return {boolean} True if trendy, False otherwise
+		 */
+		isTrendy: function() {
+			return this.$container.hasClass( 'style_trendy' );
 		},
 
 		hashchange: function() {
@@ -255,7 +278,7 @@
 				this.$contents.resetInlineCSS( 'height', 'padding-top', 'padding-bottom', 'display', 'opacity' );
 			}
 
-			if ( this.isTrendy && ( from === 'hor' || from === 'ver' ) ) {
+			if ( this.isTrendy() && 'hor|ver'.indexOf( from ) > -1 ) {
 				this.$tabsBar.remove();
 			}
 		},
@@ -266,9 +289,9 @@
 		 * @param to
 		 */
 		prepareLayout: function( to ) {
-			if ( to !== 'accordion' && this.active[ 0 ] === undefined ) {
+			if ( to !== 'accordion' && this.active[ 0 ] === _undefined ) {
 				this.active[ 0 ] = this.activeOnInit[ 0 ];
-				if ( this.active[ 0 ] !== undefined ) {
+				if ( this.active[ 0 ] !== _undefined ) {
 					this.tabs[ this.active[ 0 ] ]
 						.addClass( 'active' );
 					this.sections[ this.active[ 0 ] ]
@@ -279,7 +302,7 @@
 			if ( to === 'accordion' ) {
 				this.$container.addClass( 'accordion' );
 				this.$contents.hide();
-				if ( this.curLayout !== 'accordion' && this.active[ 0 ] !== undefined && this.active[ 0 ] !== this.definedActive[ 0 ] ) {
+				if ( this.curLayout !== 'accordion' && this.active[ 0 ] !== _undefined && this.active[ 0 ] !== this.definedActive[ 0 ] ) {
 					this.headers[ this.active[ 0 ] ]
 						.removeClass( 'active' );
 					this.tabs[ this.active[ 0 ] ]
@@ -290,7 +313,7 @@
 
 				}
 				for ( var i = 0; i < this.active.length; i ++ ) {
-					if ( this.contents[ this.active[ i ] ] !== undefined ) {
+					if ( this.contents[ this.active[ i ] ] !== _undefined ) {
 						this.tabs[ this.active[ i ] ]
 							.addClass( 'active' );
 						this.sections[ this.active[ i ] ]
@@ -308,10 +331,10 @@
 					.show();
 			}
 
-			if ( this.isTrendy && ( to === 'hor' || to === 'ver' ) ) {
-				this.$tabsBar = $( '<div class="w-tabs-list-bar"></div>' ).appendTo( this.$tabsList );
+			if ( this.isTrendy() && 'hor|ver'.indexOf( this.curLayout ) > -1 ) {
+				this.$tabsBar = $( '<div class="w-tabs-list-bar"></div>' )
+					.appendTo( this.$tabsList );
 			}
-
 		},
 
 		/**
@@ -336,12 +359,16 @@
 					this.minWidth = Math.max( 480, minContentWidth + minTabWidth + 1 )
 				}
 
-				if ( this.isTrendy ) {
+				if ( this.isTrendy() ) {
 					this.tabHeights = [];
 					this.tabTops = [];
 					for ( var index = 0; index < this.tabs.length; index ++ ) {
 						this.tabHeights.push( this.tabs[ index ].outerHeight( true ) );
-						this.tabTops.push( index ? ( this.tabTops[ index - 1 ] + this.tabHeights[ index - 1 ] ) : 0 );
+						this.tabTops.push(
+							index
+								? ( this.tabTops[ index - 1 ] + this.tabHeights[ index - 1 ] )
+								: 0
+						);
 					}
 				}
 
@@ -353,43 +380,77 @@
 						this.minWidth = this.accordionAtWidth;
 					} else {
 						this.minWidth = 0;
-						for ( var index = 0; index < this.tabs.length; index ++ ) {
+						for ( var index = 0; index < this.tabs.length; index++ ) {
 							this.minWidth += this.tabs[ index ].outerWidth( true );
 						}
 					}
 					this.$container.removeClass( 'measure' );
 				}
 
-				if ( this.isTrendy ) {
+				if ( this.isTrendy() ) {
 					this.tabWidths = [];
 					this.tabLefts = [];
 					for ( var index = 0; index < this.tabs.length; index ++ ) {
 						this.tabWidths.push( this.tabs[ index ].outerWidth( true ) );
-						this.tabLefts.push( index ? ( this.tabLefts[ index - 1 ] + this.tabWidths[ index - 1 ] ) : 0 );
+						this.tabLefts.push( index
+								? ( this.tabLefts[ index - 1 ] + this.tabWidths[ index - 1 ] )
+								: this.tabs[ index ].position().left
+						);
+					}
+					// Offset correction for RTL version with Trendy enabled
+					if ( this.isRtl ) {
+						var
+							// Get the width of the first tab
+							firstTabWidth = this.tabWidths[ 0 ],
+							// Get X offsets
+							offset = ( 'none' == this.align )
+								? this.$tabsList.outerWidth( true )
+								: this.tabWidths // Get the total width of all tambours
+									.reduce( function ( a, b ) { return a + b }, /* Default */0 );
+						// Calculate position based on offset
+						this.tabLefts = this.tabLefts
+							.map( function ( left ) { return Math.abs( left - offset + firstTabWidth ) } );
 					}
 				}
 			}
 		},
 
 		/**
-		 * Counts bar position for certain element index and current layout.
+		 * Set bar position for certain element index and current layout
 		 *
-		 * @param index
+		 * @param {number} index The index element
+		 * @param {boolean} animated Animating an element when updating css
 		 */
-		barPosition: function( index ) {
-			if ( this.curLayout === 'hor' ) {
-				var result = { width: this.tabWidths[ index ] };
-				result[ this.isRtl ? 'right' : 'left' ] = this.tabLefts[ index ];
-				return result;
+		setBarPosition: function( index, animated ) {
+			if (
+				index === _undefined
+				|| ! this.isTrendy()
+				|| 'hor|ver'.indexOf( this.curLayout ) == -1
+			) {
+				return;
 			}
-			else if ( this.curLayout === 'ver' ) {
-				return {
+			// Add a bar to the document if it does not exist
+			if ( ! this.$tabsBar.length ) {
+				this.$tabsBar = $( '<div class="w-tabs-list-bar"></div>' )
+					.appendTo( this.$tabsList );
+			}
+			// Get bar position for certain element index and current layout
+			var css = {};
+			if ( this.curLayout === 'hor' ) {
+				css = { width: this.tabWidths[ index ] };
+				css[ this.isRtl ? 'right' : 'left' ] = this.tabLefts[ index ];
+			} else if ( this.curLayout === 'ver' ) {
+				css = {
 					top: this.tabTops[ index ],
 					height: this.tabHeights[ index ]
 				};
 			}
-			else {
-				return {};
+			// Set css properties for a bar element
+			if ( ! animated ) {
+				this.$tabsBar.css( css );
+			} else {
+				this.$tabsBar
+					.performCSSTransition( css, this.options.duration, null, this.options.easing );
 			}
 		},
 
@@ -399,7 +460,7 @@
 		 * @param index int
 		 */
 		openSection: function( index ) {
-			if ( this.sections[ index ] === undefined ) {
+			if ( this.sections[ index ] === _undefined ) {
 				return;
 			}
 			if ( this.curLayout === 'hor' ) {
@@ -412,7 +473,7 @@
 						$( this ).addClass( 'active' );
 					} );
 			} else if ( this.curLayout === 'accordion' ) {
-				if ( this.contents[ this.active[ 0 ] ] !== undefined ) {
+				if ( this.contents[ this.active[ 0 ] ] !== _undefined ) {
 					this.contents[ this.active[ 0 ] ]
 						.css( 'display', 'block' )
 						.attr( 'aria-expanded', 'true' )
@@ -485,7 +546,7 @@
 				this.sections[ index ]
 					.addClass( 'active' );
 			} else if ( this.curLayout === 'ver' ) {
-				if ( this.contents[ this.active[ 0 ] ] !== undefined ) {
+				if ( this.contents[ this.active[ 0 ] ] !== _undefined ) {
 					this.contents[ this.active[ 0 ] ]
 						.css( 'display', 'none' )
 						.attr( 'aria-expanded', 'false' );
@@ -506,9 +567,8 @@
 			this.tabs[ index ].addClass( 'active' );
 			this.active[ 0 ] = index;
 
-			if ( this.isTrendy && ( this.curLayout === 'hor' || this.curLayout === 'ver' ) ) {
-				this.$tabsBar.performCSSTransition( this.barPosition( index ), this.options.duration, null, this.options.easing );
-			}
+			// Set bar position for certain element index and current layout
+			this.setBarPosition( index, /* animated */true );
 		},
 
 		/**
@@ -571,10 +631,8 @@
 			}
 
 			this._events.contentChanged();
-
-			if ( this.isTrendy && ( this.curLayout === 'hor' || this.curLayout === 'ver' ) ) {
-				this.$tabsBar.css( this.barPosition( this.active[ 0 ] ), this.options.duration, null, this.options.easing );
-			}
+			// Set bar position for certain element index and current layout
+			this.setBarPosition( this.active[ 0 ] );
 		}
 	};
 

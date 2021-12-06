@@ -37,9 +37,6 @@ return array(
 				'std' => FALSE,
 				'classes' => 'for_above',
 				'context' => array( 'header' ),
-				'usb_preview' => array(
-					'toggle_class' => 'wrap',
-				),
 			),
 			'link_type' => array(
 				'title' => us_translate( 'Link' ),

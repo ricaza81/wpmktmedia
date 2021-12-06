@@ -310,6 +310,32 @@ if ( ! function_exists( 'us_update_postmeta_for_custom_css' ) ) {
 	}
 }
 
+if ( ! function_exists( 'us_update_postmeta_schema_markup' ) ) {
+	/**
+	 * Checking and saving information about `schema_markup` in post metadata
+	 *
+	 * @param WP_Post $post
+	 * @return NULL|array|string
+	 */
+	function us_update_postmeta_schema_markup( $post ) {
+
+		// If the `schema_markup` is disabled in the theme options, delete the meta entry
+		if ( ! us_get_option( 'schema_markup' ) ) {
+			delete_post_meta( $post->ID, '_us_schema_markup_faq' );
+			return;
+		}
+
+		// If the `schema_markup` is present in the accordion, store `1` in the post metadata
+		if ( preg_match( '/(\[vc_tta_accordion.*faq_markup="1")/', $post->post_content ) ) {
+			update_post_meta( $post->ID, '_us_schema_markup_faq', 1 );
+			return;
+		}
+
+		// Otherwise, delete the meta entry
+		delete_post_meta( $post->ID, '_us_schema_markup_faq' );
+	}
+}
+
 if ( ! function_exists( 'us_save_post' ) ) {
 	add_action( 'save_post', 'us_save_post', 10, 2 );
 	/**
@@ -320,6 +346,7 @@ if ( ! function_exists( 'us_save_post' ) ) {
 	 */
 	function us_save_post( $post_id, $post ) {
 		us_update_postmeta_for_custom_css( $post );
+		us_update_postmeta_schema_markup( $post );
 	}
 }
 
@@ -334,7 +361,7 @@ if ( ! function_exists( 'us_vc_base_save_post_custom_css' ) ) {
 	 */
 	function us_vc_base_save_post_custom_css( $post_custom_css, $post_id ) {
 		// Get usb key for custom css
-		$usb_key_custom_css = apply_filters( 'usb_get_key_custom_css', /* Return on none value */NULL );
+		$usb_key_custom_css = usb_get_key_custom_css();
 		if ( empty( $usb_key_custom_css ) ) {
 			return $post_custom_css;
 		}

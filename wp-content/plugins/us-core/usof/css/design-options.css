@@ -82,10 +82,11 @@ textarea.usof_design_value {
 		visibility: hidden;
 		font-size: .9em;
 		padding: 0 10px;
+		border-radius: 4px;
 		color: var(--usof-color-blue-50);
 		}
 	.usof-design-options-reset:hover {
-		background: var(--usof-color-gray-5);
+		background: var(--usof-color-gray-2);
 		}
 	.usof-design-options-header.changed .usof-design-options-reset {
 		visibility: visible;
@@ -95,6 +96,7 @@ textarea.usof_design_value {
 	.usof-design-options-responsive {
 		visibility: hidden;
 		padding: 0 10px;
+		border-radius: 4px;
 		margin-right: auto;
 		}
 		.usof-design-options-responsive:before {
@@ -104,7 +106,7 @@ textarea.usof_design_value {
 		visibility: visible;
 		}
 	.usof-design-options-responsive:hover {
-		background: var(--usof-color-gray-5);
+		background: var(--usof-color-gray-2);
 		color: var(--usof-color-gray-90);
 		}
 	.usof-design-options-header.responsive .usof-design-options-responsive {
@@ -155,6 +157,8 @@ textarea.usof_design_value {
 .usof-design-options-content .us-builder-states {
 	display: none;
 	margin: .6em 1em;
+	border-radius: 4px;
+	overflow: hidden;
 	}
 .responsive + .usof-design-options-content > .us-builder-states {
 	display: flex;
@@ -187,3 +191,6 @@ textarea.usof_design_value {
 .usof-design-options .usof-form-row.cols_4 {
 	width: 25%;
 	}
+	.usof-design-options .usof-form-row.cols_4 > .usof-form-row-title {
+		white-space: nowrap;
+		}

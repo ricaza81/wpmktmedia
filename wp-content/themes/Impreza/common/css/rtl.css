@@ -578,13 +578,24 @@ i + .w-tabs-section-title {
 .w-tabs-section-header.cpos_right .w-tabs-section-control {
 	margin-right: auto;
 	}
-.w-tabs.layout_ver.navpos_left .w-tabs-section:not(.no_indents) {
-	padding-left: 0;
-	padding-right: 2.5rem;
+.w-tabs.layout_ver.navpos_left {
+	flex-direction: row-reverse;
 	}
-.w-tabs.layout_ver.navpos_right .w-tabs-section:not(.no_indents) {
-	padding-left: 2.5rem;
-	padding-right: 0;
+.w-tabs.layout_ver.navpos_right {
+	flex-direction: row;
+	}
+.w-tabs.style_simple.layout_hor > .w-tabs-list .w-tabs-item:not(:last-of-type),
+.w-tabs.style_simple2.layout_hor > .w-tabs-list .w-tabs-item:not(:last-of-type) {
+	margin-left: 1.5em;
+	margin-right: 0;
+	}
+.w-tabs.style_simple2.layout_hor > .w-tabs-list .w-tabs-item:after {
+	left: auto;
+	right: 0;
+	}
+.w-tabs.style_simple3.layout_hor > .w-tabs-list .w-tabs-item:not(:last-of-type) {
+	margin-left: .3em;
+	margin-right: 0;
 	}
 
 /* pagination */

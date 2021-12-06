@@ -18,7 +18,7 @@
  * @var $css                 string Custom CSS
  * @var $us_bg_overlay_color string
  */
- 
+
 // Enable new columns layout only if Live Builde is enabled too
 $grid_columns_layout = ( us_get_option( 'live_builder' ) AND us_get_option( 'grid_columns_layout' ) );
 
@@ -69,11 +69,6 @@ if ( us_design_options_has_property( $css, array( 'background-color', 'backgroun
 	$_atts['class'] .= ' has_bg_color';
 }
 
-// When text color is set in Design Options, add the specific class
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 // Fallback for the old "animate" attribute (for versions before 8.0)
 if ( ! us_amp() AND ! us_design_options_has_property( $css, 'animation-name' ) AND ! empty( $atts['animate'] ) ) {
 	$_atts['class'] .= ' us_animate_' . $atts['animate'];
@@ -93,7 +88,7 @@ if ( ! empty( $el_id ) ) {
 
 // Background Overlay
 $bg_overlay_html = '';
-if ( ! empty( $us_bg_overlay_color ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( ! empty( $us_bg_overlay_color ) OR usb_is_preview_page() ) {
 	$bg_overlay_html = '<div class="vc_column-overlay" style="background:' . us_get_color( $us_bg_overlay_color, /* Gradient */ TRUE ) . '"></div>';
 }
 

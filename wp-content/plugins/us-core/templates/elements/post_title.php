@@ -44,10 +44,10 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 		$title = single_tag_title( '', FALSE );
 	} elseif ( is_category() ) {
 		$title = single_cat_title( '', FALSE );
-	} elseif ( is_tax() ) {
-		$title = single_term_title( '', FALSE );
 	} elseif ( function_exists( 'is_shop' ) AND is_shop() ) {
 		$title = woocommerce_page_title( '', FALSE );
+	} elseif ( is_tax() ) { // Note: It is important that this check should be after `is_shop`
+		$title = single_term_title( '', FALSE );
 	} elseif ( is_archive() ) {
 		$title = get_the_archive_title();
 	} elseif ( is_404() ) {
@@ -78,11 +78,6 @@ if ( $us_elm_context == 'grid' AND get_post_type() == 'product' ) {
 // Extra class for link color
 if ( $color_link ) {
 	$_atts['class'] .= ' color_link_inherit';
-}
-
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
 }
 
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {

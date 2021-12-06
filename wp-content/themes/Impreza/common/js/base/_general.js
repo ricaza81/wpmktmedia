@@ -932,6 +932,11 @@ jQuery( function( $ ) {
 				// Not percent: using pixels
 				offset = parseInt( offset );
 			}
+			// Determining whether an element is already in the scope,
+			// if it is visible, reset offset
+			if ( $elm.offset().top < ( $us.$window.height() + $us.$window.scrollTop() ) ) {
+				offset = 0;
+			}
 			var waypoint = {
 				$elm: $elm, offset: offset, fn: fn
 			};

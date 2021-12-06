@@ -109,9 +109,6 @@ if (
 	if ( us_design_options_has_property( $css, array( 'background-color', 'background-image' ) ) ) {
 		$_atts['class'] .= ' has_bg_color';
 	}
-	if ( us_design_options_has_property( $css, 'color' ) ) {
-		$_atts['class'] .= ' has_text_color';
-	}
 }
 
 // Get url to the image to immitate shadow

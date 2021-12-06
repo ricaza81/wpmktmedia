@@ -60,7 +60,7 @@ foreach ( $available_taxonomies as $taxonomy_slug => $taxonomy ) {
 	if (
 		wp_doing_ajax()
 		OR in_array( $pagenow, array( 'post.php', 'post-new.php' ) )
-		OR apply_filters( 'usb_is_builder_page', NULL )
+		OR usb_is_builder_page()
 	) {
 		$terms_params = array(
 			'taxonomy' => $taxonomy_slug,

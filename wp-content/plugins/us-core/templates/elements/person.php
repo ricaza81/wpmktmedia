@@ -38,11 +38,6 @@ if ( ! empty( $content ) ) {
 	$_atts['class'] .= ' with_desc';
 }
 
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -192,7 +187,7 @@ if ( $layout == 'trendy' AND ( ! empty( $content ) OR ! empty( $social_links_htm
 if ( ! in_array( $layout, array( 'square', 'circle' ) ) ) {
 	$output .= $social_links_html;
 }
-if ( ! empty( $content ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( ! empty( $content ) OR usb_is_preview_page() ) {
 	$output .= '<div class="w-person-description"' . $schema_desc . '>' . do_shortcode( wpautop( $content ) ) . '</div>';
 }
 $output .= '</div></div>';

@@ -56,7 +56,7 @@
 // if so, output these Page Blocks and Post Content only
 if (
 	preg_match_all( '/\[(us_\w+)\s(.*remove_rows="parent_row"?[^\]]+)\]/', $content, $shortcode_matches )
-	AND ! apply_filters( 'usb_is_preview_page', NULL )
+	AND ! usb_is_preview_page()
 ) {
 	$new_content = '';
 	$shortcodes_regex = get_shortcode_regex( $shortcode_matches[1] );
@@ -117,11 +117,6 @@ if ( ! empty( $atts['disable_element'] ) ) {
 	} else {
 		return '';
 	}
-}
-
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
 }
 
 // Generate Background Image output
@@ -230,7 +225,7 @@ if ( ! us_amp() ) {
 				$video_params = '?autoplay=1&loop=1&muted=1&title=0&byline=0&background=1';
 			}
 			// Removing autoplay for builder preview
-			if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+			if ( usb_is_preview_page() ) {
 				$video_params = str_replace( 'autoplay=1&loop=1&', '', $video_params );
 			}
 			$embed_html = ( ! empty( $embed['iframe_html'] ) ) ? $embed['iframe_html'] : $embed['player_html'];
@@ -295,7 +290,7 @@ if ( ! us_amp() ) {
 
 // Background Overlay
 $bg_overlay_html = '';
-if ( apply_filters( 'usb_is_preview_page', NULL ) OR ! empty( $us_bg_overlay_color ) ) {
+if ( usb_is_preview_page() OR ! empty( $us_bg_overlay_color ) ) {
 	$bg_overlay_html = '<div class="l-section-overlay" style="background:' . us_get_color( $us_bg_overlay_color, TRUE ) . '"></div>';
 }
 

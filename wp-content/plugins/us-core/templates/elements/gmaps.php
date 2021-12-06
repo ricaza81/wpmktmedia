@@ -38,15 +38,12 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 if ( us_design_options_has_property( $css, 'font-size' ) ) {
 	$_atts['class'] .= ' has_font_size';
 }
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
 
 // Set unique map ID
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 } elseif (
-	apply_filters( 'usb_is_preview_page', NULL )
+	usb_is_preview_page()
 	OR ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() )
 ) {
 	$_atts['id'] = us_uniqid();
@@ -94,7 +91,7 @@ if (
 ) {
 	if ( $acf_map_field = get_field( $source ) ) {
 		$marker_address = $acf_map_field['address'];
-	} elseif ( ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+	} elseif ( ! usb_is_preview_page() ) {
 		// Don't output the element if custom field has no value
 		return;
 	}

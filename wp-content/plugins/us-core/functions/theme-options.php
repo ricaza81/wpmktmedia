@@ -277,7 +277,7 @@ function us_generate_asset_file( $ext, $custom_language_domain = '' ) {
 						}
 					}
 				}
-				
+
 				if ( $gfont_file_copied ) {
 					$google_fonts_content = file_get_contents( $gfont_file_path );
 					$content = $google_fonts_content . $content;

@@ -12,7 +12,7 @@ if ( us_amp() ) {
 }
 
 // Don't output the Grid Filter if there are no items for it
-if ( empty( $filter_items ) AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( empty( $filter_items ) AND ! usb_is_preview_page() ) {
 	return;
 }
 
@@ -20,11 +20,6 @@ $filter_items = json_decode( urldecode( $filter_items ), TRUE );
 
 $form_atts['class'] = 'w-filter state_desktop';
 $form_atts['class'] .= isset( $classes ) ? $classes : '';
-
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$form_atts['class'] .= ' has_text_color';
-}
 
 $form_atts['class'] .= ' layout_' . $layout;
 $form_atts['class'] .= ' items_' . count( $filter_items );
@@ -142,26 +137,33 @@ $query_args = array(
  */
 $selected_taxonomies = array();
 if ( ! is_archive() ) {
-	$post_id = get_the_ID();
+
+	// Get current post ID
+	if ( is_search() ) {
+		$post_id = (int) us_get_option( 'search_page', /* Default */get_the_ID() );
+	} else {
+		$post_id = get_the_ID();
+	}
+
 	$meta_key = '_us_first_grid_selected_taxonomies';
 	// If there are no parameters in the current object, then we will get all the indicators to check
 	if ( ! $selected_taxonomies = get_post_meta( $post_id, $meta_key, TRUE ) ) {
-		$post_ids = array();
-		us_get_recursive_parse_page_block( get_post( $post_id ), function ( $post ) use ( &$post_ids ) {
-			$post_ids[] = $post->ID;
+		$page_block_ids = array();
+		us_get_recursive_parse_page_block( get_post( $post_id ), function ( $page_block ) use ( &$page_block_ids ) {
+			$page_block_ids[] = $page_block->ID;
 		} );
 	}
-	if ( ! empty( $post_ids ) ) {
-		foreach ( $post_ids as $post_id ) {
-			if ( $selected_taxonomies = get_post_meta( $post_id, $meta_key, TRUE ) ) {
+	if ( ! empty( $page_block_ids ) ) {
+		foreach ( $page_block_ids as $page_block_id ) {
+			if ( $selected_taxonomies = get_post_meta( $page_block_id, $meta_key, TRUE ) ) {
 				break;
 			}
 		}
 	}
 
 	// Get the post types of the first grid
-	if ( $post_types = (array) get_post_meta( $post_id, '_us_first_grid_post_type', TRUE ) ) {
-		$query_args['post_type'] = (string) us_arr_path( $post_types, '0', 'post' );
+	if ( ! is_search() AND $post_types = (array) get_post_meta( $post_id, '_us_first_grid_post_type', TRUE ) ) {
+		$query_args['post_type'] = (string) us_arr_path( $post_types, '0', /* Default */'post' );
 	}
 	// Get products include of the first grid
 	if ( $products_include = (string) get_post_meta( $post_id, '_us_first_grid_products_include', TRUE ) ) {
@@ -183,7 +185,7 @@ if ( ! is_archive() ) {
 			);
 		}
 	}
-	unset( $post_id, $post_ids, $meta_key, $products_include );
+	unset( $post_id, $page_block_ids, $meta_key, $products_include );
 }
 
 if ( is_archive() ) {
@@ -192,11 +194,6 @@ if ( is_archive() ) {
 	if ( isset( $wp_query->posts[0]->post_type ) AND in_array( $wp_query->posts[0]->post_type, $query_args['post_type'] ) ) {
 		$query_args['post_type'] = array( $wp_query->posts[0]->post_type );
 	}
-}
-
-// Fix for search query when Grid Filter goes after Grids
-if ( is_search() ) {
-	$query_args['post_type'] = array( '' );
 }
 
 /**
@@ -380,7 +377,7 @@ foreach ( $filter_items as $filter_item ) {
 		if ( function_exists( 'acf_get_field' ) AND $acf_field = acf_get_field( $item_name ) ) {
 
 			// Add a unique ID to the item name and source
-			$filter_item['source'] .= '_' . $acf_field['ID'];
+			$filter_item['source'] = strtolower( $filter_item['source'] . '_' . $acf_field['ID'] );
 			$item_name .= '_' . $acf_field['ID'];
 			$source .= '_' . $acf_field['ID'];
 
@@ -398,22 +395,27 @@ foreach ( $filter_items as $filter_item ) {
 					// Get the number of entries for a ACF
 					$item_query_args = $query_args;
 
+					// Name to lowercase
+					if ( $acf_field_name = us_arr_path( $acf_field, 'name', NULL ) ) {
+						$acf_field_name = strtolower( (string) $acf_field_name );
+					}
+
 					$item_query_args['meta_query'][] = array(
 						'relation' => 'OR',
 						array(
-							'key' => us_arr_path( $acf_field, 'name', NULL ),
+							'key' => $acf_field_name,
 							'value' => '"' . $option_key . '"',
 							'compare' => 'LIKE',
 							'type' => 'CHAR',
 						),
 						array(
-							'key' => us_arr_path( $acf_field, 'name', NULL ),
+							'key' => $acf_field_name,
 							'value' => '"' . $option_name . '"',
 							'compare' => 'LIKE',
 							'type' => 'CHAR',
 						),
 						array(
-							'key' => us_arr_path( $acf_field, 'name', NULL ),
+							'key' => $acf_field_name,
 							'value' => array( $option_key, $option_name ),
 							'compare' => 'IN',
 							'type' => 'CHAR',
@@ -517,7 +519,6 @@ foreach ( $filter_items as $filter_item ) {
 			if ( empty( $item_value->count ) ) {
 				continue;
 			}
-
 
 			$item_value_slug = urlencode( $item_value->slug );
 

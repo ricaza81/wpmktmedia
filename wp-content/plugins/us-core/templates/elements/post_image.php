@@ -122,7 +122,7 @@ if (
 $_post_preview = '';
 
 // In Live Builder for Page Block / Content template show a placeholder for shortcode
-if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+if ( usb_is_preview_page_for_template() AND $us_elm_context == 'shortcode' ) {
 	$_post_preview = us_get_img_placeholder( $thumbnail_size );
 }
 
@@ -237,7 +237,7 @@ if ( $_post_preview == '' AND $placeholder ) {
 }
 
 // Don't output the element without any content unless it's US Builder page
-if ( $_post_preview == '' AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( $_post_preview == '' AND ! usb_is_preview_page() ) {
 	return;
 }
 

@@ -17,9 +17,12 @@ if ( ! empty( $value ) AND is_string( $value ) AND $value[0] === '{' ) {
 }
 
 // Fallback
-$value = us_hb_settings_fallback( $value );
-
-$value = us_fix_header_settings( $value );
+if ( function_exists( 'us_header_settings_fallback' ) ) {
+	$value = us_header_settings_fallback( $value );
+}
+if ( function_exists( 'us_fix_header_settings' ) ) {
+	$value = us_fix_header_settings( $value );
+}
 
 $output = '<div class="us-bld" data-ajaxurl="' . esc_attr( admin_url( 'admin-ajax.php' ) ) . '">';
 

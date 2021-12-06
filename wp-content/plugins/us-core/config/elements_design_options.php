@@ -31,9 +31,6 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => us_translate( 'Text' ),
-				'usb_preview' => array(
-					'toggle_class' => 'has_text_color',
-				),
 			),
 			// Note: When using responsive design, the default value will be `inherit`
 			// for the possibility of canceling other values.
@@ -42,13 +39,13 @@ return array(
 				'type' => 'radio',
 				'labels_as_icons' => 'fas fa-align-*',
 				'options' => array(
-					'' => us_translate( 'Default' ),
+					'inherit' => us_translate( 'Default' ),
 					'left' => us_translate( 'Left' ),
 					'center' => us_translate( 'Center' ),
 					'right' => us_translate( 'Right' ),
 					'justify' => us_translate( 'Justify' ),
 				),
-				'std' => '',
+				'std' => 'inherit',
 				'cols' => 2,
 				'group' => us_translate( 'Text' ),
 			),
@@ -111,9 +108,6 @@ return array(
 				'std' => '',
 				'cols' => 3,
 				'group' => us_translate( 'Text' ),
-				'usb_preview' => array(
-					'toggle_class' => 'has_font_size',
-				),
 			),
 			'line-height' => array(
 				'title' => __( 'Line height', 'us' ),
@@ -139,9 +133,6 @@ return array(
 				'clear_pos' => 'right',
 				'std' => '',
 				'group' => __( 'Background', 'us' ),
-				'usb_preview' => array(
-					'toggle_class' => 'has_bg_color',
-				),
 			),
 			'background-image' => array(
 				'title' => __( 'Background Image', 'us' ),
@@ -202,9 +193,6 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => __( 'Sizes', 'us' ),
-				'usb_preview' => array(
-					'toggle_class' => 'has_width',
-				),
 			),
 			'height' => array(
 				'title' => us_translate( 'Height' ),
@@ -213,9 +201,6 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => __( 'Sizes', 'us' ),
-				'usb_preview' => array(
-					'toggle_class' => 'has_height',
-				),
 			),
 			'max-width' => array(
 				'title' => us_translate( 'Max Width' ),
@@ -340,9 +325,6 @@ return array(
 				'std' => '',
 				'cols' => 2,
 				'group' => __( 'Border', 'us' ),
-				'usb_preview' => array(
-					'toggle_class' => 'has_border_radius',
-				),
 			),
 			'border-left-width' => array(
 				'title' => __( 'Border Width', 'us' ),
@@ -529,7 +511,16 @@ return array(
 
 		// The value will be compiled into css and added to the style tag
 		'usb_preview' => array(
-			'design_options' => TRUE,
+			'design_options' => array(
+				// List of specific classes that will be added if there is a value by key name
+				'color' => 'has_text_color',
+				'font-size' => 'has_font_size',
+				'background-color' => 'has_bg_color',
+				'width' => 'has_width',
+				'height' => 'has_height',
+				'border-radius' => 'has_border_radius',
+			),
+			// ...
 		),
 	),
 

@@ -15,7 +15,7 @@ if (
 	AND (
 		wp_doing_ajax()
 		OR in_array( $pagenow, array( 'post.php', 'post-new.php' ) )
-		OR apply_filters( 'usb_is_builder_page', NULL )
+		OR usb_is_builder_page()
 	)
 	AND function_exists( 'acf_get_field_groups' )
 	AND $acf_groups = acf_get_field_groups()

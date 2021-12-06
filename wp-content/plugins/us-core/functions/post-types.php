@@ -704,10 +704,10 @@ function us_save_post_add_in_content_ids( $post_id ) {
 	$the_content = $post->post_content;
 
 	// Add Grid Layouts IDs
-	if ( preg_match_all( '/\[us_grid[^\]]+items_layout="([0-9]+)"/i', $the_content, $matches ) ) {
+	if ( preg_match_all( '/\[[us_grid|us_carousel][^\]]+items_layout="([0-9]+)"/i', $the_content, $matches ) ) {
 		$ids = array_merge( $ids, $matches[1] );
 	}
-	if ( preg_match_all( '/\[us_carousel[^\]]+items_layout="([0-9]+)"/i', $the_content, $matches ) ) {
+	if ( preg_match_all( '/\[[us_grid|us_carousel][^\]]+no_items_page_block="([0-9]+)"/i', $the_content, $matches ) ) {
 		$ids = array_merge( $ids, $matches[1] );
 	}
 

@@ -124,36 +124,65 @@ final class USBuilder_Shortcode {
 			return $output;
 		}
 
-		// If `$tag` is `us_page_block` then add a wrapper to merge the output
-		if ( strpos( $tag , 'us_page_block' ) !== FALSE ) {
-			// Output styles from Page Block
-			if ( $page_block_id = us_arr_path( $atts, 'id' ) ) {
-				$jsoncss_data = get_post_meta( $page_block_id, '_us_jsoncss_data', TRUE );
-				if ( is_array( $jsoncss_data ) AND ! empty( $jsoncss_data ) ) {
-					$jsoncss_data_collection = array();
-					foreach ( $jsoncss_data as $jsoncss ) {
-						us_add_jsoncss_to_collection( $jsoncss, $jsoncss_data_collection );
-					}
-					if ( $custom_css = (string) us_jsoncss_compile( $jsoncss_data_collection ) ) {
-						$output .= '<style>'. $custom_css .'</style>';
-					}
+		/**
+		 * Get custom css by ID
+		 *
+		 * @private
+		 * @param int $post_id The post ID
+		 * @return string Returns custom styles (CSS)
+		 */
+		$func_get_custom_css = function ( $post_id ) {
+			$result = '';
+			$jsoncss_data = get_post_meta( (int) $post_id, '_us_jsoncss_data', TRUE );
+			if ( is_array( $jsoncss_data ) AND ! empty( $jsoncss_data ) ) {
+				$jsoncss_data_collection = array();
+				foreach ( $jsoncss_data as $jsoncss ) {
+					us_add_jsoncss_to_collection( $jsoncss, $jsoncss_data_collection );
+				}
+				if ( $custom_css = (string) us_jsoncss_compile( $jsoncss_data_collection ) ) {
+					$result .= $custom_css;
 				}
 			}
-			// Add a wrapper for the output
-			$output = '<div class="w-page-block" data-edit_link="' . esc_attr( USBuilder::get_edit_permalink( $page_block_id ) ) . '">' . $output . '</div>';
+
+			return $result;
+		};
+
+		$page_block_custom_css = '';
+
+		// Get custom styles for page blocks
+		if ( $tag == 'us_page_block' AND $post_id = us_arr_path( $atts, 'id' ) ) {
+			$page_block_custom_css .= $func_get_custom_css( $post_id );
+		}
+
+		// Get custom styles for page blocks in grids
+		if ( $tag == 'us_grid' AND $post_id = us_arr_path( $atts, 'no_items_page_block' ) ) {
+			$page_block_custom_css .= $func_get_custom_css( $post_id );
+		}
+
+		// Adding wrappers for us_grid / us_page_block elements, this is necessary to detect the element in the builder
+		if ( in_array( $tag, array( 'us_grid', 'us_page_block' ) ) ) {
+			$wrapper_atts = array();
+			// Attributes for the page block wrapper
+			if ( $tag == 'us_page_block' AND $post_id = us_arr_path( $atts, 'id' ) ) {
+				$wrapper_atts = array(
+					'class' => 'w-page-block',
+					'data-edit_link' => (string) USBuilder::get_edit_permalink( $post_id ),
+				);
+			}
+			$output = '<div' . us_implode_atts( $wrapper_atts ) . '>' . $output . '</div>';
 		}
 
 		// Additional attributes for output
 		$output = preg_replace( '/(<[a-z\d]+)(.*)/', '$1 ' . 'data-usbid="' . $usbid . '"' . '$2', $output, 1 );
 
 		// Add custom styles to the output
-		if ( $jsoncss = us_arr_path( $atts, 'css', /* Default */FALSE ) ) {
+		if ( $jsoncss = us_arr_path( $atts, 'css', /* Default */ FALSE ) ) {
 			$jsoncss_collection = array();
 			$unique_classname = (string) us_add_jsoncss_to_collection( $jsoncss, $jsoncss_collection );
 
 			// Replacing the existing class with a new one to avoid duplicates with the same design settings.
-			$new_unique_classname = 'usb_custom_' . str_replace( ':' , '', $usbid );
-			$output = str_replace( $unique_classname , $new_unique_classname, $output );
+			$new_unique_classname = 'usb_custom_' . str_replace( ':', '', $usbid );
+			$output = str_replace( $unique_classname, $new_unique_classname, $output );
 
 			// Replacing classes in a jsoncss collection
 			$new_jsoncss_collection = array();
@@ -165,6 +194,11 @@ final class USBuilder_Shortcode {
 			if ( $custom_css = (string) us_jsoncss_compile( $new_jsoncss_collection ) ) {
 				$output .= '<style data-for="' . $usbid . '" data-classname="' . $new_unique_classname . '">' . $custom_css . '</style>';
 			}
+		}
+
+		// Custom styles for page blocks if present
+		if ( ! empty( $page_block_custom_css ) ) {
+			$output .= '<style>' . $page_block_custom_css . '</style>';
 		}
 
 		return $output;

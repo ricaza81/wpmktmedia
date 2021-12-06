@@ -12,7 +12,9 @@ if ( ! isset( $body ) ) {
 	$body = '<ul class="us-bld-window-list">';
 	foreach ( $templates as $name => $template ) {
 		$template_title = isset( $template['title'] ) ? $template['title'] : ucfirst( $name );
-		$template = us_fix_header_template_settings( $template );
+		if (  function_exists( 'us_fix_header_template_settings' )) {
+			$template = us_fix_header_template_settings( $template );
+		}
 
 		$body .= '<li data-name="' . esc_attr( $name ) . '" class="us-bld-window-item ' . $name . '">';
 		$body .= '<div class="us-bld-window-item-h">';

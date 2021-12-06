@@ -1281,12 +1281,16 @@ class us_migration_6_0 extends US_Migration_Translator {
 
 		// Layout-defined values
 		if ( isset( $options['header_layout'] ) AND isset( $header_templates[ $options['header_layout'] ] ) ) {
-			$header_template = us_fix_header_template_settings( $header_templates[ $options['header_layout'] ] );
+			if ( function_exists( 'us_fix_header_template_settings' ) ) {
+				$header_template = us_fix_header_template_settings( $header_templates[ $options['header_layout'] ] );
+			}
 			$header_settings = us_array_merge( $header_settings, $header_template );
 		}
 
 		// Filling elements' data with default values
-		$header_settings = us_fix_header_settings( $header_settings );
+		if ( function_exists( 'us_fix_header_settings' ) ) {
+			$header_settings = us_fix_header_settings( $header_settings );
+		}
 
 		// Side options
 		$rules = array(

@@ -12,7 +12,7 @@ if ( $us_elm_context === 'grid' AND $us_grid_object_type === 'term' ) {
 }
 
 // Check if this element used as shortcode via Live Builder in Content Template / Page Block
-$is_shortcode_template_preview = apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode';
+$is_shortcode_template_preview = usb_is_preview_page_for_template() AND $us_elm_context == 'shortcode';
 
 if (
 	( ! class_exists( 'woocommerce' ) OR ! $product )
@@ -20,7 +20,7 @@ if (
 ) {
 
 	// Output placeholder for Live Builder
-	if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+	if ( usb_is_preview_page() ) {
 		echo '<div class="w-post-elm"></div>';
 	}
 
@@ -214,13 +214,13 @@ if ( $type == 'price' ) {
 			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_sharing', 50 );
 			remove_action( 'woocommerce_single_product_summary', 'woocommerce_breadcrumb', 3 );
 
-			if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+			if ( usb_is_preview_page() ) {
 				echo '<div' . us_implode_atts( $_atts ) . '>';
 			}
 
 			do_action( 'woocommerce_single_product_summary' );
 
-			if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+			if ( usb_is_preview_page() ) {
 				echo '</div>';
 			}
 
@@ -244,6 +244,6 @@ $output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= $value;
 $output .= '</div>';
 
-if ( $value != '' OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( $value != '' OR usb_is_preview_page() ) {
 	echo $output;
 }

@@ -40,11 +40,6 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' color_' . $color;
 $_atts['class'] .= ' controls_' . $controls;
 
-// When some values are set in Design Options, add the specific class
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -107,7 +102,7 @@ foreach ( $btn_prefixes as $prefix ) {
 // Output the element
 $output = '<div' . us_implode_atts( $_atts ) . '>';
 $output .= '<div class="w-actionbox-text">';
-if ( ! empty( $title ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( ! empty( $title ) OR usb_is_preview_page() ) {
 
 	// Apply filters to title
 	$title = us_replace_dynamic_value( $title );
@@ -122,7 +117,7 @@ if ( ! empty( $title ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
 	}
 	$output .= '<' . $title_tag . us_implode_atts( $title_atts ) . '>' . $title . '</' . $title_tag . '>';
 }
-if ( ! empty( $content ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( ! empty( $content ) OR usb_is_preview_page() ) {
 	$output .= '<div class="w-actionbox-description">';
 	$output .= do_shortcode( wpautop( $content ) );
 	$output .= '</div>';

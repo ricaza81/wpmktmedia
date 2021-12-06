@@ -10,7 +10,7 @@
 global $product;
 if (
 	( ! class_exists( 'woocommerce' ) OR ! $product )
-	AND ! apply_filters( 'usb_is_preview_page', NULL )
+	AND ! usb_is_preview_page()
 ) {
 	return;
 }
@@ -26,7 +26,7 @@ if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 echo '<div' . us_implode_atts( $_atts ) . '>';
 
 // In Live Builder for Page Block / Content template show a placeholder
-if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+if ( usb_is_preview_page_for_template() ) {
 	echo us_get_img_placeholder();
 } else {
 	wc_get_template( 'single-product/product-image.php' );

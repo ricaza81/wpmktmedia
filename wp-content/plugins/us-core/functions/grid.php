@@ -349,7 +349,7 @@ if ( ! function_exists( 'us_get_filter_taxonomies' ) ) {
 					continue;
 				}
 				if ( $acf_field = acf_get_field( $matches[ /* ACF Field ID */ 2] ) ) {
-					$available_taxonomy[ sprintf( '%s_%s', $acf_field['name'], $acf_field['ID'] ) ] = 'cf';
+					$available_taxonomy[ sprintf( '%s_%s', strtolower( $acf_field['name'] ), $acf_field['ID'] ) ] = 'cf';
 				}
 			}
 		}
@@ -469,6 +469,13 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 	 * @param string $grid_filter_params
 	 */
 	function us_apply_grid_filters( $post_id, &$query_args, $grid_filter_params = NULL ) {
+
+		// Skip applying grid filters for nested grid
+		global $us_is_nested_grid;
+		if ( ! is_null( $us_is_nested_grid ) ) {
+			return;
+		}
+
 		/**
 		 * @var array
 		 */
@@ -490,8 +497,20 @@ if ( ! function_exists( 'us_apply_grid_filters' ) ) {
 			}
 		};
 
-		// Recursively search for a grid filter on a page or in templates / page blocks
+		// Recursively search for a grid filter on a page or in templates/page blocks
 		$post = get_post( ( int ) $post_id );
+
+		// If the grid is in a `content_template` or `page_block` where
+		// there is no grid filter, check on the output page
+		if (
+			$post instanceof WP_Post
+			AND in_array( $post->post_type, array( 'us_content_template', 'us_page_block' ) )
+			AND strpos( $post->post_content, '[us_grid_filter' ) === FALSE
+			AND preg_match( '/\[us_grid[\s?\]]/', $post->post_content )
+			AND $post_id = get_queried_object_id()
+		) {
+			$post = get_post( ( int ) $post_id );
+		}
 
 		// The search on current page
 		if ( is_callable( $func_grid_filter_atts ) ) {
@@ -811,31 +830,25 @@ if ( ! function_exists( 'us_search_grid_filter_the_post' ) ) {
 	 */
 	function us_search_grid_filter_the_post( $post_id ) {
 		$result = NULL;
-
-		// If template for content area is found ...
-		if ( $post = get_post( (int) $post_id ) ) {
-			$substring = '[us_grid_filter';
-
-			// ... first, check if content area has grid filter ...
-			if ( strpos( $post->post_content, $substring ) !== FALSE ) {
-				return $post->ID;
-
-				// ... otherwise search grid filter in Page Blocks.
-			} else {
-				us_get_recursive_parse_page_block(
-					$post, function ( $post ) use ( &$result, $substring ) {
-					if (
-						is_null( $result )
-						AND $post instanceof WP_Post
-						AND strpos( $post->post_content, $substring ) !== FALSE
-					) {
-						$result = $post->ID;
-					}
-				}
-				);
-			}
+		$post = get_post( (int) $post_id );
+		if ( ! ( $post instanceof WP_Post ) ) {
+			return $result;
 		}
-
+		$substr = '[us_grid_filter';
+		// ... first, check if content area has grid filter ...
+		if ( strpos( $post->post_content, $substr ) !== FALSE ) {
+			return $post->ID;
+		}
+		// ... otherwise search grid filter in Page Blocks.
+		us_get_recursive_parse_page_block( $post, function ( $post ) use ( &$result, $substr ) {
+			if (
+				is_null( $result )
+				AND $post instanceof WP_Post
+				AND strpos( $post->post_content, $substr ) !== FALSE
+			) {
+				$result = $post->ID;
+			}
+		} );
 		return $result;
 	}
 }
@@ -1528,14 +1541,43 @@ if ( ! function_exists( 'us_grid_stop_loop' ) ) {
 			$us_grid_loop_running = FALSE;
 		}
 
+		// For the builder turn on the display of messages
+		if ( usb_is_preview_page() ) {
+			$show_message = TRUE;
+		}
+
+		// Output hidden main grid container for ajax to work correctly when needed
+		global $us_grid_listing_start;
+		$current_listing_start = $us_grid_listing_start;
+		if ( $show_message AND empty( $current_listing_start ) ) {
+			echo '<div class="w-grid no_results_hide_grid"></div>';
+		}
+
+		$output = '';
+		if (
+			usb_is_preview_page()
+			OR (
+				$show_message
+				AND $us_grid_no_items_action === 'message'
+			)
+		) {
+			$output  = '<div class="w-grid-none type_message">';
+			$output .= strip_tags( $us_grid_no_items_message, '<br><strong>' );
+			$output .= '</div>';
+		}
+
 		if ( $show_message AND $us_grid_no_items_action !== 'hide_grid' ) {
-			
+
 			// Output specified Page Block
-			if ( $us_grid_no_items_action === 'page_block' AND is_numeric( $us_grid_no_items_page_block ) ) {
+			if (
+				$us_grid_no_items_action == 'page_block'
+				AND is_numeric( $us_grid_no_items_page_block )
+			) {
 				if ( has_filter( 'us_tr_object_id' ) ) {
 					$us_grid_no_items_page_block = apply_filters( 'us_tr_object_id', $us_grid_no_items_page_block, 'us_page_block', TRUE );
 				}
 
+				// Get page block object
 				$page_block = get_post( $us_grid_no_items_page_block );
 
 				if ( $page_block instanceof WP_Post AND $page_block->post_type == 'us_page_block' ) {
@@ -1558,19 +1600,28 @@ if ( ! function_exists( 'us_grid_stop_loop' ) ) {
 					$page_block_content = preg_replace( '~\[vc_row (.+?)]~', '', $page_block_content );
 					$page_block_content = preg_replace( '~\[vc_column (.+?)]~', '', $page_block_content );
 
+					// Check the nesting of the grid and allowed only one nesting
+					if ( strpos( $page_block_content , '[us_grid' ) !== FALSE ) {
+						global $us_is_nested_grid;
+						$us_is_nested_grid = TRUE; // The constant defining nested grid or not
+					}
+
 					// Apply filters to Page Block content and echoing it out of us_open_wp_query_context
-					echo '<div class="w-grid-none">' . apply_filters( 'us_page_block_the_content', $page_block_content ) . '</div>';
+					if ( $page_block_content = apply_filters( 'us_page_block_the_content', $page_block_content ) ) {
+						$output = '<div class="w-grid-none">' . $page_block_content . '</div>';
+					}
 
 					us_remove_from_page_block_ids();
 				}
-
-				// Output specified non-empty message
-			} elseif ( $us_grid_no_items_action === 'message' AND ! empty( $us_grid_no_items_message ) ) {
-				echo '<h4 class="w-grid-none">' . strip_tags( $us_grid_no_items_message, '<br><strong>' ) . '</h4>';
 			}
-		} elseif ( apply_filters( 'usb_is_preview_page', NULL ) ) {
-			echo '<div class="w-grid-none"></div>';
 		}
+
+		// Move the message after the main grid container
+		if ( $current_listing_start AND ! wp_doing_ajax() ) {
+			$output = preg_replace( '/(.*)(<\/div>)$/s' , "$2$1", $output );
+		}
+
+		echo $output;
 	}
 }
 

@@ -38,6 +38,7 @@ $general_params = array(
 		'switch_text' => __( 'Add FAQ structured data markup', 'us' ),
 		'type' => 'switch',
 		'std' => FALSE,
+		'place_if' => us_get_option( 'schema_markup' ),
 	),
 	'c_align' => array(
 		'title' => __( 'Title Alignment', 'us' ),
@@ -115,6 +116,7 @@ return array(
 	'category' => __( 'Containers', 'us' ),
 	'icon' => 'fas fa-plus-square',
 	'is_container' => TRUE,
+	'usb_root_container_selector' => '.w-tabs-sections:first',
 	'weight' => 370, // go after all US elements, which have "380" weight
 	'as_child' => array(
 		'except' => 'vc_tta_section',

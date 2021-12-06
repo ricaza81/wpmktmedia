@@ -11,6 +11,9 @@ $is_widget = isset( $is_widget ) ? $is_widget : FALSE;
 $filter_html = isset( $filter_html ) ? $filter_html : '';
 $data_atts = isset( $data_atts ) ? $data_atts : array();
 
+global $us_grid_listing_start;
+$us_grid_listing_start = TRUE;
+
 // Check Grid params and use default values from config, if its not set
 $default_grid_params = us_shortcode_atts( array(), 'us_grid' );
 foreach ( $default_grid_params as $param => $value ) {
@@ -50,15 +53,9 @@ $grid_atts['class'] .= isset( $classes ) ? $classes : '';
 $grid_atts['class'] .= ' type_' . $type;
 $grid_atts['class'] .= ' layout_' . $items_layout;
 
-// If there is no result in the displayed grid and the option to scan if
-// missing is enabled, then add a class and leave the html markup for the
-// filters to work correctly.
-global $us_grid_no_items_action;
-if ( $us_grid_no_items_action === 'hide_grid' ) {
-	$grid_atts['data-no_results_hide_grid'] = '';
-	if ( $no_results ) {
-		$grid_atts['class'] .= ' no_results_hide_grid';
-	}
+// If there is no result, hide the grid
+if ( $no_results ) {
+	$grid_atts['class'] .= ' no_results_hide_grid';
 }
 
 if ( $columns != 1 AND $type != 'metro' ) {
@@ -158,7 +155,7 @@ if ( ! empty( $items_gap ) ) {
 		}
 
 		// Force gap between neighbour "w-grid" elements
-		$current_grid_css .= '.w-grid + #' . $grid_elm_id . ' .w-grid-list { margin-top: ' . $items_gap . '}';
+		$current_grid_css .= '.w-grid-none + #' . $grid_elm_id . ' .w-grid-list { margin-top: ' . $items_gap . '}';
 
 	} elseif ( $type != 'carousel' ) {
 		$current_grid_css .= '#' . $grid_elm_id . ' .w-grid-item:not(:last-child) { margin-bottom: ' . $items_gap . '}';

@@ -20,7 +20,7 @@
  */
 
 // Don't output Page Scroller on AMP
-if ( us_amp() AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( us_amp() AND ! usb_is_preview_page() ) {
 	return;
 }
 

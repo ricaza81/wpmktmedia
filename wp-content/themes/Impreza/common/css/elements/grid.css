@@ -47,14 +47,14 @@
 .w-grid[class*="cols_"] > .pagination .nav-links {
 	justify-content: center;
 	}
-h4.w-grid-none {
+.w-grid-none.type_message {
 	text-align: center;
 	padding: 2rem;
 	margin: 0;
 	background: var(--color-content-bg-alt-grad);
 	}
-.l-section.color_primary .w-grid-none,
-.l-section.color_secondary .w-grid-none {
+.l-section.color_primary .w-grid-none.type_message,
+.l-section.color_secondary .w-grid-none.type_message {
 	background: rgba(255,255,255,0.1);
 	}
 
@@ -190,7 +190,7 @@ h4.w-grid-none {
 
 /* Colors
    ========================================================================== */
-.color_alternate .w-grid-none {
+.color_alternate .w-grid-none.type_message {
 	background: var(--color-alt-content-bg-grad);
 	}
 

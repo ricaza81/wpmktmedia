@@ -225,7 +225,7 @@ a[ref*="Popup"] {
 h1, h2, h3, h4, h5, h6 {
 	font-family: inherit;
 	line-height: 1.4;
-	margin: 0 0 1.5rem;
+	margin: 0;
 	padding-top: 1.5rem;
 	color: var(--color-content-heading);
 	}
@@ -235,11 +235,11 @@ h3:first-child,
 h4:first-child,
 h5:first-child,
 h6:first-child,
-body h1 + h2,
-body h2 + h3,
-body h3 + h4,
-body h4 + h5,
-body h5 + h6 {
+h1 + h2,
+h2 + h3,
+h3 + h4,
+h4 + h5,
+h5 + h6 {
 	padding-top: 0;
 	}
 p,
@@ -1287,14 +1287,13 @@ img.alignright,
 p {
 	margin-bottom: 1rem;
 	}
-body h1,
-body h2,
-body h3,
-body h4,
-body h5,
-body h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	padding-top: 1rem;
-	margin-bottom: 1rem;
 	}
 .admin-bar .l-header.sticky {
 	top: 0; /* fix when WP admin bar is enabled */

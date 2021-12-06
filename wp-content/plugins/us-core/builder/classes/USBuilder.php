@@ -10,7 +10,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 
 		/**
 		 * Param name in the URL address bar
-		 * Note: This value must have valid characters for hooks and URL.
+		 * Note: This value must have valid characters for hooks and URL
 		 */
 		const BUILDER_SLUG = 'us-builder';
 
@@ -156,13 +156,6 @@ if ( ! class_exists( 'USBuilder' ) ) {
 				}
 			}
 
-			// Auxiliary filters for class static methods
-			add_filter( 'usb_is_builder_page', sprintf( '%s::is_builder_page', __CLASS__ ) );
-			add_filter( 'usb_is_preview_page', sprintf( '%s::is_preview_page', __CLASS__ ) );
-			add_filter( 'usb_is_preview_page_for_template', sprintf( '%s::is_preview_page_for_template', __CLASS__ ) );
-			add_filter( 'usb_get_key_custom_css', sprintf( '%s::get_key_custom_css', __CLASS__ ) );
-			add_filter( 'usb_get_usbid_container', sprintf( '%s::get_usbid_container', __CLASS__ ) );
-
 			// Init the class for handling AJAX requests
 			if ( wp_doing_ajax() ) {
 				USBuilder_Ajax::init();
@@ -170,45 +163,23 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 * Get the builder slug.
+		 * Get the builder slug
 		 *
 		 * @access public
-		 * @return string The builder slug.
+		 * @return string The builder slug
 		 */
 		static public function get_slug() {
 			return sanitize_title( self::BUILDER_SLUG );
 		}
 
 		/**
-		 * Get the id of the main container
-		 *
-		 * @access public
-		 * @return string
-		 */
-		static public function get_usbid_container() {
-			return static::is_preview_page()
-				? ' data-usbid="' . self::MAIN_CONTAINER . '" '
-				: '';
-		}
-
-		/**
-		 * Get the id of the edited page or term.
+		 * Get the id of the edited page or term
 		 *
 		 * @access public
 		 * @return int Returns the id of the page being edited
 		 */
 		static public function get_post_id() {
-			return (int) us_arr_path( $_REQUEST, ( wp_doing_ajax() ? 'post_id' : 'post' ), get_queried_object_id() );
-		}
-
-		/**
-		 * Get the meta key custom css.
-		 *
-		 * @access public
-		 * @return string The meta key custom css.
-		 */
-		static public function get_key_custom_css() {
-			return self::KEY_CUSTOM_CSS;
+			return (int) us_arr_path( $_REQUEST, 'post', get_queried_object_id() );
 		}
 
 		/**
@@ -275,10 +246,10 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 * Filters a string cleaned and escaped for output as a URL.
+		 * Filters a string cleaned and escaped for output as a URL
 		 *
 		 * @access public
-		 * @param string $url The cleaned URL to be returned.
+		 * @param string $url The cleaned URL to be returned
 		 * @return string
 		 */
 		public function defer_admin_assets( $url ) {
@@ -372,6 +343,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 				<div class="usb-builder-hover-panel">
 					<div class="usb-builder-hover-panel-name">Element</div>
 					<a class="usb-builder-hover-panel-edit" href="javascript:void(0)" target="_blank">' . __( 'Edit Page Block', 'us' ) . '</a>
+					<div class="usb-builder-hover-panel-btn type_copy ui-icon_copy" title="' . esc_attr( us_translate( 'Copy' ) ) . '"></div>
 					<div class="usb-builder-hover-panel-btn ui-icon_duplicate" title="' . esc_attr( __( 'Duplicate', 'us' ) ) . '"></div>
 					<div class="usb-builder-hover-panel-btn ui-icon_delete" title="' . esc_attr( us_translate( 'Delete' ) ) . '"></div>
 				</div>
@@ -420,10 +392,10 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 * Fires when scripts and styles are enqueued for the code editor.
+		 * Fires when scripts and styles are enqueued for the code editor
 		 *
 		 * @access public
-		 * @param array $settings Settings for the enqueued code editor.
+		 * @param array $settings Settings for the enqueued code editor
 		 */
 		public function wp_enqueue_code_editor( $settings ) {
 			// Remove assets from the general output, they will be loaded as
@@ -489,7 +461,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 * Post types that are available for editing by the builder.
+		 * Post types that are available for editing by the builder
 		 *
 		 * @return array List of post types names
 		 */
@@ -525,7 +497,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		 * Add a button that switched editing to US builder
 		 *
 		 * @access public
-		 * @param \WP_Post $post The current post object.
+		 * @param \WP_Post $post The current post object
 		 */
 		public function output_builder_switch( \WP_Post $post ) {
 			if ( ! in_array( $post->post_type, $this->get_allowed_edit_post_types() ) ) {
@@ -568,12 +540,12 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 * Substitution of metadata to preview changes before saving.
+		 * Substitution of metadata to preview changes before saving
 		 *
 		 * @access public
-		 * @param null|array|string $value The value get_metadata() should return a single metadata value, or an array of values.
+		 * @param null|array|string $value The value get_metadata() should return a single metadata value, or an array of values
 		 * @param string $meta_key Meta key.
-		 * @return array|null|string The attachment metadata value, array of values, or null.
+		 * @return array|null|string The attachment metadata value, array of values, or null
 		 */
 		public function meta_to_preview( $value, $meta_key ) {
 			return us_arr_path( $_REQUEST, "meta.{$meta_key}", /* Default value */ $value );
@@ -596,7 +568,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 *  The determines if builder preview page.
+		 *  The determines if builder preview page
 		 *
 		 * @access public
 		 * @return bool TRUE if builder page, FALSE otherwise
@@ -611,25 +583,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		}
 
 		/**
-		 *  Determines if builder preview page is shown for Page Block or Content Template
-		 *
-		 * @access public
-		 * @return bool TRUE if builder page, FALSE otherwise
-		 */
-		final static public function is_preview_page_for_template() {
-			if ( static::is_preview_page() ) {
-				$post_id = static::get_post_id();
-				$post_type = get_post_type( $post_id );
-				if ( in_array( $post_type, array( 'us_page_block', 'us_content_template' ) ) ) {
-					return TRUE;
-				}
-			}
-
-			return FALSE;
-		}
-
-		/**
-		 * Get the edit permalink.
+		 * Get the edit permalink
 		 *
 		 * @access public
 		 * @param int $post_id The post ID
@@ -661,11 +615,17 @@ if ( ! class_exists( 'USBuilder' ) ) {
 		public function init_builder_page() {
 			$post_id = static::get_post_id();
 			$builder_slug = static::get_slug();
-			$builder_nonce = wp_create_nonce( $builder_slug );
 
-			// The get edit page url
-			$page_link = apply_filters( 'the_permalink', get_permalink( $post_id ) );
+			// Key and signature array
+			$nonce_args = array(
+				$builder_slug => wp_create_nonce( $builder_slug ),
+			);
+
+			// Get edit page url
 			$edit_page_link = get_edit_post_link( $post_id );
+
+			// Get a link to a page
+			$page_link = apply_filters( 'the_permalink', get_permalink( $post_id ) );
 
 			// Get options for jsoncss generator
 			$jsoncss_options = us_get_jsoncss_options();
@@ -738,10 +698,14 @@ if ( ! class_exists( 'USBuilder' ) ) {
 							),
 						),
 					),
+					// Elements, when changed or added, which must be updated inclusively from the parent
+					'update_parent' => array(),
 				),
 
 				// Dynamic assets for the correct operation of fieldsets
 				'dynamicFieldsetAssets' => array(),
+				// List of elements that have movement along axis X enabled
+				'moving_x_direction' => array(),
 
 				// Available shortcodes and their titles
 				'elm_titles' => array(),
@@ -756,10 +720,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 				'template' => us_config( 'us-builder.templates', array() ),
 
 				// Default parameters for AJAX requests
-				'ajaxArgs' => array(
-					$builder_slug => $builder_nonce,
-					'post_id' => $post_id,
-				),
+				'ajaxArgs' => array_merge( array( 'post' => $post_id ), $nonce_args ),
 
 				// The set responsive states
 				'responsiveStates' => array_keys( $states ),
@@ -788,10 +749,13 @@ if ( ! class_exists( 'USBuilder' ) ) {
 				'useLongUpdateForFields' => (array) us_config( 'us-builder.use_long_update_for_fields', /* Default */array() ),
 
 				// Link to preview page
-				'iframeSrc' => add_query_arg( $builder_slug, $builder_nonce, $page_link ),
+				'previewUrl' => add_query_arg( $nonce_args, $page_link ),
 
 				// Columns Layout via CSS grid
 				'isGridColumnsLayout' => (bool) us_get_option( 'grid_columns_layout' ),
+
+				// List of selectors for overriding the root node in containers
+				'rootContainerSelectors' => array(),
 			);
 
 			unset( $vc_row_template, $vc_row_html_template, $handler_add_usbid_to_html );
@@ -810,9 +774,22 @@ if ( ! class_exists( 'USBuilder' ) ) {
 						continue;
 					}
 					$fieldsets[ $elm_filename ] = $elm_config;
+					$is_container = ! empty( $elm_config['is_container'] );
 					// The list of all containers
-					if ( ! empty( $elm_config['is_container'] ) ) {
+					if ( $is_container ) {
 						$usb_settings['shortcode']['containers'][] = $elm_filename;
+					}
+					// Check for a selector to find the root container
+					if ( $is_container AND $root_container_selector = us_arr_path( $elm_config, 'usb_root_container_selector' ) ) {
+						$usb_settings['rootContainerSelectors'][ $elm_filename ] = (string) $root_container_selector;
+					}
+					// Elements, when changed or added, which must be updated inclusively from the parent
+					if ( ! empty( $elm_config['usb_update_parent'] ) ) {
+						$usb_settings['shortcode']['update_parent'][] = $elm_filename;
+					}
+					// List of elements that have movement along axis X enabled
+					if ( ! empty( $elm_config['usb_moving_child_x_direction'] ) ) {
+						$usb_settings['moving_child_x_direction'][] = $elm_filename;
 					}
 					// The list of strict relations between shortcodes
 					// All permissions are extracted from WPB settings for compatibility and correct work both on the USBuilder and WPB
@@ -851,6 +828,7 @@ if ( ! class_exists( 'USBuilder' ) ) {
 						'hide_on_adding_list' => us_arr_path( $elm_config, 'hide_on_adding_list', '' ),
 						'icon' => us_arr_path( $elm_config, 'icon', '' ),
 						'is_container' => us_arr_path( $elm_config, 'is_container', FALSE ),
+						'shortcode_post_type' => us_arr_path( $elm_config, 'shortcode_post_type' ),
 						'title' => us_arr_path( $elm_config, 'title', $elm_filename ),
 					);
 				}

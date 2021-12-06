@@ -107,13 +107,17 @@ $us_layout = US_Layout::instance();
 	?>
 </head>
 <body <?php body_class( 'l-body ' . $us_layout->body_classes() );
+
+// Schema.org page type
 if ( us_get_option( 'schema_markup' ) ) {
-	if ( us_is_faqs_page() ) {
+	if ( get_post_meta( get_the_ID(), '_us_schema_markup_faq', /* single */ TRUE ) ) {
 		echo ' itemscope itemtype="https://schema.org/FAQPage"';
 	} else {
 		echo ' itemscope itemtype="https://schema.org/WebPage"';
 	}
 }
+
+// AMP id
 if ( us_amp() ) {
 	echo ' id="amp-body-id"';
 }

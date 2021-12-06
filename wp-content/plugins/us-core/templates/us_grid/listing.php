@@ -8,6 +8,10 @@
  * @action Before the template: 'us_before_template:templates/us_grid/listing'
  * @action After the template: 'us_after_template:templates/us_grid/listing'
  * @filter Template variables: 'us_template_vars:templates/us_grid/listing'
+ *
+ * Note: An example of a correct element structure:
+ * 		<div class="w-grid">....</div>
+ * 		<div class="w-grid-none hidden"></div>
  */
 global $us_is_menu_page_block, $us_grid_no_items_message, $us_grid_no_items_action, $us_grid_no_items_page_block;
 
@@ -29,7 +33,7 @@ $query_args = isset( $query_args ) ? $query_args : array();
 if ( ! empty( $el_id ) ) {
 	$grid_elm_id = $el_id;
 } elseif (
-	apply_filters( 'usb_is_preview_page', NULL )
+	usb_is_preview_page()
 	OR ( function_exists( 'vc_is_page_editable' ) AND vc_is_page_editable() )
 ) {
 	$grid_elm_id = 'us_grid_' . us_uniqid();
@@ -149,6 +153,9 @@ $query_args_from_orderby = array_merge_recursive(
 	is_array( $query_args ) ? $query_args : array(),
 	$orderby_query_args
 );
+
+// Filter for query arguments
+$query_args_from_orderby = apply_filters( 'us_grid_listing_query_args', $query_args_from_orderby );
 
 $use_custom_query = (
 	! empty( $query_args )

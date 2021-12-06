@@ -2601,6 +2601,27 @@ if ( ! function_exists( 'us_output_design_css' ) ) {
 			$posts = array_merge( $include_posts, $posts );
 		}
 
+		/**
+		 * Recursively retrieving all posts assigned to `no_items_page_block`
+		 * @param WP_Post $post
+		 */
+		$func_get_no_items_page_block = function( $post ) use( &$posts, &$func_get_no_items_page_block ) {
+			if (
+				strpos( $post->post_content, 'no_items_page_block="') !== FALSE
+				AND preg_match_all( '/no_items_page_block="(\d+)"/', $post->post_content, $matches )
+			) {
+				$query_args = array(
+					'include' => $matches[ /* match ids */ 1 ],
+					'post_type' => array_keys( get_post_types() ),
+				);
+				foreach ( get_posts( $query_args ) as $page_block ) {
+					$posts[] = $page_block;
+					$func_get_no_items_page_block( $page_block );
+				}
+			}
+		};
+		array_walk( $posts, $func_get_no_items_page_block );
+
 		// Get Templatera IDs and add templates to $posts
 		if ( class_exists( 'VcTemplateManager' ) ) {
 			$templatera_ids = array();
@@ -2741,6 +2762,23 @@ if ( ! function_exists( 'us_filter_design_css_colors' ) ) {
 	add_filter( 'us_output_design_css_options', 'us_filter_design_css_colors', 1, 1 );
 }
 
+if ( ! function_exists( 'us_get_design_css_class' ) ) {
+	/**
+	 * Get a unique class for custom CSS styles
+	 *
+	 * @param string $str The css
+	 * @param string $class_name The prefix for css class name
+	 * @return string
+	 */
+	function us_get_design_css_class( $str, $class_name = 'us_custom' ) {
+		if ( ! empty( $str ) AND ! empty( $class_name ) ) {
+			return $class_name . '_' . hash( 'crc32b', $str );
+		}
+
+		return '';
+	}
+}
+
 if ( ! function_exists( 'us_get_recursive_parse_page_block' ) ) {
 	/**
 	 * Recursive parse page_block
@@ -2813,23 +2851,6 @@ if ( ! function_exists( 'us_find_element_in_post_page_blocks' ) ) {
 		}
 
 		return $result;
-	}
-}
-
-if ( ! function_exists( 'us_get_design_css_class' ) ) {
-	/**
-	 * Get a unique class for custom CSS styles
-	 *
-	 * @param string $str The css
-	 * @param string $class_name The prefix for css class name
-	 * @return string
-	 */
-	function us_get_design_css_class( $str, $class_name = 'us_custom' ) {
-		if ( ! empty( $str ) AND ! empty( $class_name ) ) {
-			return $class_name . '_' . hash( 'crc32b', $str );
-		}
-
-		return '';
 	}
 }
 
@@ -3122,16 +3143,6 @@ if ( ! function_exists( 'us_jsoncss_compile' ) ) {
 					$media_css = '';
 					foreach ( $jsoncss_collection[ $state ] as $class_name => $css_options ) {
 						$styles = '';
-
-						// Remove duplicate styles
-						if ( 'default' !== $state AND ! empty( $jsoncss_collection['default'][ $class_name ] ) ) {
-							$default_css_options = $jsoncss_collection['default'][ $class_name ];
-							foreach ( $css_options as $prop_name => $prop_value ) {
-								if ( isset( $default_css_options[ $prop_name ] ) AND $default_css_options[ $prop_name ] === $prop_value ) {
-									unset( $css_options[ $prop_name ] );
-								}
-							}
-						}
 						foreach ( $css_options as $prop_name => $prop_value ) {
 							if ( trim( $prop_value ) == '' ) {
 								continue;
@@ -3208,7 +3219,7 @@ if ( ! function_exists( 'us_get_terms_by_slug' ) ) {
 
 		$query_args = array(
 			//'fields' => 'id=>name',
-			'hide_empty' => TRUE,
+			'hide_empty' => /* show empty ones */FALSE,
 			'number' => (int) $number_per_page,
 			'offset' => (int) $offset,
 			'suppress_filter' => FALSE,
@@ -3450,21 +3461,6 @@ if ( ! function_exists( 'us_register_context_layout' ) ) {
 	function us_register_context_layout( $layout ) {
 		global $us_context_layout;
 		$us_context_layout = (string) strtolower( $layout );
-	}
-}
-
-if ( ! function_exists( 'us_is_faqs_page' ) ) {
-	/**
-	 * The current page is FAQs
-	 *
-	 * @return bool
-	 */
-	function us_is_faqs_page() {
-		return (
-			is_singular( 'page' )
-			AND us_get_option( 'schema_markup', FALSE )
-			AND us_get_option( 'schema_faqs_page', NULL ) == get_the_ID()
-		);
 	}
 }
 
@@ -3735,5 +3731,95 @@ if ( ! function_exists( 'us_uniqid' ) ) {
 		}
 
 		return $result;
+	}
+}
+
+if ( ! function_exists( 'usb_is_builder_page' ) ) {
+	/**
+	 * The determines if builder page.
+	 *
+	 * @return bool TRUE if builder page, FALSE otherwise
+	 */
+	function usb_is_builder_page() {
+		return (bool) (
+		class_exists( 'USBuilder' )
+			? apply_filters( 'usb_is_builder_page', USBuilder::is_builder_page() )
+			: FALSE
+		);
+	}
+}
+
+if ( ! function_exists( 'usb_is_preview_page' ) ) {
+	/**
+	 *  Determines if builder preview page is shown for Page Block or Content Template
+	 *
+	 * @return bool TRUE if builder page, FALSE otherwise
+	 */
+	function usb_is_preview_page() {
+		return (bool) (
+		class_exists( 'USBuilder' )
+			? USBuilder::is_preview_page()
+			: FALSE
+		);
+	}
+}
+
+if ( ! function_exists( 'usb_is_preview_page_for_search' ) ) {
+	/**
+	 * Determines if preview page for search page
+	 *
+	 * @return bool True if search page, False otherwise
+	 */
+	function usb_is_preview_page_for_search() {
+		return (bool) (
+		class_exists( 'USBuilder' )
+			? USBuilder::get_post_id() == us_get_option( 'search_page' )
+			: FALSE
+		);
+	}
+}
+
+if ( ! function_exists( 'usb_is_preview_page_for_template' ) ) {
+	/**
+	 *  Determines if builder preview page is shown for Page Block or Content Template
+	 *
+	 * @return bool TRUE if builder page, FALSE otherwise
+	 */
+	function usb_is_preview_page_for_template() {
+		if ( usb_is_preview_page() ) {
+			$post_type = get_post_type( (int) USBuilder::get_post_id() );
+			if ( in_array( $post_type, array( 'us_page_block', 'us_content_template' ) ) ) {
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+}
+
+if ( ! function_exists( 'usb_get_key_custom_css' ) ) {
+	/**
+	 * Get the meta key custom css
+	 *
+	 * @return string The meta key custom css
+	 */
+	function usb_get_key_custom_css() {
+		return (string) (
+		class_exists( 'USBuilder' )
+			? USBuilder::KEY_CUSTOM_CSS
+			: ''
+		);
+	}
+}
+
+if ( ! function_exists( 'usb_get_usbid_container' ) ) {
+	/**
+	 * Get the id of the main container
+	 *
+	 * @return string
+	 */
+	function usb_get_usbid_container() {
+		return usb_is_preview_page()
+			? ' data-usbid="' . USBuilder::MAIN_CONTAINER . '" '
+			: '';
 	}
 }

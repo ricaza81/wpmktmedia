@@ -14,12 +14,14 @@
 		_document = document,
 		_undefined = undefined;
 
+	// Get the current `UserAgent`
+	var ua = _window.navigator.userAgent.toLowerCase();
+
 	// Check for is set objects
 	_window.$usbdata = _window.$usbdata || {};
 
 	/**
 	 * The functionality for expanding objects
-	 * TODO: All methods `$usbcore.$el...` move under `$usbcore.$el( node )` to `$usbcore.$el.prototype`.
 	 *
 	 * @var {{}}
 	 */
@@ -44,6 +46,20 @@
 	$usbcore.isUndefined = function( value ) {
 		return '' + _undefined === ( '' + value );
 	};
+
+	/**
+	 * Detect Firefox
+	 *
+	 * @return {boolean} True if firefox, False otherwise.
+	 */
+	$usbcore.isFirefox = ua.indexOf( 'firefox' ) > -1;
+
+	/**
+	 * Detect Safari
+	 *
+	 * @return {boolean} True if safari, False otherwise.
+	 */
+	$usbcore.isSafari = /^((?!chrome|android).)*safari/i.test( ua );
 
 	/**
 	 * The function parses a string argument and returns an integer of the specified radix.
@@ -113,12 +129,38 @@
 		var result = $.isPlainObject( dataObject ) ? dataObject : {};
 		for ( k in path ) {
 			result = result[ path[ k ] ];
-			if ( $usbcore.isUndefined( result ) ) {
+			if ( this.isUndefined( result ) ) {
 				return _default;
 			}
 		}
 		// Returning the final result
 		return result;
+	};
+
+	/**
+	 * Escape special characters for PCRE (Perl Compatible Regular Expressions)
+	 *
+	 * @param {string} value The value
+	 * @return {string}
+	 */
+	$usbcore.escapePcre = function( value ) {
+		return ( '' + value ).replace( /[.*+?^${}()|\:[\]\\]/g, '\\$&' ); // $& means the whole matched string
+	};
+
+	/**
+	 * Escape special characters for attributes
+	 * Note: The code is not used.
+	 *
+	 * @param {string} value The value
+	 * @return {string} Returns a string replacing html tags with entities
+	 */
+	$usbcore.escapeHtml = function( value ) {
+		return ( '' + value )
+			.replace( '&', '&amp;' )
+			.replace( '<', '&lt;' )
+			.replace( '>', '&gt;' )
+			.replace( '"', '&quot;' )
+			.replace( "'", '&#039;' );
 	};
 
 	// Prototype mixin for all classes working with events
@@ -230,10 +272,10 @@
 	};
 
 	/**
-	 * Adds the specified class(es) to each element in the set of matched elements.
+	 * Adds the specified class(es) to each element in the set of matched elements
 	 *
 	 * @param {node} node The node from document
-	 * @param {string} className One or more classes (separated by spaces) to be toggled for each element in the matched set.
+	 * @param {string} className One or more classes (separated by spaces) to be toggled for each element in the matched set
 	 * @return self
 	 */
 	$usbcore.$addClass = function( node, className ) {
@@ -244,10 +286,10 @@
 	};
 
 	/**
-	 * Remove a single class or multiple classes from each element in the set of matched elements.
+	 * Remove a single class or multiple classes from each element in the set of matched elements
 	 *
 	 * @param {node} node The node from document
-	 * @param {string} className One or more classes (separated by spaces) to be toggled for each element in the matched set.
+	 * @param {string} className One or more classes (separated by spaces) to be toggled for each element in the matched set
 	 * @return self
 	 */
 	$usbcore.$removeClass = function( node, className ) {
@@ -264,11 +306,11 @@
 
 	/**
 	 * Add or remove one or more classes from each element in the set of matched elements,
-	 * depending on either the class's presence or the value of the state argument.
+	 * depending on either the class's presence or the value of the state argument
 	 *
 	 * @param {node} node The node from document
 	 * @param {string} className One or more classes (separated by spaces) to be toggled for each element in the matched set.
-	 * @param {boolean} state A boolean (not just truthy/falsy) value to determine whether the class should be added or removed.
+	 * @param {boolean} state A boolean (not just truthy/falsy) value to determine whether the class should be added or removed
 	 * @return self
 	 */
 	$usbcore.$toggleClass = function( node, className, state ) {
@@ -337,6 +379,37 @@
 			node.remove();
 		}
 		return this;
+	};
+
+	/**
+	 * Copying the passed text to the clipboard
+	 *
+	 * @param {string} text The text to copy
+	 * @return {boolean}
+	 */
+	$usbcore.copyTextToClipboard = function( text ) {
+		try {
+			// Add a temporary field for the record
+			var textarea = _document.createElement( 'textarea' );
+			textarea.value = '' + text;
+			this.$attr( textarea, 'readonly', '' );
+			this.$attr( textarea, 'css', 'position:absolute;top:-9999px;left:-9999px' );
+			_document.body.append( textarea );
+			// Copy text to clipboard
+			textarea.select();
+			_document.execCommand( 'copy' );
+			// The unselect data
+			if ( _window.getSelection ) {
+				_window.getSelection().removeAllRanges();
+			} else if ( _document.selection ) {
+				_document.selection.empty();
+			}
+			// Remove temporary field from document
+			this.$remove( textarea );
+			return true;
+		} catch ( e ) {
+			return false;
+		}
 	};
 
 	/**
@@ -563,7 +636,7 @@
 			keyCustomCss: 'usb_post_custom_css', // Default
 
 			// Link to preview page
-			iframeSrc: '',
+			previewUrl: '',
 
 			// A single place for the names of classes that are used in different places in the builder
 			className: {
@@ -622,7 +695,7 @@
 
 		// The add information from `UserAgent` to bind styles to specific browsers or browser versions.
 		this.$html
-			.attr( 'data-useragent', ( _window.navigator.userAgent || '' ).toLowerCase() );
+			.attr( 'data-useragent', ua );
 
 		// Variables
 		this.iframe = this.$iframe[0] || {};
@@ -782,13 +855,14 @@
 
 			// Other handlers
 			'closeNotification',
+			'elmCopy',
 			'elmDelete',
 			'elmDuplicate',
 			'elmLeave',
 			'elmMove',
 			'elmSelected',
-			'setParamsForPageSettings',
 			'iframeLoad',
+			'setParamsForPageSettings',
 			'keydown' // Standard `keydown` browser event handler.
 
 		].map( function( event ) {
@@ -801,6 +875,7 @@
 		// TODO: Optimize and get rid of these permissions.
 		[
 			'contentChange',			// The event is triggered every time the html on the preview page has changed
+			'elmCopy',					// The event of copying shortcode to clipboard
 			'elmDelete',				// The handler when the delete element
 			'elmDuplicate',				// The handler when the duplicate element
 			'elmLeave',					// The event when the cursor moves out of the bounds of an element
@@ -916,8 +991,9 @@
 		 * Types of notifications
 		 */
 		_NOTIFY_TYPE: {
-			SUCCESS: 'success',
-			ERROR: 'error'
+			ERROR: 'error',
+			INFO: 'info',
+			SUCCESS: 'success'
 		},
 
 		/**
@@ -1001,7 +1077,7 @@
 		 * @return {boolean} True if hide responsive toolbar, False otherwise.
 		 */
 		isHideResponsiveToolbar: function() {
-			return ! this.$preview.is( '.responsive_mode' );
+			return ! this.$preview.hasClass( 'responsive_mode' );
 		},
 
 		/**
@@ -1217,8 +1293,8 @@
 			if ( ! this.isValidId( id ) ) {
 				return;
 			}
-			var // Definition is TTA (Tabs/Tour/Accordion) section
-				isTTASection = ( 'vc_tta_section' === this.getElmType( id ) ),
+			var // Determine the need to update including the parent
+				isUpdateIncludeParent = this.isUpdateIncludeParent( id ),
 				// Get parent ID
 				parentId = this.getElmParentId( id ),
 				// Get shortcode string
@@ -1259,7 +1335,7 @@
 
 			var // Position to add on the preview page
 				position = 'after',
-				isContainer = this.isElmContainer( this.getElmType( id ) );
+				isContainer = this.isElmContainer( id );
 
 			// Add temporary loader
 			this.postMessage( 'showPreloader', [ id, position, isContainer, /* Preloader id */newId ] );
@@ -1267,7 +1343,7 @@
 			// Get a rendered shortcode
 			this._renderShortcode( /* request id */newId, {
 				data: {
-					content: isTTASection // If the duplicate is item TTA section then we get the whole code TTA
+					content: isUpdateIncludeParent
 						? this.getElmShortcode( parentId )
 						: strShortcode
 				},
@@ -1282,7 +1358,7 @@
 					html = html.replace( 'us_animate_this', 'us_animate_this start' );
 
 					// Add new shortcde to preview page
-					if ( isTTASection ) {
+					if ( isUpdateIncludeParent ) {
 						this.postMessage( 'updateSelectedElm', [ parentId, html ] );
 					} else {
 						this.postMessage( 'insertElm', [ id, position, html ] );
@@ -1302,6 +1378,20 @@
 			} );
 		},
 
+		/**
+		 * Handler for copying shortcode to clipboard
+		 *
+		 * @private
+		 * @event handler
+		 * @param {string} id Shortcode's usbid, e.g. "vc_row:1"
+		 */
+		_elmCopy: function( id ) {
+			if ( ! this.isValidId( id ) ) {
+				return;
+			}
+			// Copy row shortcode to clipboard
+			$usbcore.copyTextToClipboard( this.getElmShortcode( id ) );
+		},
 		/**
 		 * Handler when the delete element
 		 *
@@ -1355,7 +1445,7 @@
 			}
 
 			// Remove reboot class if installed.
-			if ( this.$iframe.is('.reboot') ) {
+			if ( this.$iframe.hasClass('reboot') ) {
 				this.$iframe.removeClass( 'reboot' );
 			}
 
@@ -1401,7 +1491,7 @@
 		 */
 		__iframeReload: $usbcore.debounce( function() {
 			this.$iframe.addClass( 'reboot' );
-			this.iframe.src = this.config( 'iframeSrc', '' ) + '&' + $.param( { meta: this.pageData.pageMeta || {} } );
+			this.iframe.src = this.config( 'previewUrl', '' ) + '&' + $.param( { meta: this.pageData.pageMeta || {} } );
 		}, 1 ),
 
 		/**
@@ -1531,7 +1621,7 @@
 		 */
 		showPanelAddElms: function() {
 			var $actionElmAdd = this.$panelActionElmAdd;
-			if ( $actionElmAdd.is( '.active' ) ) {
+			if ( $actionElmAdd.hasClass( 'active' ) ) {
 				return;
 			}
 
@@ -1837,7 +1927,7 @@
 				}
 				// Firefox blocks events between current page and iframe so will use onParentEventData
 				// Other browsers in iframe intercepts events
-				if ( this.isFirefox() && this.isParentDragging() ) {
+				if ( $usbcore.isFirefox && this.isParentDragging() ) {
 					var eventData =  this._getEventData( e );
 					if ( eventData.pageX ) {
 						this.postMessage( 'onParentEventData', [ '_maybeDrop', eventData ] );
@@ -1883,7 +1973,7 @@
 
 			// Firefox blocks events between current page and frame so will use onParentEventData
 			// Other browsers in iframe intercepts events
-			if ( this.isFirefox() ) {
+			if ( $usbcore.isFirefox ) {
 				this.postMessage( 'onParentEventData', '_endDrag' );
 			}
 
@@ -1932,7 +2022,7 @@
 		 * @return {boolean} True if hide panel, False otherwise
 		 */
 		isHidePanel: function() {
-			return this.$panel.is( '.hide' )
+			return this.$panel.hasClass( 'hide' )
 		},
 
 		/**
@@ -2047,7 +2137,7 @@
 
 			// Get element name
 			var name = this.getElmName( id ),
-				title = this.config( 'elm_titles.' + name, name );
+				title = this.config( 'elm_titles.' + name );
 
 			// If there is no title, then the element does not support editing in the USBuilder
 			if ( ! title ) {
@@ -2103,7 +2193,7 @@
 			}
 
 			// Remove the `waiting_mode` class if any
-			if ( this.$panel.is( '.waiting_mode' ) ) {
+			if ( this.$panel.hasClass( 'waiting_mode' ) ) {
 				this.$panel
 					.removeClass( 'waiting_mode' );
 			}
@@ -2372,7 +2462,8 @@
 			 * @return {{}} Returns the old and updated shortcode
 			 */
 			var _updateShortcode = function() {
-				var oldShortcode = this.getElmShortcode( id );
+				var originalId = id,
+					oldShortcode = this.getElmShortcode( id );
 				if ( ! oldShortcode || _skipSave ) {
 					return {};
 				}
@@ -2408,7 +2499,14 @@
 
 				// Converts a shortcode object to a string
 				var newShortcode = this.buildShortcode( shortcodeObj ),
-					hasChanged = ( oldShortcode !== newShortcode && ! isActiveRecoveryTask );
+					hasChanged = ( oldShortcode !== newShortcode && ! isActiveRecoveryTask ),
+					oldParentShortcode; // The parent shortcode for the events of the year, children change, but the parent needs to be updated.
+
+				// Get parent shortcode data
+				if ( instructions === true && this.isUpdateIncludeParent( id ) ) {
+					id = this.getElmParentId( id );
+					oldParentShortcode = this.getElmShortcode( id );
+				}
 
 				// Saving shortcode to page content
 				if ( hasChanged ) {
@@ -2418,8 +2516,14 @@
 					this.__contentChange.call( this );
 				}
 
+				// Get parent and update it
+				if ( oldParentShortcode ) {
+					oldShortcode = oldParentShortcode;
+					newShortcode = this.getElmShortcode( id );
+				}
+
 				// Changing columns layout according to the row setting
-				if ( hasChanged && $.inArray( elmType, [ 'vc_row', 'vc_row_inner' ] ) !== -1 && name === 'columns' ) {
+				if ( hasChanged && elmType.indexOf( 'vc_row' ) === 0 && name === 'columns' ) {
 					this.__updateColumnsLayout( id, value );
 				}
 
@@ -2436,12 +2540,14 @@
 					};
 
 					var commitArgs = [ id, this._CHANGED_ACTION.UPDATE ];
-					// Get the id of the root container
-					if ( instructions === true && 'vc_tta_section' === elmType ) {
-						commitArgs[ /* id */0 ] = this.getElmParentId( id );
-					}
+
 					// Determining the field type whether the spacing is needed or not.
 					commitArgs.push( this.config( 'useThrottleForFields', [] ).indexOf( usofField.type ) > -1 );
+
+					// Add external end-to-end data
+					if ( oldParentShortcode ) {
+						commitArgs.push( { originalId: originalId } );
+					}
 
 					// Commit to save changes to history
 					this.commitDataToHistory.apply( this, commitArgs );
@@ -2467,6 +2573,7 @@
 					if ( ! _shortcode.changed ) {
 						return;
 					}
+
 					// Show the loading
 					this.postMessage( 'showPreloader', id );
 					// Get a rendered shortcode
@@ -2490,7 +2597,7 @@
 			}
 
 			// Updating the shortcode at a specified frequency
-			else if ( instructions !== true && instructions ) {
+			else if ( instructions !== true ) {
 				/**
 				 * Update on instructions and data
 				 *
@@ -2498,10 +2605,12 @@
 				 */
 				var _updateOnInstructions = function() {
 					var _shortcode = _updateShortcode();
-					if ( ! _shortcode.changed ) {
+					// If the shortcode data has not changed or there are no instructions,
+					// then we will complete the execution at this stage
+					if ( ! _shortcode.changed || $usbcore.isUndefined( instructions ) ) {
 						return;
 					}
-					//  Spot updating styles, classes or other parameters
+					// Spot updating styles, classes or other parameters
 					this.postMessage( 'onPreviewParamChange', [ id, instructions, value, fieldType ] );
 				}.bind( this );
 
@@ -2883,6 +2992,15 @@
 		 * @event handler
 		 */
 		_showPanelPageCustomCss: function() {
+			// Loading the code editor only after initializing the iframe,
+			// due to loading assets on demand from the iframe
+			if ( ! this.iframe.isLoad ) {
+				this
+					.off( 'iframeLoaded', this._events.showPanelPageCustomCss )
+					.one( 'iframeLoaded', this._events.showPanelPageCustomCss );
+				return;
+			}
+
 			// Loading assets required to initialize the code editor
 			this._loadAssetsForCodeEditor();
 
@@ -3068,7 +3186,7 @@
 					if ( !! this._$temp.isReloadPreviewAfterSave && this.isPageMetaChanged() ) {
 						// Reset value after page reload.
 						this._$temp.isReloadPreviewAfterSave = false;
-						this.iframe.src = this.config( 'iframeSrc' );
+						this.iframe.src = this.config( 'previewUrl' );
 					}
 					// Saving the last page data.
 					this._$temp.savedPageData = $usbcore.clone( this.pageData );
@@ -3223,8 +3341,9 @@
 		 * @param {string} id Shortcode's usbid, e.g. "us_btn:1"
 		 * @param {string} action The action that is executed to apply the changes
 		 * @param {boolean} useThrottle Using the interval when saving data
+		 * @param {{}} extData External end-to-end data
 		 */
-		commitDataToHistory: function( id, action, useThrottle ) {
+		commitDataToHistory: function( id, action, useThrottle, extData ) {
 			var changedAction = this._CHANGED_ACTION;
 			if (
 				! action
@@ -3248,7 +3367,8 @@
 				 */
 				var data = {
 					action: action,
-					id: id
+					id: id,
+					extData: $.isPlainObject( extData ) ? extData : {},
 				};
 
 				// Get and save the position of an element
@@ -3500,8 +3620,9 @@
 					this.trigger( 'elmSelected', task.id );
 				}
 				// Refresh data in editing active fieldset
-				if ( task.id === this.selectedElmId && this.activeElmFieldset instanceof $usof.GroupParams ) {
-					this.activeElmFieldset.setValues( this.getElmValues( task.id ), /* quiet mode */true );
+				var id = ( task.extData || {} ).originalId || task.id;
+				if ( id === this.selectedElmId && this.activeElmFieldset instanceof $usof.GroupParams ) {
+					this.activeElmFieldset.setValues( this.getElmValues( this.selectedElmId ), /* quiet mode */true );
 				}
 
 			} else {
@@ -3614,15 +3735,6 @@
 		},
 
 		/**
-		 * Detect Firefox
-		 *
-		 * @return {boolean} True if firefox, False otherwise.
-		 */
-		isFirefox: function() {
-			return navigator.userAgent.toLowerCase().indexOf( 'firefox' ) > -1
-		},
-
-		/**
 		 * Determines if ontent hanged.
 		 *
 		 * @return {boolean} True if ontent hanged, False otherwise.
@@ -3679,8 +3791,12 @@
 		 * @param {string} text
 		 * @param {mixed} data
 		 */
-		_debugLog: function( text, data ) {
-			console.log( text, data );
+		_debugLog: function() {
+			var args = arguments;
+			if ( ! args.length ) {
+				args = [ '_debugLog: called with no params' ];
+			}
+			console.log.apply( null, args );
 		},
 
 		/**
@@ -3890,11 +4006,11 @@
 
 			if ( result ) {
 				return {
-					tag: result[ 2 ],				// The shortcode tag of the current object
-					atts: result[ 3 ] || '',		// The a string representation of the shortcode attributes
-					input: result[ 0 ],				// The input shortcode text
-					content: result[ 5 ] || '',		// The content of the shortcode if there is of course
-					hasClosingTag: !! result[ 6 ]	// The need for an closing tag
+					tag: result[ 2 ], // The shortcode tag of the current object
+					atts: this._unescapeAttr( result[ 3 ] || '' ), // The a string representation of the shortcode attributes
+					input: result[ 0 ], // The input shortcode text
+					content: result[ 5 ] || '', // The content of the shortcode if there is of course
+					hasClosingTag: !! result[ 6 ] // The need for an closing tag
 				};
 			}
 
@@ -3943,6 +4059,8 @@
 				if ( ! $.isEmptyObject( attsDefaults ) ) {
 					shortcode.atts = this.buildAtts( this.parseAtts( shortcode.atts ), attsDefaults );
 				}
+				// Escaping for shortcode attributes
+				shortcode.atts = this._escapeAttr( shortcode.atts );
 				result += ' ' + shortcode.atts.trim();
 			}
 			result += ']';
@@ -4012,9 +4130,9 @@
 				params = {};
 			}
 			var // Create pattern for regular expression. Variable example: `{%var_name%}`
-				pattern = this.escapeRegExp( this.config( 'startSymbol', '{%' ) );
+				pattern = $usbcore.escapePcre( this.config( 'startSymbol', '{%' ) );
 				pattern += '([A-z\\_\\d]+)';
-				pattern += this.escapeRegExp( this.config( 'endSymbol', '%}' ) );
+				pattern += $usbcore.escapePcre( this.config( 'endSymbol', '%}' ) );
 			// Replace all variables with values
 			return ( '' + template ).replace( new RegExp( pattern, 'gm' ), function( _, varName ) {
 				return '' + ( params[ varName ] || '' );
@@ -4085,18 +4203,45 @@
 		},
 
 		/**
-		 * Determines if the specified id is a container, defines any types
-		 * for example: `vc_row`, `vc_row_inner`, `vc_column`, `vc_column_inner`, `vc_tta_*`,
-		 * `vwrapper`, `hwrapper` etc.
+		 * Determines whether the specified id is main container id,
+		 * this is the root whose name is assigned to `this.mainContainer`,
+		 * for example name: `container`
 		 *
-		 * @param {string} id Shortcode's usbid, e.g. "us_btn:1"
-		 * @return {boolean} True if the specified id is container, False otherwise.
+		 * @param {string} id Shortcode's usbid, e.g. "container"
+		 * @return {boolean} True if the specified id is container id, False otherwise
 		 */
-		isElmContainer: function( id ) {
-			if ( this.isValidId( id ) ) {
-				id = this.getElmName( id );
+		isMainContainer: function( id ) {
+			return id && id === this.mainContainer;
+		},
+
+		/**
+		 * Determines whether the specified identifier is container.
+		 *
+		 * @param {string} name Shortcode's usbid, e.g. "vwrapper:1"
+		 * @return {boolean} True if the specified identifier is container, False otherwise.
+		 */
+		isElmContainer: function( name ) {
+			var name = this.isValidId( name )
+				? this.getElmName( name )
+				: name;
+			return name && this.config( 'shortcode.containers', [] ).indexOf( name ) > -1;
+		},
+
+		/**
+		 * Determining whether an element needs to be updated from the parent
+		 *
+		 * @param {string|node} id Shortcode's usbid, e.g. "vc_tta_section:1"
+		 * @return {boolean}True if the specified identifier is elm parent update, False otherwise.
+		 */
+		isUpdateIncludeParent: function( id ) {
+			if ( $usbcore.isNode( id ) ) {
+				id = this.getElmId( id );
 			}
-			return id && this.config( 'shortcode.containers', [] ).indexOf( id ) !== -1;
+			if ( ! this.isValidId( id ) ) {
+				return false;
+			}
+			var name = this.getElmName( id );
+			return name && this.config( 'shortcode.update_parent', [] ).indexOf( name ) > -1;
 		},
 
 		/**
@@ -4136,41 +4281,12 @@
 		},
 
 		/**
-		 * Determines whether the specified id is main container id,
-		 * this is the root whose name is assigned to `this.mainContainer`,
-		 * for example name: `container`
-		 *
-		 * @param {string} id Shortcode's usbid, e.g. "container"
-		 * @return {boolean} True if the specified id is container id, False otherwise
-		 */
-		isMainContainer: function( id ) {
-			return id && id === this.mainContainer;
-		},
-
-		/**
-		 * Determine if the type or id is in the vc_tta_accordion, vc_tta_tab, vc_tta_tour group or vc_tta_section.
-		 *
-		 * @param {string} name The name e.g. "vc_tta_section:1"
-		 * @return {boolean}  True if the specified type is vc_tta_*, False otherwise.
-		 */
-		isElmTTA: function( name ) {
-			name += '';
-			if ( this.isValidId( name ) ) {
-				name = this.getElmName( name );
-			}
-			return name && this.isElmContainer( name ) && name.indexOf( 'vc_tta_' ) === 0;
-		},
-
-		/**
 		 * Determines whether the specified identifier is tab.
 		 *
 		 * @param {string} name The name e.g. "vc_tta_tabs:1"
 		 * @return {boolean} True if the specified identifier is tab, False otherwise.
 		 */
 		isElmTab: function( name ) {
-			if ( ! this.isElmTTA( name ) ) {
-				return false;
-			}
 			if ( this.isValidId( name ) ) {
 				name = this.getElmType( name );
 			}
@@ -4178,30 +4294,29 @@
 		},
 
 		/**
-		 * Escape special characters for regular expression
+		 * Escape for shortcode attributes
 		 *
-		 * @param {string} string The value
-		 * @return {string}
+		 * @private
+		 * @param {string} value The value
+		 * @return {string} Returns a string from escaped with special characters
 		 */
-		escapeRegExp: function( string ) {
-			return string.replace(/[.*+?^${}()|\:[\]\\]/g, '\\$&'); // $& means the whole matched string
+		_escapeAttr: function( value ) {
+			return ( '' + value )
+				.replaceAll( '[', '&#91;' )
+				.replaceAll( ']', '&#93;' );
 		},
 
 		/**
-		 * Escape special characters for attributes
-		 * Note: The code is not used.
+		 * Unescape for shortcode attributes
 		 *
 		 * @private
-		 * @param {string} string The value
-		 * @return {string} Returns a string replacing html tags with entities
+		 * @param {string} value The value
+		 * @return {string} Returns a string from the canceled escaped special characters
 		 */
-		_escapeHtml: function( string ) {
-			return ( '' + string )
-				.replace( '&', '&amp;' )
-				.replace( '<', '&lt;' )
-				.replace( '>', '&gt;' )
-				.replace( '"', '&quot;' )
-				.replace( "'", '&#039;' );
+		_unescapeAttr: function( value ) {
+			return ( '' + value )
+				.replaceAll( '&#91;', '[' )
+				.replaceAll( '&#93;', ']' );
 		},
 
 		/**
@@ -4417,7 +4532,7 @@
 			if ( ! this.isValidId( id ) || ! this.pageData.content ) {
 				return false;
 			}
-			return ( new RegExp( '\\['+ this.getElmType( id ) +'[^\\]]+usbid=\\"'+ this.escapeRegExp( id ) +'\\"' ) )
+			return ( new RegExp( '\\['+ this.getElmType( id ) +'[^\\]]+usbid=\\"'+ $usbcore.escapePcre( id ) +'\\"' ) )
 				.test( '' + this.pageData.content );
 		},
 
@@ -4487,7 +4602,7 @@
 
 			var content = ( '' + this.pageData.content ),
 				// Get the index of the start of the shortcode
-				elmRegex = new RegExp( '\\['+ this.getElmType( id ) +'[^\\]]+usbid=\\"'+ this.escapeRegExp( id ) +'\\"' ),
+				elmRegex = new RegExp( '\\['+ this.getElmType( id ) +'[^\\]]+usbid=\\"'+ $usbcore.escapePcre( id ) +'\\"' ),
 				startPosition = content.search( elmRegex ),
 				// Get content before and after shortcode
 				prevContent = content.slice( 0, startPosition ),
@@ -4655,7 +4770,7 @@
 			if ( ! this.iframe.isLoad ) {
 				return null;
 			}
-			return ( this.iframe.contentWindow.$usb || {} ).getElmNode( id );
+			return ( this.iframe.contentWindow.$usbp || {} ).getElmNode( id );
 		},
 
 		/**
@@ -4668,7 +4783,7 @@
 			if ( ! this.iframe.isLoad ) {
 				return '';
 			}
-			return ( this.iframe.contentWindow.$usb || {} ).getElmOuterHtml( id ) || '';
+			return ( this.iframe.contentWindow.$usbp || {} ).getElmOuterHtml( id ) || '';
 		},
 
 		/**
@@ -4842,8 +4957,8 @@
 			}
 			// Add required settings
 			$.extend( settings.data, {
-				_nonce: $usb.config( '_nonce' ),
-				action: $usb.config( 'action_render_shortcode' )
+				_nonce: this.config( '_nonce' ),
+				action: this.config( 'action_render_shortcode' )
 			} );
 			// Content preparation
 			if ( $usbcore.isUndefined( settings.data.content ) ) {
@@ -4861,11 +4976,14 @@
 		 * @param {string} layout The layout
 		 */
 		_updateColumnsLayout: function( rowId, layout ) {
+			// Exclusion of custom settings, since we do not change the rows, but only apply `--custom-columns`
+			if ( 'custom' === layout ) {
+				return;
+			}
 			var columns = this.getElmChildren( rowId ),
 				columnsCount = columns.length,
 				renderNeeded = false,
-				rowType = this.getElmType( rowId ),
-				columnType = ( rowType === 'vc_row_inner' ) ? 'vc_column_inner' : 'vc_column',
+				columnType = this.isRow( rowId ) ? 'vc_column' : 'vc_column_inner',
 				newColumnsWidths = [],
 				newColumnsWidthsBase = 0,
 				newColumnsWidthsTmp,
@@ -5114,8 +5232,9 @@
 			if ( ! child ) {
 				return _getDefaultContent( elmType );
 			}
+
 			// Adding elements for tab structures
-			if ( this.isElmTTA( child ) ) {
+			if ( child === 'vc_tta_section' ) {
 
 				// Get a title template for a section
 				var titleTemplate = this.getTextTranslation( 'section' ),
@@ -5126,11 +5245,11 @@
 					title_2: ( titleTemplate + ' 2' ),
 					vc_column_text: this.getSpareElmId( 'vc_column_text' ),
 					vc_column_text_content: _getDefaultContent( 'vc_column_text' ),
-					vc_tta_section_1: this.getSpareElmId( 'vc_tta_section' ),
-					vc_tta_section_2: this.getSpareElmId( 'vc_tta_section' )
+					vc_tta_section_1: this.getSpareElmId( /* vc_tta_section */child ),
+					vc_tta_section_2: this.getSpareElmId( /* vc_tta_section */child )
 				};
 				// Build shortcode
-				return this.buildString( this.config( 'template.vc_tta_section', '' ), params );
+				return this.buildString( this.config( 'template.' + /* vc_tta_section */child, '' ), params );
 
 				// Adding an empty element with no content
 			} else {
@@ -5210,8 +5329,7 @@
 			// then adding a wrapper `vc_row`. It is forbidden to add elements without a line to the root container!
 			if (
 				this.isMainContainer( parent )
-				&& ! this.isSecondElmContainer( elmId )
-				&& this.getElmName( elmId ) !== 'vc_row'
+				&& ! this.isRow( elmId )
 			) {
 				buildShortcode = this._addRowWrapper( buildShortcode );
 			}
@@ -5346,11 +5464,10 @@
 			// Remove element from preview
 			this.postMessage( 'removeHtmlById', removeId );
 			var selectedElmId = this.selectedElmId,
-				removeName = this.getElmName( removeId ),
 				allChildren = this.getElmAllChildren( removeId ),
 				rootContainerId;
 			// Get the root container to send the change event
-			if ( removeName === 'vc_column' || removeName === 'vc_column_inner' ) {
+			if ( this.isColumn( removeId ) ) {
 				rootContainerId = this.getElmParentId( removeId );
 			}
 

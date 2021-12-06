@@ -13,7 +13,7 @@ if ( ! empty( $orderby_items ) ) {
 	$orderby_items = json_decode( urldecode( $orderby_items ), TRUE );
 } else {
 	// If the shortcode is loaded on the USBuilder page, then we will continue processing with empty values
-	if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+	if ( usb_is_preview_page() ) {
 		$orderby_items = array();
 	} else {
 		return;

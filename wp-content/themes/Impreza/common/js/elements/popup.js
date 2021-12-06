@@ -5,6 +5,7 @@
 	"use strict";
 	$us.WPopup = function( container ) {
 		this.$container = $( container );
+		this.$content = $( '.w-popup-box-content', this.$container );
 
 		this._events = {
 			show: this.show.bind( this ),
@@ -24,15 +25,14 @@
 				$us.$document.trigger( 'scroll' );
 			},
 			touchmove: function( e ) {
+				this.savePopupSizes();
 				// Prevent underlying content scroll
 				if (
-					( this.popupSizes.boxHeight < this.popupSizes.wrapHeight )
-					|| ( ! $( e.target ).closest( '.w-popup-box' ).length )
+					( this.popupSizes.wrapHeight > this.popupSizes.contentHeight )
+					|| ! $( e.target ).closest( '.w-popup-box' ).length
 				) {
 					e.preventDefault();
 				}
-
-
 			}.bind( this ),
 		};
 
@@ -43,8 +43,11 @@
 		this.$trigger = this.$container.find( '.w-popup-trigger' );
 		this.triggerType = this.$trigger.usMod( 'type' );
 		if ( this.triggerType == 'load' ) {
-			var delay = this.$trigger.data( 'delay' ) || 2;
-			$us.timeout( this.show.bind( this ), delay * 1000 );
+			// Check trigger display on which `hide_on_*` can be applied
+			if ( this.$container.css( 'display' ) != 'none' ) {
+				var delay = this.$trigger.data( 'delay' ) || 2;
+				$us.timeout( this.show.bind( this ), delay * 1000 );
+			}
 		} else if ( this.triggerType == 'selector' ) {
 			var selector = this.$trigger.data( 'selector' );
 			if ( selector ) {
@@ -71,6 +74,7 @@
 		this.popupSizes = {
 			boxHeight: 0,
 			wrapHeight: 0,
+			contentHeight: 0,
 			initialWindowHeight: window.innerHeight,
 			openedWindowHeight: 0,
 		}
@@ -172,6 +176,7 @@
 		savePopupSizes: function() {
 			this.popupSizes.boxHeight = this.$box.height();
 			this.popupSizes.wrapHeight = this.$wrap.height();
+			this.popupSizes.contentHeight = this.$content.outerHeight( true );
 		},
 		saveWindowSizes: function() {
 			this.popupSizes.openedWindowHeight = window.innerHeight;

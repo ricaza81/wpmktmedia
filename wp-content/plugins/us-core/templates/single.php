@@ -19,7 +19,7 @@ if ( $content_area_id = us_get_page_area_id( 'content' ) AND get_post_status( $c
 	$has_content_template = FALSE;
 
 	// If no Content template, add the specific attribute to enable correct editing in USBuilder
-	$usbid_container_attribute = apply_filters( 'usb_get_usbid_container', NULL );
+	$usbid_container_attribute = usb_get_usbid_container();
 }
 
 ?>

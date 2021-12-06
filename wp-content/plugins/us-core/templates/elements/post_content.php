@@ -66,12 +66,12 @@ if ( $type == 'full_content' ) {
 
 	// Checking if we are outputting queried post full content inside US Builder and writing corresponding variables values in this case
 	if (
-		apply_filters( 'usb_is_preview_page', NULL )
-		AND ! apply_filters( 'usb_is_preview_page_for_template', NULL )
+		usb_is_preview_page()
+		AND ! usb_is_preview_page_for_template()
 		AND get_the_ID() == get_queried_object_id()
 	) {
 		if ( $remove_rows != '1' ) {
-			$usbid_container_attribute = apply_filters( 'usb_get_usbid_container', NULL );
+			$usbid_container_attribute = usb_get_usbid_container();
 		} else {
 			// TODO: remove this after enabling proper editing of content inside Post Content with removed rows
 			define( 'USB_REMOVE_ROWS', TRUE );
@@ -95,7 +95,7 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 
 	// Get term description as "Excerpt" for archive pages
 } elseif ( $us_elm_context == 'shortcode' AND ( is_category() OR is_tag() OR is_tax() ) ) {
-	if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+	if ( usb_is_preview_page_for_template() ) {
 		$the_content = us_config( 'elements/post_content.usb_preview_dummy_data.term_description', '' );
 	} else {
 		$the_content = do_shortcode( term_description() );
@@ -104,9 +104,9 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 	// Post excerpt is not empty
 } elseif (
 	in_array( $type, array( 'excerpt_content', 'excerpt_only' ) )
-	AND ( has_excerpt() OR apply_filters( 'usb_is_preview_page_for_template', NULL ) )
+	AND ( has_excerpt() OR usb_is_preview_page_for_template() )
 ) {
-	if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+	if ( usb_is_preview_page_for_template() ) {
 		$the_content = us_config( 'elements/post_content.usb_preview_dummy_data.excerpt', '' );
 	} else {
 		$the_content = do_shortcode( apply_filters( 'the_excerpt', get_the_excerpt() ) );
@@ -122,7 +122,7 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 } elseif ( in_array( $type, array( 'excerpt_content', 'part_content', 'full_content' ) ) ) {
 	global $us_is_search_page_block;
 
-	if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+	if ( usb_is_preview_page_for_template() ) {
 		$the_content = us_config( 'elements/post_content.usb_preview_dummy_data.full_content', '' );
 	} elseif ( get_post_type() == 'attachment' ) {
 		$the_content = get_the_content();
@@ -197,12 +197,12 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 }
 
 // Add pagination for Full Content only
-if ( $type == 'full_content' AND ! apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+if ( $type == 'full_content' AND ! usb_is_preview_page_for_template() ) {
 	$the_content .= us_wp_link_pages();
 }
 
 // In case of excluding parent Row and Columns, output the content itself
-if ( $type == 'full_content' AND $remove_rows === 'parent_row' AND ! apply_filters( 'usb_is_preview_page_for_template', NULL ) ) {
+if ( $type == 'full_content' AND $remove_rows === 'parent_row' AND ! usb_is_preview_page_for_template() ) {
 	$output = $the_content;
 
 	// Wrap the content into a section to enable its correct editing in USBuilder
@@ -262,7 +262,7 @@ if ( $type == 'full_content' ) {
 us_remove_from_page_block_ids();
 
 // Output nothing when no content
-if ( $the_content == '' AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( $the_content == '' AND ! usb_is_preview_page() ) {
 	return;
 } else {
 	echo $output;

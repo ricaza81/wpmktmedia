@@ -12,6 +12,11 @@
 	font-weight: 400;
 	src: url(../../../assets/ui-icons.woff) format("woff");
 	}
+.ui-icon_copy:before {
+	content: '\e90d';
+	font-family: 'UI icons';
+	vertical-align: top;
+	}
 .ui-icon_duplicate:before {
 	content: '\e900';
 	font-family: 'UI icons';
@@ -130,7 +135,9 @@ body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
 	line-height: 28px;
 	pointer-events: all !important;
 	position: absolute;
+	overflow: hidden;
 	right: 0;
+	border-bottom-left-radius: 5px;
 	-webkit-user-select: none;
 	user-select: none;
 	background: #090;
@@ -157,6 +164,12 @@ body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
 	.usb-builder-hover-panel-edit {
 		color: inherit !important;
 		}
+	.usb-builder-hover-panel-btn.type_copy {
+		display: none;
+		}
+		.usb-builder-hover-panel-btn.type_copy.copied {
+			background: #00a32a !important;
+			}
 
 	/* Display name for containers */
 	.usb-builder-hover.elm_vc_row .usb-builder-hover-panel-name,
@@ -167,15 +180,27 @@ body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
 	.usb-builder-hover.elm_vc_tta_tour .usb-builder-hover-panel-name,
 	.usb-builder-hover.elm_vc_tta_accordion .usb-builder-hover-panel-name,
 	.usb-builder-hover.elm_vc_tta_section .usb-builder-hover-panel-name,
-	.usb-builder-hover.elm_us_page_block .usb-builder-hover-panel-edit {
+	.usb-builder-hover.elm_us_page_block .usb-builder-hover-panel-edit,
+	.usb-builder-hover.elm_vc_row > .usb-builder-hover-panel .type_copy {
 		display: block;
 		}
 
+/* UX improvement when hover on Row panel */
+.elm_vc_row:before {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 25%;
+	width: 50%;
+	height: 40px;
+	pointer-events: auto;
+	}
 .elm_vc_row > .usb-builder-hover-panel,
 .elm_vc_row_inner > .usb-builder-hover-panel {
 	top: 100%;
 	left: 50%;
 	right: auto;
+	border-radius: 0 0 5px 5px;
 	transform: translateX(-50%);
 	background: #277cea;
 	}
@@ -184,6 +209,7 @@ body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
 	left: 0;
 	right: auto;
 	bottom: 100%;
+	border-radius: 5px 5px 0 0;
 	background: #277cea;
 	}
 .elm_vc_row > .usb-builder-hover-h,
@@ -202,6 +228,7 @@ body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
 	bottom: 100%;
 	left: 50%;
 	right: auto;
+	border-radius: 5px 5px 0 0;
 	transform: translateX(-50%);
 	background: #f2a200;
 	}
@@ -210,6 +237,7 @@ body.usb_preview [data-usbid] .w-vwrapper > :not(.g-preloader):empty {
 .elm_us_vwrapper > .usb-builder-hover-panel {
 	left: 0;
 	right: auto;
+	border-radius: 0 0 5px 0;
 	background: #f2a200;
 	}
 .elm_vc_tta_tabs > .usb-builder-hover-h,

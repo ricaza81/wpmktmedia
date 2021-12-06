@@ -558,19 +558,19 @@ for ( $i = 1; $i <= 6; $i ++ ) {
 			'h' . $i . '_bottom_indent' => array(
 				'title' => __( 'Bottom indent', 'us' ),
 				'type' => 'slider',
-				'std' => '1.5rem',
+				'std' => '0.6em',
 				'options' => array(
 					'px' => array(
-						'min' => 1,
+						'min' => 0,
 						'max' => 50,
 					),
 					'em' => array(
-						'min' => 0.1,
+						'min' => 0.0,
 						'max' => 5.0,
 						'step' => 0.1,
 					),
 					'rem' => array(
-						'min' => 0.1,
+						'min' => 0.0,
 						'max' => 5.0,
 						'step' => 0.1,
 					),
@@ -1028,7 +1028,7 @@ return array(
 				'title' => __( 'Bottom Indent of Text Blocks', 'us' ),
 				'title_pos' => 'side',
 				'type' => 'slider',
-				'std' => '1.5rem',
+				'std' => '0rem',
 				'options' => array(
 					'rem' => array(
 						'min' => 0,
@@ -3363,19 +3363,6 @@ return array(
 				'switch_text' => __( 'Schema.org markup', 'us' ),
 				'std' => 1,
 				'classes' => 'for_above',
-			),
-			'schema_faqs_page' => array(
-				'title' => __( 'FAQs page', 'us' ),
-				'description' => sprintf( __( 'The selected page must contain a "%s" element.', 'us' ), us_translate( 'Accordion', 'js_composer' ) ) . ' <a href="https://developers.google.com/search/docs/data-types/faqpage" target="_blank">' . __( 'Learn more', 'us' ) . '</a>',
-				'type' => 'select',
-				'options' => us_array_merge(
-					array( '' => sprintf( '&ndash; %s &ndash;', us_translate( 'None' ) ) ),
-					$us_page_list
-				),
-				'std' => '',
-				'hints_for' => 'page',
-				'show_if' => array( 'schema_markup', '=', '1' ),
-				'classes' => 'for_above desc_4',
 			),
 
 			// Global Values

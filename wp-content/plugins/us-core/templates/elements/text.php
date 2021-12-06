@@ -21,13 +21,8 @@ global $us_grid_object_type;
 $_atts['class'] = 'w-text';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 
-if ( ! empty( $wrap ) ) {
-	$_atts['class'] .= ' wrap';
-}
-
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
+if ( $us_elm_context == 'header' AND empty( $wrap ) ) {
+	$_atts['class'] .= ' nowrap';
 }
 
 // Fallback since version 7.1

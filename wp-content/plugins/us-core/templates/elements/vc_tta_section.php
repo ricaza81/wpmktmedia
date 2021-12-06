@@ -70,7 +70,7 @@ if ( $text_color ) {
 }
 
 // Hide the section with empty content, if it is not USBuilder page
-if ( $content_html == '' AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( $content_html == '' AND ! usb_is_preview_page() ) {
 	$_atts['class'] .= ' content-empty';
 }
 

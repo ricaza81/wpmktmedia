@@ -38,11 +38,6 @@ if ( $avatar ) {
 	$_atts['class'] .= ' with_ava avapos_' . $avatar_pos;
 }
 
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {
 	$_atts['id'] = $el_id;
 }

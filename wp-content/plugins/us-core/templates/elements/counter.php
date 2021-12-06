@@ -16,9 +16,6 @@ $_atts['class'] .= ' align_' . $align;
 if ( us_design_options_has_property( $css, 'font-size' ) ) {
 	$_atts['class'] .= ' has_font_size';
 }
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
 
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;

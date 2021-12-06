@@ -15,7 +15,6 @@ return array(
 	'category' => __( 'Post Elements', 'us' ),
 	'icon' => 'fas fa-align-justify',
 	'shortcode_post_type' => array( 'us_content_template', 'us_page_block' ),
-	'hide_on_adding_list' => TRUE, // TODO: remove when 'shortcode_post_type' will work for USBuilder
 	'params' => us_set_params_weight(
 
 		// General section

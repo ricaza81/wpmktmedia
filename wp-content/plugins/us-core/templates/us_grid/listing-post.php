@@ -29,7 +29,7 @@ $post_atts = array(
 
 // Add items appearance animation on loading
 // TODO: add animation preview for US Builder
-if ( $load_animation !== 'none' AND ! us_amp() AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( $load_animation !== 'none' AND ! us_amp() AND ! usb_is_preview_page() ) {
 	$post_atts['class'] .= ' us_animate_' . $load_animation;
 
 	// We need to hide CSS animation before isotope.js initialization

@@ -27,13 +27,6 @@
 			this.loading = false;
 			this.changeUpdateState = false;
 			this.gridFilter = null;
-			this.noResultsHideGrid = false;
-
-			// Enabled hide action when no results are found
-			if ( this.$container.is( '[data-no_results_hide_grid]' ) ) {
-				this.$container.removeAttr( 'data-no_results_hide_grid' );
-				this.noResultsHideGrid = true;
-			}
 
 			this.curFilterTaxonomy = '';
 			this.paginationType = this.$pagination.length
@@ -295,7 +288,6 @@
 			// Add events
 			this.$list
 				.on( 'click', '[ref=magnificPopup]', this._events.initMagnificPopup.bind( this ) );
-
 		},
 		/**
 		 * Event handlers
@@ -444,10 +436,10 @@
 			this.none = false;
 			this.loading = true;
 
-			var $none = this.$container.find( '> .w-grid-none' );
-			if ( $none.length ) {
-				$none.hide();
-			}
+			// Hide element by default
+			this.$container
+				.next( '.w-grid-none' )
+				.addClass( 'hidden' );
 
 			// Create params for built-in filter
 			if ( this.$filters.length && ! this.changeUpdateState ) {
@@ -529,16 +521,23 @@
 				type: 'post',
 				url: this.ajaxData.ajax_url,
 				data: this.ajaxData,
+				beforeSend: function() {
+					// Display the grid before submitting the request
+					this.$container
+						.removeClass( 'no_results_hide_grid' );
+				}.bind( this ),
 				success: function( html ) {
 					var $result = $( html ),
-						$container = $( '.w-grid-list', $result ),
+						// Note: Get the `first()` list since there may be several of them due to
+						// the output of grids in `w-grid-none`
+						$container = $( '.w-grid-list', $result ).first(),
 						$pagination = $( '.pagination > *', $result ),
 						$items = $container.children(),
 						smallestItemSelector;
 
 					// Hide the grid if there is no result if action 'Hide this Grid' is enabled
 					this.$container
-						.toggleClass( 'no_results_hide_grid', ( this.noResultsHideGrid && ! $items.length ) );
+						.toggleClass( 'no_results_hide_grid', ! $items.length );
 
 					$container.imagesLoaded( function() {
 						this.beforeAppendItems( $items );
@@ -664,11 +663,19 @@
 						}
 
 						// The display a message in the absence of data.
-						if ( this.changeUpdateState && $result.find( '.w-grid-none' ).length ) {
-							if ( ! $none.length ) {
-								this.$container.prepend( $result.find( '.w-grid-none' ) );
+						var $result_none = $result.find( '> .w-grid-none' );
+						if ( this.changeUpdateState && $result_none.length ) {
+							var $none = this.$container.next( '.w-grid-none' );
+							if ( $none.length ) {
+								$none.removeClass( 'hidden' );
 							} else {
-								$none.show();
+								this.$container
+									.after( $result_none );
+							}
+							// If the result contains a grid that can be Page Block, then we will initialize
+							var $nextGrid = this.$container.next( '.w-grid-none' ).find( '.w-grid:first' );
+							if ( $nextGrid.length ) {
+								$nextGrid.wGrid();
 							}
 							this.none = true;
 						}

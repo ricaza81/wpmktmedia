@@ -677,6 +677,10 @@ return array(
 	'is_container' => TRUE,
 	'weight' => 400, // sets the FIRST position in "Add element" lists
 	'usb_preload' => TRUE,
+	// Since the tabs are located on axis X, we will enable
+	// movement along axis X for the current shortcode
+	'usb_moving_child_x_direction' => TRUE,
+	'usb_root_container_selector' => '> .l-section-h > .g-cols',
 	'as_parent' => array(
 		'only' => 'vc_column',
 	),

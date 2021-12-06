@@ -43,7 +43,7 @@ final class USBuilder_Post {
 		}
 
 		if ( wp_revisions_enabled( get_post( $post_id ) ) ) {
-			$latest_revision = wp_get_post_revisions( $id );
+			$latest_revision = wp_get_post_revisions( $post_id );
 			if ( ! empty( $latest_revision ) ) {
 				$array_values = array_values( $latest_revision );
 				$post_id = $array_values[0]->ID;

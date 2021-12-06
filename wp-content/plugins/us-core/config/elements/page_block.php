@@ -12,7 +12,7 @@ if (
 	AND (
 		wp_doing_ajax()
 		OR in_array( $pagenow, array( 'post.php', 'post-new.php' ) )
-		OR apply_filters( 'usb_is_builder_page', NULL )
+		OR usb_is_builder_page()
 	)
 ) {
 	$us_page_blocks_list = us_get_posts_titles_for( 'us_page_block' );

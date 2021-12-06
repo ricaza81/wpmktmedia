@@ -6,7 +6,7 @@
 
 if (
 	! is_nav_menu( $source )
-	AND ! apply_filters( 'usb_is_preview_page', NULL )
+	AND ! usb_is_preview_page()
 ) {
 	return;
 }
@@ -44,7 +44,7 @@ if ( $us_elm_context == 'shortcode' ) {
 	}
 
 	// Generate unique ID for US builder preview
-	if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+	if ( usb_is_preview_page() ) {
 		$us_menu_id = us_uniqid();
 	} else {
 		global $us_menu_id;

@@ -555,6 +555,12 @@ if ( us_is_asset_used( 'columns' ) ) {
 				.g-cols.<?= $state ?>-cols_1-2-1 {
 					grid-template-columns: 1fr 2fr 1fr;
 					}
+				.g-cols.<?= $state ?>-cols_1-3-1 {
+					grid-template-columns: 1fr 3fr 1fr;
+					}
+				.g-cols.<?= $state ?>-cols_1-4-1 {
+					grid-template-columns: 1fr 4fr 1fr;
+					}
 				<?php if ( $state == 'mobiles' ) { ?>
 				.g-cols:not([style*="grid-gap"]) {
 					grid-gap: 1.5rem;

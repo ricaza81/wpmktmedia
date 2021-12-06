@@ -202,7 +202,7 @@ return array(
 				'options' => array(
 					'px' => array(
 						'min' => 300,
-						'max' => 2000,
+						'max' => 3000,
 						'step' => 10,
 					),
 				),

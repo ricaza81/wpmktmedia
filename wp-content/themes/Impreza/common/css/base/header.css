@@ -42,6 +42,7 @@
 .l-header:not(.sticky) .hide-for-not-sticky {
 	display: none !important;
 	}
+
 /* It is necessary to transfer value to JS */
 .l-header:before {
 	content: 'auto';
@@ -65,6 +66,6 @@
 .l-header .w-text {
 	line-height: 1.5;
 	}
-.l-header .w-text:not(.wrap) {
+.l-header .w-text.nowrap {
 	white-space: nowrap;
 	}

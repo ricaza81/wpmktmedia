@@ -1,5 +1,415 @@
 <?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
+if ( ! function_exists( 'us_header_settings_fallback' ) ) {
+	/**
+	 * Apply fallback changes for old header settings on update
+	 *
+	 * @param $header_settings
+	 * @return array
+	 */
+	function us_header_settings_fallback( $header_settings ) {
+		global $usof_options;
+
+		// Check if the settings are empty and abort following execution in this case
+		if ( ! is_array( $header_settings ) OR empty( $header_settings['default'] ) ) {
+			return $header_settings;
+		}
+
+		// Populate Laptops settings with values from the Default.
+		// Also set a custom breakpoint equals the Tablets breakpoint, needed to avoid fallback in metabox (Sticky and Transparent settings)
+		if ( ! isset( $header_settings['laptops'] ) ) {
+			$header_settings['laptops'] = $header_settings['default'];
+			$header_settings['laptops']['options']['custom_breakpoint'] = 1;
+			$header_settings['laptops']['options']['breakpoint'] = $header_settings['tablets']['options']['breakpoint'];
+		}
+
+		// Fallback for colors
+		if ( ! isset( $header_settings['default']['options']['top_transparent_text_hover_color'] ) ) {
+			$header_settings['default']['options']['top_transparent_text_hover_color'] =
+				isset( $usof_options['color_header_bottom_text_hover'] ) ? '_header_transparent_text_hover' : '_header_top_transparent_text_hover';
+		}
+		if ( ! isset( $header_settings['default']['options']['bottom_bg_color'] ) ) {
+			$header_settings['default']['options']['bottom_bg_color'] =
+				us_arr_path( $usof_options, 'color_header_bottom_bg', '_header_middle_bg' );
+		}
+		if ( ! isset( $header_settings['default']['options']['bottom_text_hover_color'] ) ) {
+			$header_settings['default']['options']['bottom_text_hover_color'] =
+				us_arr_path( $usof_options, 'color_header_bottom_text_hover', '_header_middle_text_hover' );
+		}
+		if ( ! isset( $header_settings['default']['options']['bottom_text_color'] ) ) {
+			$header_settings['default']['options']['bottom_text_color'] =
+				us_arr_path( $usof_options, 'color_header_bottom_text', '_header_middle_text' );
+		}
+
+		// Turn on the custom breakpoint option for Tablets and Mobiles, if it wasn't exist
+		if ( ! isset( $header_settings['tablets']['options']['custom_breakpoint'] ) ) {
+			$header_settings['tablets']['options']['custom_breakpoint'] = 1;
+		}
+		if ( ! isset( $header_settings['mobiles']['options']['custom_breakpoint'] ) ) {
+			$header_settings['mobiles']['options']['custom_breakpoint'] = 1;
+		}
+
+		// Fallback for elements
+		foreach ( $header_settings['data'] as $elm_id => $elm_data ) {
+
+			// Menu
+			if ( strpos( $elm_id, 'menu' ) === 0 ) {
+				if ( ! isset( $elm_data['color_active_bg'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_active_bg'] =
+						us_arr_path( $usof_options, 'color_menu_active_bg', 'transparent' );
+				}
+				if ( ! isset( $elm_data['color_active_text'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_active_text'] =
+						us_arr_path( $usof_options, 'color_menu_active_text', '_header_middle_text_hover' );
+				}
+				if ( ! isset( $elm_data['color_transparent_active_bg'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_transparent_active_bg'] =
+						us_arr_path( $usof_options, 'color_menu_transparent_active_bg', 'transparent' );
+				}
+				if ( ! isset( $elm_data['color_transparent_active_text'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_transparent_active_text'] =
+						us_arr_path( $usof_options, 'color_menu_transparent_active_text', '_header_transparent_text_hover' );
+				}
+				if ( ! isset( $elm_data['color_hover_bg'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_hover_bg'] =
+						us_arr_path( $usof_options, 'color_menu_hover_bg', 'transparent' );
+				}
+				if ( ! isset( $elm_data['color_hover_text'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_hover_text'] =
+						us_arr_path( $usof_options, 'color_menu_hover_text', '_header_middle_text_hover' );
+				}
+				if ( ! isset( $elm_data['color_drop_bg'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_drop_bg'] =
+						us_arr_path( $usof_options, 'color_drop_bg', '_header_middle_bg' );
+				}
+				if ( ! isset( $elm_data['color_drop_text'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_drop_text'] =
+						us_arr_path( $usof_options, 'color_drop_text', '_header_middle_text' );
+				}
+				if ( ! isset( $elm_data['color_drop_hover_bg'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_drop_hover_bg'] =
+						us_arr_path( $usof_options, 'color_drop_hover_bg', 'transparent' );
+				}
+				if ( ! isset( $elm_data['color_drop_hover_text'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_drop_hover_text'] =
+						us_arr_path( $usof_options, 'color_drop_hover_text', '_header_middle_text_hover' );
+				}
+				if ( ! isset( $elm_data['color_drop_active_bg'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_drop_active_bg'] =
+						us_arr_path( $usof_options, 'color_drop_active_bg', 'transparent' );
+				}
+				if ( ! isset( $elm_data['color_drop_active_text'] ) ) {
+					$header_settings['data'][ $elm_id ]['color_drop_active_text'] =
+						us_arr_path( $usof_options, 'color_drop_active_text', '_header_middle_text_hover' );
+				}
+			}
+
+			// Search
+			if ( strpos( $elm_id, 'search' ) === 0 ) {
+				if ( ! isset( $elm_data['field_bg_color'] ) ) {
+					$header_settings['data'][ $elm_id ]['field_bg_color'] =
+						us_arr_path( $usof_options, 'color_header_search_bg', '' );
+				}
+				if ( ! isset( $elm_data['field_text_color'] ) ) {
+					$header_settings['data'][ $elm_id ]['field_text_color'] =
+						us_arr_path( $usof_options, 'color_header_search_text', '' );
+				}
+
+				// Search Shop Products only
+				if ( ! empty( $elm_data['product_search'] ) ) {
+					$header_settings['data'][ $elm_id ]['search_post_type'] = 'product';
+					unset( $header_settings['data'][ $elm_id ]['product_search'] );
+				}
+			}
+
+		}
+
+		return $header_settings;
+	}
+}
+
+if ( ! function_exists( 'us_fix_header_settings' ) ) {
+	/**
+	 * Make the provided header settings value consistent and proper
+	 *
+	 * @param $value array
+	 * @return array
+	 */
+	function us_fix_header_settings( $value ) {
+		if ( empty( $value ) OR ! is_array( $value ) ) {
+			$value = array();
+		}
+		if ( ! isset( $value['data'] ) OR ! is_array( $value['data'] ) ) {
+			$value['data'] = array();
+		}
+		$options_defaults = array();
+		foreach ( us_config( 'header-settings.options', array() ) as $group => $opts ) {
+			foreach ( $opts as $opt_name => $opt ) {
+				$options_defaults[ $opt_name ] = isset( $opt['std'] ) ? $opt['std'] : '';
+			}
+		}
+		foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
+			if ( ! isset( $value[ $state ] ) OR ! is_array( $value[ $state ] ) ) {
+				$value[ $state ] = array();
+			}
+			if ( ! isset( $value[ $state ]['layout'] ) OR ! is_array( $value[ $state ]['layout'] ) ) {
+				if ( $state != 'default' AND isset( $value['default']['layout'] ) ) {
+					$value[ $state ]['layout'] = $value['default']['layout'];
+				} else {
+					$value[ $state ]['layout'] = array();
+				}
+			}
+			$state_elms = array();
+			foreach ( $value[ $state ]['layout'] as $place => $elms ) {
+				if ( ! is_array( $elms ) ) {
+					$elms = array();
+				}
+				foreach ( $elms as $index => $elm_id ) {
+					if ( ! is_string( $elm_id ) OR strpos( $elm_id, ':' ) == - 1 ) {
+						unset( $elms[ $index ] );
+					} else {
+						$state_elms[] = $elm_id;
+						if ( ! isset( $value['data'][ $elm_id ] ) ) {
+							$value['data'][ $elm_id ] = array();
+						}
+					}
+				}
+				$value[ $state ]['layout'][ $place ] = array_values( $elms );
+			}
+			if ( ! isset( $value[ $state ]['layout']['hidden'] ) OR ! is_array( $value[ $state ]['layout']['hidden'] ) ) {
+				$value[ $state ]['layout']['hidden'] = array();
+			}
+			$value[ $state ]['layout']['hidden'] = array_merge( $value[ $state ]['layout']['hidden'], array_diff( array_keys( $value['data'] ), $state_elms ) );
+			// Fixing options
+			if ( ! isset( $value[ $state ]['options'] ) OR ! is_array( $value[ $state ]['options'] ) ) {
+				$value[ $state ]['options'] = array();
+			}
+			$value[ $state ]['options'] = array_merge( $options_defaults, ( $state != 'default' ) ? $value['default']['options'] : array(), $value[ $state ]['options'] );
+		}
+
+		foreach ( $value['data'] as $elm_id => $values ) {
+			$type = strtok( $elm_id, ':' );
+			$defaults = us_get_elm_defaults( $type, 'header' );
+			$value['data'][ $elm_id ] = array_merge( $defaults, array_intersect_key( $value['data'][ $elm_id ], $defaults ) );
+		}
+
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'us_fix_header_template_settings' ) ) {
+	/**
+	 * @param $value array
+	 * @return array
+	 */
+	function us_fix_header_template_settings( $value ) {
+		if ( isset( $value['title'] ) ) {
+			// Don't need this in data processing
+			unset( $value['title'] );
+		}
+
+		// Basic structure
+		$template_structure = array_fill_keys(
+			us_get_responsive_states( /* only keys */TRUE ),
+			array( 'options' => array(), 'layout' => array() )
+		);
+		// Add space for data
+		$template_structure['data'] = array();
+
+		$value = us_array_merge( $template_structure, $value );
+		$layout_structure = array(
+			'top_left' => array(),
+			'top_center' => array(),
+			'top_right' => array(),
+			'middle_left' => array(),
+			'middle_center' => array(),
+			'middle_right' => array(),
+			'bottom_left' => array(),
+			'bottom_center' => array(),
+			'bottom_right' => array(),
+			'hidden' => array(),
+		);
+		foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
+
+			// Options
+			$value[ $state ]['options'] = array_merge( ( $state == 'default' ) ? array() : $value['default']['options'], $value[ $state ]['options'] );
+
+			// Layout
+			$value[ $state ]['layout'] = array_merge( $layout_structure, ( $state == 'default' ) ? array() : $value['default']['layout'], $value[ $state ]['layout'] );
+		}
+		$value = us_fix_header_settings( $value );
+
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'us_load_header_settings' ) ) {
+	add_filter( 'us_load_header_settings', 'us_load_header_settings', 9 );
+	/**
+	 * Load header settings
+	 *
+	 * @param array $header_settings
+	 * @return array
+	 */
+	function us_load_header_settings( $header_settings ) {
+		global $us_header_id;
+
+		// Get Header ID from Theme Options
+		$us_header_id = us_get_page_area_id( 'header' );
+
+		// Override Header ID and its settings for certain post when they set in metabox
+		$states = (array) us_get_responsive_states( /* Only keys */TRUE );
+		$override_options = array();
+		$is_shop = FALSE;
+		if ( is_singular() ) {
+			$postID = get_the_ID();
+		}
+		if ( is_404() ) {
+			$postID = us_get_option( 'page_404' );
+		}
+		if ( is_search() AND ! is_post_type_archive( 'product' ) ) {
+			$postID = us_get_option( 'search_page' );
+		}
+		if ( is_home() ) {
+			$postID = us_get_option( 'posts_page' );
+		}
+		if ( function_exists( 'is_shop' ) AND is_shop() AND ! is_search() ) {
+			$postID = wc_get_page_id( 'shop' );
+			$is_shop = TRUE;
+		}
+		if ( ! empty( $postID ) AND $postID != 'default' ) {
+			if ( usof_meta( 'us_header_id', $postID ) != '__defaults__' OR $is_shop ) {
+				// Do not try to translate header ID for shop pages - it is set at Theme Options now
+				if ( ! $is_shop AND has_filter( 'us_tr_default_language' ) ) {
+
+					$default_language = apply_filters( 'us_tr_default_language', NULL );
+					$current_language = apply_filters( 'us_tr_current_language', NULL );
+					if ( $default_language != $current_language ) {
+						$orig_postID = apply_filters( 'us_tr_object_id', $postID, get_post_type( $postID ), TRUE, $default_language );
+						if ( $orig_postID != $postID ) {
+							$us_header_id = usof_meta( 'us_header_id', $orig_postID );
+							$us_header_id = apply_filters( 'us_tr_object_id', $us_header_id,'us_header', TRUE, $current_language );
+						}
+					}
+				}
+				if ( usof_meta( 'us_header_sticky_override', $postID ) ) {
+					// Note: The value can be either an array or a delimited string.
+					$sticky_override = usof_meta( 'us_header_sticky', $postID );
+					if ( is_string( $sticky_override ) ) {
+						$sticky_override = explode( ',' , $sticky_override );
+					}
+					foreach ( $states as $state ) {
+						$override_options[ $state ]['options']['sticky'] = in_array( $state, (array) $sticky_override );
+					}
+				}
+				if ( usof_meta( 'us_header_transparent_override', $postID ) ) {
+					// Note: The value can be either an array or a delimited string.
+					$transparent_override = usof_meta( 'us_header_transparent', $postID );
+					if ( is_string( $transparent_override ) ) {
+						$transparent_override = explode( ',' , $transparent_override );
+					}
+					foreach ( $states as $state ) {
+						$override_options[ $state ]['options']['transparent'] = in_array( $state, (array) $transparent_override );
+					}
+				}
+				if ( usof_meta( 'us_header_shadow', $postID ) ) {
+					foreach ( $states as $state ) {
+						$override_options[ $state ]['options']['shadow'] = 'none';
+					}
+				}
+			}
+		}
+
+		// Reset Header ID to Defaults if set
+		if ( $us_header_id == '__defaults__' ) {
+			$us_header_id = us_get_option( 'header_id' );
+		}
+
+		// Generate header settings from Header post content
+		if ( $us_header_id != '' ) {
+			if (
+				has_filter( 'us_tr_object_id' )
+				AND $_header_id = apply_filters( 'us_tr_object_id', $us_header_id, 'us_header', TRUE )
+			) {
+				$us_header_id = $_header_id;
+			}
+
+			$header = get_post( (int) $us_header_id );
+			if ( $header instanceof WP_Post AND $header->post_type === 'us_header' ) {
+				if ( ! empty( $header->post_content ) AND strpos( $header->post_content, '{' ) === 0 ) {
+					try {
+						$header_settings = json_decode( $header->post_content, TRUE );
+					}
+					catch ( Exception $e ) {
+					}
+				}
+			}
+			// Add Header ID to settings
+			$header_settings['header_id'] = $us_header_id;
+
+			// Fallback
+			if ( function_exists( 'us_header_settings_fallback' ) ) {
+				$header_settings = us_header_settings_fallback( $header_settings );
+			}
+
+			/*
+			 * Applying global breakpoints where needed
+			 * Note: this should go after fallback because laptop state sometimes is not present before fallback
+			 */
+			foreach ( $states as $state ) {
+				if (
+					isset( $header_settings[ $state ]['options']['custom_breakpoint'] )
+					AND ! $header_settings[ $state ]['options']['custom_breakpoint']
+				) {
+					$header_settings[ $state ]['options']['breakpoint'] = us_get_option( $state . '_breakpoint' );
+				}
+			}
+
+		} else {
+			$header_settings['is_hidden'] = TRUE;
+		}
+
+		// Merge header settings with metabox settings
+		$header_settings = us_array_merge( $header_settings, $override_options );
+
+		// Casting values to the same data type
+		foreach ( $states as $state ) {
+			foreach ( array( 'sticky', 'sticky_auto_hide' ) as $option ) {
+				if ( isset( $header_settings[ $state ]['options'][ $option ] ) ) {
+					$value = &$header_settings[ $state ]['options'][ $option ];
+					$value = ! empty( $value );
+					unset( $value );
+				}
+			}
+		}
+
+		return $header_settings;
+	}
+}
+
+if ( ! function_exists( 'us_load_header_settings_once' ) ) {
+	/**
+	 * Load the current header settings for all possible responsive states
+	 */
+	function us_load_header_settings_once() {
+		global $us_header_settings;
+
+		// Note: Based on `get_queried_object_id()`, we will determine if data has been loaded,
+		// which is necessary for the WP functionality to work correctly
+		if ( ! empty( $us_header_settings ) AND ! get_queried_object_id() ) {
+			return;
+		}
+		// Basic structure
+		$us_header_settings = array_fill_keys(
+			us_get_responsive_states( /* only keys */TRUE ),
+			array( 'options' => array(), 'layout' => array() )
+		);
+		// Add space for data
+		$us_header_settings['data'] = array();
+		$us_header_settings = apply_filters( 'us_load_header_settings', $us_header_settings );
+	}
+}
+
 if ( ! function_exists( 'us_get_header_option' ) ) {
 	/**
 	 * Get header option for the specified state
@@ -77,414 +487,298 @@ if ( ! function_exists( 'us_get_header_option' ) ) {
 	}
 }
 
-
-/**
- * Get header layout for the specified state
- *
- * @param $state
- *
- * @return array
- */
-function us_get_header_layout( $state = 'default' ) {
-	global $us_header_settings;
-	us_load_header_settings_once();
-	$layout = array(
-		'top_left' => array(),
-		'top_center' => array(),
-		'top_right' => array(),
-		'middle_left' => array(),
-		'middle_center' => array(),
-		'middle_right' => array(),
-		'bottom_left' => array(),
-		'bottom_center' => array(),
-		'bottom_right' => array(),
-		'hidden' => array(),
-	);
-	if ( $state != 'default' AND isset( $us_header_settings['default']['layout'] ) AND is_array( $us_header_settings['default']['layout'] ) ) {
-		$layout = array_merge( $layout, $us_header_settings['default']['layout'] );
-	}
-	if ( isset( $us_header_settings[ $state ]['layout'] ) AND is_array( $us_header_settings[ $state ]['layout'] ) ) {
-		$layout = array_merge( $layout, $us_header_settings[ $state ]['layout'] );
-	}
-
-	return $layout;
-}
-
-/**
- * Load the current header settings for all possible responsive states
- */
-function us_load_header_settings_once() {
-	global $us_header_settings;
-
-	// Note: At this point, a check for the presence of options is necessary because
-	// the current function can be called from the helpers.php file that is connected
-	// before `after_setup_theme`
-	if ( ! empty( $us_header_settings['default']['options'] ) ) {
-		return;
-	}
-	// Basic structure
-	$us_header_settings = array_fill_keys(
-		us_get_responsive_states( /* only keys */TRUE ),
-		array( 'options' => array(), 'layout' => array() )
-	);
-	// Add space for data
-	$us_header_settings['data'] = array();
-	$us_header_settings = apply_filters( 'us_load_header_settings', $us_header_settings );
-}
-
-/**
- * Recursively output elements of a certain state / place
- *
- * @param array $settings Current layout
- * @param string $state Current state
- * @param string $place Outputted place
- * @param string $context 'header' / 'grid'
- * @param string $grid_object_type 'post' / 'term'
- */
-function us_output_builder_elms( &$settings, $state, $place, $context = 'header', $grid_object_type = 'post' ) {
-
-	$layout = &$settings[ $state ]['layout'];
-	$data = &$settings['data'];
-	if ( ! isset( $layout[ $place ] ) OR ! is_array( $layout[ $place ] ) ) {
-		return;
-	}
-
-	// Set 3 states for header and 1 for other contexts, like Grid Layouts
-	$_states = ( $context === 'header' )
-		? (array) us_get_responsive_states( /* Only keys */TRUE )
-		: array( 'default' );
-
-	$visible_elms = array();
-	foreach ( $_states as $_state ) {
-		$visible_elms[ $_state ] = us_get_builder_shown_elements_list( us_arr_path( $settings, $_state . '.layout', array() ) );
-	}
-
-	foreach ( $layout[ $place ] as $elm ) {
-		$classes = '';
-		if ( $context === 'header' ) {
-			if ( isset( $data[ $elm ] ) ) {
-				if ( us_arr_path( $data[ $elm ], 'hide_for_sticky', FALSE ) ) {
-					$classes .= ' hide-for-sticky';
-				}
-				if ( us_arr_path( $data[ $elm ], 'hide_for_not_sticky', FALSE ) ) {
-					$classes .= ' hide-for-not-sticky';
-				}
-			}
+if ( ! function_exists( 'us_get_header_layout' ) ) {
+	/**
+	 * Get header layout for the specified state
+	 *
+	 * @param $state
+	 * @return array
+	 */
+	function us_get_header_layout( $state = 'default' ) {
+		global $us_header_settings;
+		us_load_header_settings_once();
+		$layout = array(
+			'top_left' => array(),
+			'top_center' => array(),
+			'top_right' => array(),
+			'middle_left' => array(),
+			'middle_center' => array(),
+			'middle_right' => array(),
+			'bottom_left' => array(),
+			'bottom_center' => array(),
+			'bottom_right' => array(),
+			'hidden' => array(),
+		);
+		if ( $state != 'default' AND isset( $us_header_settings['default']['layout'] ) AND is_array( $us_header_settings['default']['layout'] ) ) {
+			$layout = array_merge( $layout, $us_header_settings['default']['layout'] );
 		}
+		if ( isset( $us_header_settings[ $state ]['layout'] ) AND is_array( $us_header_settings[ $state ]['layout'] ) ) {
+			$layout = array_merge( $layout, $us_header_settings[ $state ]['layout'] );
+		}
+
+		return $layout;
+	}
+}
+
+if ( ! function_exists( 'us_output_builder_elms' ) ) {
+	/**
+	 * Recursively output elements of a certain state / place
+	 *
+	 * @param array $settings Current layout
+	 * @param string $state Current state
+	 * @param string $place Outputted place
+	 * @param string $context 'header' / 'grid'
+	 * @param string $grid_object_type 'post' / 'term'
+	 */
+	function us_output_builder_elms( &$settings, $state, $place, $context = 'header', $grid_object_type = 'post' ) {
+
+		$layout = &$settings[ $state ]['layout'];
+		$data = &$settings['data'];
+		if ( ! isset( $layout[ $place ] ) OR ! is_array( $layout[ $place ] ) ) {
+			return;
+		}
+
+		// Set 3 states for header and 1 for other contexts, like Grid Layouts
+		$_states = ( $context === 'header' )
+			? (array) us_get_responsive_states( /* Only keys */TRUE )
+			: array( 'default' );
+
+		$visible_elms = array();
 		foreach ( $_states as $_state ) {
-			if ( ! in_array( $elm, $visible_elms[ $_state ] ) ) {
-				$classes .= ' hidden_for_' . $_state;
-			}
-		}
-		if ( $context === 'header' ) {
-			$classes .= ' ush_' . str_replace( ':', '_', $elm );
-		} elseif ( $context === 'grid' ) {
-			$classes .= ' usg_' . str_replace( ':', '_', $elm );
+			$visible_elms[ $_state ] = us_get_builder_shown_elements_list( us_arr_path( $settings, $_state . '.layout', array() ) );
 		}
 
-		// Add custom class name, if set
-		if ( ! empty( $data[ $elm ]['el_class'] ) ) {
-			$classes .= ' ' . $data[ $elm ]['el_class'];
-		}
-
-		// Add animation class if set in Design options
-		if (
-			! us_amp()
-			AND ! empty( $data[ $elm ][ 'css' ] )
-			AND us_design_options_has_property( $data[ $elm ][ 'css' ], 'animation-name' )
-		) {
-			if ( ! isset( $data[ $elm ]['el_class'] ) ) {
-				$classes = ' us_animate_this';
-			} else {
-				$classes .= ' us_animate_this';
-			}
-		}
-
-		// Wrapper
-		if ( substr( $elm, 1, 7 ) == 'wrapper' ) {
-			$wrapper_atts = array(
-				'class' => 'w-' . strtok( $elm, ':' ) . $classes,
-			);
-			if ( isset( $data[ $elm ] ) ) {
-				if ( isset( $data[ $elm ]['alignment'] ) ) {
-					$wrapper_atts['class'] .= ' align_' . $data[ $elm ]['alignment'];
-				}
-				if ( isset( $data[ $elm ]['valign'] ) ) {
-					$wrapper_atts['class'] .= ' valign_' . $data[ $elm ]['valign'];
-				}
-				if ( ! empty( $data[ $elm ]['wrap'] ) ) {
-					$wrapper_atts['class'] .= ' wrap';
-				}
-				if ( isset( $data[ $elm ]['inner_items_gap'] ) ) {
-					$inner_items_gap = trim( $data[ $elm ]['inner_items_gap'] );
-					if ( strpos( $elm, 'hwrapper' ) !== FALSE ) {
-
-						// Set CSS var for Horizontal wrapper, if the value is not default
-						if ( $inner_items_gap != '1.2rem' ) {
-							$wrapper_atts['style'] = '--hwrapper-gap:' . $inner_items_gap;
-						}
-
-						// Set CSS var for Vertical wrapper, if the value is not default
-					} elseif ( $inner_items_gap != '0.7rem' ) {
-						$wrapper_atts['style'] = '--vwrapper-gap:' . $inner_items_gap;
+		foreach ( $layout[ $place ] as $elm ) {
+			$classes = '';
+			if ( $context === 'header' ) {
+				if ( isset( $data[ $elm ] ) ) {
+					if ( us_arr_path( $data[ $elm ], 'hide_for_sticky', FALSE ) ) {
+						$classes .= ' hide-for-sticky';
+					}
+					if ( us_arr_path( $data[ $elm ], 'hide_for_not_sticky', FALSE ) ) {
+						$classes .= ' hide-for-not-sticky';
 					}
 				}
 			}
-			echo '<div' . us_implode_atts( $wrapper_atts ) . '>';
-			us_output_builder_elms( $settings, $state, $elm, $context );
-			echo '</div>';
-
-			// Element
-		} else {
-			$type = strtok( $elm, ':' );
-			$defaults = us_get_elm_defaults( $type, $context );
-			if ( ! isset( $data[ $elm ] ) ) {
-				$data[ $elm ] = us_get_elm_defaults( $type, $context );
+			foreach ( $_states as $_state ) {
+				if ( ! in_array( $elm, $visible_elms[ $_state ] ) ) {
+					$classes .= ' hidden_for_' . $_state;
+				}
 			}
-			$values = array_merge( $defaults, array_intersect_key( $data[ $elm ], $defaults ) );
-			$values['id'] = $elm;
-			$values['classes'] = ( isset( $values['classes'] ) ? $values['classes'] : '' ) . $classes;
-			$values['us_elm_context'] = $context;
-			$values['us_grid_object_type'] = $grid_object_type;
-
-			// Adding special classes
-			us_load_template( 'templates/elements/' . $type, $values );
-		}
-	}
-}
-
-/**
- * Get default value for an element
- *
- * @param string $type
- * @param string $context 'header' or 'grid'
- *
- * @return mixed
- */
-function us_get_elm_defaults( $type, $context = 'header' ) {
-	global $us_elm_defaults, $usof_options;
-	if ( ! isset( $us_elm_defaults ) ) {
-		$us_elm_defaults = array();
-	}
-	if ( ! isset( $us_elm_defaults[ $context ] ) ) {
-		$us_elm_defaults[ $context ] = array();
-	}
-	if ( ! isset( $us_elm_defaults[ $context ][ $type ] ) ) {
-		$us_elm_defaults[ $context ][ $type ] = array();
-		$elm_config = us_config( 'elements/' . $type, array() );
-		foreach ( us_arr_path( $elm_config, 'params', array() ) as $field_name => $field ) {
-			$value = isset( $field['std'] ) ? $field['std'] : '';
-			// Check if context specific standard value is set
-			$value = isset( $field[ $context . '_std' ] ) ? $field[ $context . '_std' ] : $value;
 			if ( $context === 'header' ) {
-				// Some default header values may be based on main theme options' values
-				if ( function_exists( 'usof_load_options_once' ) ) {
-					usof_load_options_once();
-				}
-				if ( is_string( $value ) AND substr( $value, 0, 1 ) == '=' AND isset( $usof_options[ substr( $value, 1 ) ] ) ) {
-					$value = $usof_options[ substr( $value, 1 ) ];
+				$classes .= ' ush_' . str_replace( ':', '_', $elm );
+			} elseif ( $context === 'grid' ) {
+				$classes .= ' usg_' . str_replace( ':', '_', $elm );
+			}
+
+			// Add custom class name, if set
+			if ( ! empty( $data[ $elm ]['el_class'] ) ) {
+				$classes .= ' ' . $data[ $elm ]['el_class'];
+			}
+
+			// Add animation class if set in Design options
+			if (
+				! us_amp()
+				AND ! empty( $data[ $elm ][ 'css' ] )
+				AND us_design_options_has_property( $data[ $elm ][ 'css' ], 'animation-name' )
+			) {
+				if ( ! isset( $data[ $elm ]['el_class'] ) ) {
+					$classes = ' us_animate_this';
+				} else {
+					$classes .= ' us_animate_this';
 				}
 			}
-			$us_elm_defaults[ $context ][ $type ][ $field_name ] = $value;
-		}
-		if ( ! empty( $elm_config['fallback_params'] ) ) {
-			foreach ( $elm_config['fallback_params'] as $field_name ) {
-				$us_elm_defaults[ $context ][ $type ][ $field_name ] = '';
+
+			// Wrapper
+			if ( substr( $elm, 1, 7 ) == 'wrapper' ) {
+				$wrapper_atts = array(
+					'class' => 'w-' . strtok( $elm, ':' ) . $classes,
+				);
+				if ( isset( $data[ $elm ] ) ) {
+					if ( isset( $data[ $elm ]['alignment'] ) ) {
+						$wrapper_atts['class'] .= ' align_' . $data[ $elm ]['alignment'];
+					}
+					if ( isset( $data[ $elm ]['valign'] ) ) {
+						$wrapper_atts['class'] .= ' valign_' . $data[ $elm ]['valign'];
+					}
+					if ( ! empty( $data[ $elm ]['wrap'] ) ) {
+						$wrapper_atts['class'] .= ' wrap';
+					}
+					if ( isset( $data[ $elm ]['inner_items_gap'] ) ) {
+						$inner_items_gap = trim( $data[ $elm ]['inner_items_gap'] );
+						if ( strpos( $elm, 'hwrapper' ) !== FALSE ) {
+
+							// Set CSS var for Horizontal wrapper, if the value is not default
+							if ( $inner_items_gap != '1.2rem' ) {
+								$wrapper_atts['style'] = '--hwrapper-gap:' . $inner_items_gap;
+							}
+
+							// Set CSS var for Vertical wrapper, if the value is not default
+						} elseif ( $inner_items_gap != '0.7rem' ) {
+							$wrapper_atts['style'] = '--vwrapper-gap:' . $inner_items_gap;
+						}
+					}
+				}
+				echo '<div' . us_implode_atts( $wrapper_atts ) . '>';
+				us_output_builder_elms( $settings, $state, $elm, $context );
+				echo '</div>';
+
+				// Element
+			} else {
+				$type = strtok( $elm, ':' );
+				$defaults = us_get_elm_defaults( $type, $context );
+				if ( ! isset( $data[ $elm ] ) ) {
+					$data[ $elm ] = us_get_elm_defaults( $type, $context );
+				}
+				$values = array_merge( $defaults, array_intersect_key( $data[ $elm ], $defaults ) );
+				$values['id'] = $elm;
+				$values['classes'] = ( isset( $values['classes'] ) ? $values['classes'] : '' ) . $classes;
+				$values['us_elm_context'] = $context;
+				$values['us_grid_object_type'] = $grid_object_type;
+
+				// Adding special classes
+				us_load_template( 'templates/elements/' . $type, $values );
 			}
 		}
 	}
-
-	return us_arr_path( $us_elm_defaults, array( $context, $type ), array() );
 }
 
-// Backward compability with older HB versions
+if ( ! function_exists( 'us_get_elm_defaults' ) ) {
+	/**
+	 * Get default value for an element
+	 *
+	 * @param string $type
+	 * @param string $context 'header' or 'grid'
+	 *
+	 * @return mixed
+	 */
+	function us_get_elm_defaults( $type, $context = 'header' ) {
+		global $us_elm_defaults, $usof_options;
+		if ( ! isset( $us_elm_defaults ) ) {
+			$us_elm_defaults = array();
+		}
+		if ( ! isset( $us_elm_defaults[ $context ] ) ) {
+			$us_elm_defaults[ $context ] = array();
+		}
+		if ( ! isset( $us_elm_defaults[ $context ][ $type ] ) ) {
+			$us_elm_defaults[ $context ][ $type ] = array();
+			$elm_config = us_config( 'elements/' . $type, array() );
+			foreach ( us_arr_path( $elm_config, 'params', array() ) as $field_name => $field ) {
+				$value = isset( $field['std'] ) ? $field['std'] : '';
+				// Check if context specific standard value is set
+				$value = isset( $field[ $context . '_std' ] ) ? $field[ $context . '_std' ] : $value;
+				if ( $context === 'header' ) {
+					// Some default header values may be based on main theme options' values
+					if ( function_exists( 'usof_load_options_once' ) ) {
+						usof_load_options_once();
+					}
+					if ( is_string( $value ) AND substr( $value, 0, 1 ) == '=' AND isset( $usof_options[ substr( $value, 1 ) ] ) ) {
+						$value = $usof_options[ substr( $value, 1 ) ];
+					}
+				}
+				$us_elm_defaults[ $context ][ $type ][ $field_name ] = $value;
+			}
+			if ( ! empty( $elm_config['fallback_params'] ) ) {
+				foreach ( $elm_config['fallback_params'] as $field_name ) {
+					$us_elm_defaults[ $context ][ $type ][ $field_name ] = '';
+				}
+			}
+		}
+
+		return us_arr_path( $us_elm_defaults, array( $context, $type ), array() );
+	}
+}
+
 if ( ! function_exists( 'us_get_header_elm_defaults' ) ) {
+	/**
+	 * Backward compability with older HB versions
+	 *
+	 * @param string $type The type
+	 * @return string
+	 */
 	function us_get_header_elm_defaults( $type ) {
 		return us_get_elm_defaults( $type, 'header' );
 	}
 }
 
-/**
- * Get elements
- *
- * @param string $type
- * @param bool $key_as_class Should the keys of the resulting array be css classes instead of elms ids?
- *
- * @return array
- */
-function us_get_header_elms_of_a_type( $type, $key_as_class = TRUE ) {
-	global $us_header_settings;
-	us_load_header_settings_once();
-	$defaults = us_get_elm_defaults( $type, 'header' );
-	$result = array();
-	if ( ! is_array( $us_header_settings['data'] ) ) {
+if ( ! function_exists( 'us_get_header_elms_of_a_type' ) ) {
+	/**
+	 * Get elements
+	 *
+	 * @param string $type
+	 * @param bool $key_as_class Should the keys of the resulting array be css classes instead of elms ids?
+	 * @return array
+	 */
+	function us_get_header_elms_of_a_type( $type, $key_as_class = TRUE ) {
+		global $us_header_settings;
+		us_load_header_settings_once();
+		$defaults = us_get_elm_defaults( $type, 'header' );
+		$result = array();
+		if ( ! is_array( $us_header_settings['data'] ) ) {
+			return $result;
+		}
+		foreach ( $us_header_settings['data'] as $elm_id => $elm ) {
+			if ( strtok( $elm_id, ':' ) != $type ) {
+				continue;
+			}
+			$key = $key_as_class ? ( 'ush_' . str_replace( ':', '_', $elm_id ) ) : $elm_id;
+			$result[ $key ] = array_merge( $defaults, array_intersect_key( $elm, $defaults ) );
+		}
+
 		return $result;
 	}
-	foreach ( $us_header_settings['data'] as $elm_id => $elm ) {
-		if ( strtok( $elm_id, ':' ) != $type ) {
-			continue;
-		}
-		$key = $key_as_class ? ( 'ush_' . str_replace( ':', '_', $elm_id ) ) : $elm_id;
-		$result[ $key ] = array_merge( $defaults, array_intersect_key( $elm, $defaults ) );
-	}
-
-	return $result;
 }
 
-/**
- * Make the provided header settings value consistent and proper
- *
- * @param $value array
- *
- * @return array
- */
-function us_fix_header_settings( $value ) {
-	if ( empty( $value ) OR ! is_array( $value ) ) {
-		$value = array();
-	}
-	if ( ! isset( $value['data'] ) OR ! is_array( $value['data'] ) ) {
-		$value['data'] = array();
-	}
-	$options_defaults = array();
-	foreach ( us_config( 'header-settings.options', array() ) as $group => $opts ) {
-		foreach ( $opts as $opt_name => $opt ) {
-			$options_defaults[ $opt_name ] = isset( $opt['std'] ) ? $opt['std'] : '';
+if ( ! function_exists( 'us_get_nav_menus' ) ) {
+	/**
+	 * Get list of user registered nav menus with theirs proper names, in a format sutable for usof select field
+	 *
+	 * @return array
+	 */
+	function us_get_nav_menus() {
+		$menus = array();
+		foreach ( get_terms( 'nav_menu', array( 'hide_empty' => TRUE ) ) as $menu ) {
+			$menus[ $menu->slug ] = $menu->name;
 		}
-	}
-	foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
-		if ( ! isset( $value[ $state ] ) OR ! is_array( $value[ $state ] ) ) {
-			$value[ $state ] = array();
-		}
-		if ( ! isset( $value[ $state ]['layout'] ) OR ! is_array( $value[ $state ]['layout'] ) ) {
-			if ( $state != 'default' AND isset( $value['default']['layout'] ) ) {
-				$value[ $state ]['layout'] = $value['default']['layout'];
-			} else {
-				$value[ $state ]['layout'] = array();
+
+		// Adding us_main_menu location if it is filled with mene
+		$theme_locations = get_nav_menu_locations();
+		if ( isset( $theme_locations['us_main_menu'] ) ) {
+			$menu_obj = get_term( $theme_locations['us_main_menu'], 'nav_menu' );
+			if ( $menu_obj AND is_object( $menu_obj ) AND isset ( $menu_obj->name ) ) {
+				$menus['location:us_main_menu'] = $menu_obj->name . ' (' . __( 'Custom Menu', 'us' ) . ')';
 			}
 		}
-		$state_elms = array();
-		foreach ( $value[ $state ]['layout'] as $place => $elms ) {
-			if ( ! is_array( $elms ) ) {
-				$elms = array();
+
+		return $menus;
+	}
+}
+
+if ( ! function_exists( 'us_get_builder_shown_elements_list' ) ) {
+	/**
+	 * Get the list of header elements that are shown in the certain layout listing
+	 *
+	 * @param array $list Euther layout or separate list
+	 *
+	 * @return array
+	 */
+	function us_get_builder_shown_elements_list( $list ) {
+		$shown = array();
+		foreach ( $list as $key => $sublist ) {
+			if ( $key != 'hidden' ) {
+				$shown = array_merge( $shown, $sublist );
 			}
-			foreach ( $elms as $index => $elm_id ) {
-				if ( ! is_string( $elm_id ) OR strpos( $elm_id, ':' ) == - 1 ) {
-					unset( $elms[ $index ] );
-				} else {
-					$state_elms[] = $elm_id;
-					if ( ! isset( $value['data'][ $elm_id ] ) ) {
-						$value['data'][ $elm_id ] = array();
-					}
-				}
-			}
-			$value[ $state ]['layout'][ $place ] = array_values( $elms );
 		}
-		if ( ! isset( $value[ $state ]['layout']['hidden'] ) OR ! is_array( $value[ $state ]['layout']['hidden'] ) ) {
-			$value[ $state ]['layout']['hidden'] = array();
-		}
-		$value[ $state ]['layout']['hidden'] = array_merge( $value[ $state ]['layout']['hidden'], array_diff( array_keys( $value['data'] ), $state_elms ) );
-		// Fixing options
-		if ( ! isset( $value[ $state ]['options'] ) OR ! is_array( $value[ $state ]['options'] ) ) {
-			$value[ $state ]['options'] = array();
-		}
-		$value[ $state ]['options'] = array_merge( $options_defaults, ( $state != 'default' ) ? $value['default']['options'] : array(), $value[ $state ]['options'] );
-	}
 
-	foreach ( $value['data'] as $elm_id => $values ) {
-		$type = strtok( $elm_id, ':' );
-		$defaults = us_get_elm_defaults( $type, 'header' );
-		$value['data'][ $elm_id ] = array_merge( $defaults, array_intersect_key( $value['data'][ $elm_id ], $defaults ) );
+		return $shown;
 	}
-
-	return $value;
 }
 
-function us_fix_header_template_settings( $value ) {
-
-	if ( isset( $value['title'] ) ) {
-		// Don't need this in data processing
-		unset( $value['title'] );
-	}
-
-	// Basic structure
-	$template_structure = array_fill_keys(
-		us_get_responsive_states( /* only keys */TRUE ),
-		array( 'options' => array(), 'layout' => array() )
-	);
-	// Add space for data
-	$template_structure['data'] = array();
-
-	$value = us_array_merge( $template_structure, $value );
-	$layout_structure = array(
-		'top_left' => array(),
-		'top_center' => array(),
-		'top_right' => array(),
-		'middle_left' => array(),
-		'middle_center' => array(),
-		'middle_right' => array(),
-		'bottom_left' => array(),
-		'bottom_center' => array(),
-		'bottom_right' => array(),
-		'hidden' => array(),
-	);
-	foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
-
-		// Options
-		$value[ $state ]['options'] = array_merge( ( $state == 'default' ) ? array() : $value['default']['options'], $value[ $state ]['options'] );
-
-		// Layout
-		$value[ $state ]['layout'] = array_merge( $layout_structure, ( $state == 'default' ) ? array() : $value['default']['layout'], $value[ $state ]['layout'] );
-	}
-	$value = us_fix_header_settings( $value );
-
-	return $value;
-}
-
-/**
- * Get list of user registered nav menus with theirs proper names, in a format sutable for usof select field
- *
- * @return array
- */
-function us_get_nav_menus() {
-	$menus = array();
-	foreach ( get_terms( 'nav_menu', array( 'hide_empty' => TRUE ) ) as $menu ) {
-		$menus[ $menu->slug ] = $menu->name;
-	}
-
-	// Adding us_main_menu location if it is filled with mene
-	$theme_locations = get_nav_menu_locations();
-	if ( isset( $theme_locations['us_main_menu'] ) ) {
-		$menu_obj = get_term( $theme_locations['us_main_menu'], 'nav_menu' );
-		if ( $menu_obj AND is_object( $menu_obj ) AND isset ( $menu_obj->name ) ) {
-			$menus['location:us_main_menu'] = $menu_obj->name . ' (' . __( 'Custom Menu', 'us' ) . ')';
-		}
-	}
-
-	return $menus;
-}
-
-/**
- * Get the list of header elements that are shown in the certain layout listing
- *
- * @param array $list Euther layout or separate list
- *
- * @return array
- */
-function us_get_builder_shown_elements_list( $list ) {
-	$shown = array();
-	foreach ( $list as $key => $sublist ) {
-		if ( $key != 'hidden' ) {
-			$shown = array_merge( $shown, $sublist );
-		}
-	}
-
-	return $shown;
-}
-
-/**
- * Adding header settings JSON value to footer
- */
 if ( ! function_exists( 'us_pass_header_settings_to_js' ) ) {
+	/**
+	 * Adding header settings JSON value to footer
+	 */
+
 	// Changing ordering to avoid JavaScript errors with NextGEN Gallery plugin
 	add_action( 'wp_footer', 'us_pass_header_settings_to_js', -2 );
 	function us_pass_header_settings_to_js() {
@@ -511,72 +805,78 @@ if ( ! function_exists( 'us_pass_header_settings_to_js' ) ) {
 	}
 }
 
-/**
- * Get the header design options css for all the fields
- *
- * @return string
- */
-function us_get_header_design_options_css() {
-	global $us_header_settings;
-	us_load_header_settings_once();
+if ( ! function_exists( 'us_get_header_design_options_css' ) ) {
+	/**
+	 * Get the header design options css for all the fields
+	 *
+	 * @return string
+	 */
+	function us_get_header_design_options_css() {
+		global $us_header_settings;
+		us_load_header_settings_once();
 
-	// Get header states
-	$header_states = array();
-	foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
-		if ( ! empty( $us_header_settings[ $state ]['options']['custom_breakpoint'] ) ) {
-			$header_states[ $state ]['breakpoint'] = (int) $us_header_settings[ $state ]['options']['breakpoint'];
-		} else {
-			$header_states[ $state ]['breakpoint'] = (int) us_get_option( $state . '_breakpoint' );
-		}
-	}
-
-	// Get breakpoints from jsoncss parameters
-	$breakpoints = (array) us_get_jsoncss_options( /* breakpoints */array(), $header_states )['breakpoints'];
-
-	$jsoncss_collection = array();
-	foreach ( $us_header_settings['data'] as $elm_id => $elm ) {
-		if ( ! isset( $elm['css'] ) OR empty( $elm['css'] ) OR ! is_array( $elm['css'] ) ) {
-			continue;
-		}
-		foreach ( array_keys( $breakpoints ) as $state ) {
-			if ( $css_options = us_arr_path( $elm, 'css.' . $state, FALSE ) ) {
-				$class_name = 'ush_' . str_replace( ':', '_', $elm_id );
-				$css_options = apply_filters( 'us_output_design_css_options', $css_options, $state );
-				$jsoncss_collection[ $state ][ $class_name ] = $css_options;
+		// Get header states
+		$header_states = array();
+		foreach ( (array) us_get_responsive_states( /* Only keys */TRUE ) as $state ) {
+			if ( ! empty( $us_header_settings[ $state ]['options']['custom_breakpoint'] ) ) {
+				$header_states[ $state ]['breakpoint'] = (int) $us_header_settings[ $state ]['options']['breakpoint'];
+			} else {
+				$header_states[ $state ]['breakpoint'] = (int) us_get_option( $state . '_breakpoint' );
 			}
 		}
-	}
 
-	return us_jsoncss_compile( $jsoncss_collection, $breakpoints );
-}
+		// Get breakpoints from jsoncss parameters
+		$breakpoints = (array) us_get_jsoncss_options( /* breakpoints */array(), $header_states )['breakpoints'];
 
-/**
- * Add link to Theme Options to Admin Bar
- *
- * @param $wp_admin_bar
- */
-function us_admin_bar_theme_options_link( $wp_admin_bar ) {
-	$wp_admin_bar->add_node(
-		array(
-			'id' => 'us_theme_otions',
-			'title' => __( 'Theme Options', 'us' ),
-			'href' => admin_url( 'admin.php?page=us-theme-options' ),
-			'parent' => 'site-name',
-		)
-	);
-}
+		$jsoncss_collection = array();
+		foreach ( $us_header_settings['data'] as $elm_id => $elm ) {
+			if ( ! isset( $elm['css'] ) OR empty( $elm['css'] ) OR ! is_array( $elm['css'] ) ) {
+				continue;
+			}
+			foreach ( array_keys( $breakpoints ) as $state ) {
+				if ( $css_options = us_arr_path( $elm, 'css.' . $state, FALSE ) ) {
+					$class_name = 'ush_' . str_replace( ':', '_', $elm_id );
+					$css_options = apply_filters( 'us_output_design_css_options', $css_options, $state );
+					$jsoncss_collection[ $state ][ $class_name ] = $css_options;
+				}
+			}
+		}
 
-add_action( 'init', 'us_admin_bar_theme_options_link_init' );
-function us_admin_bar_theme_options_link_init() {
-	if ( ! is_admin() AND function_exists( 'current_user_can' ) AND function_exists( 'wp_get_current_user' ) AND current_user_can( 'administrator' ) ) {
-		add_action( 'admin_bar_menu', 'us_admin_bar_theme_options_link', 99 );
+		return us_jsoncss_compile( $jsoncss_collection, $breakpoints );
 	}
 }
 
-/**
- * Preload Uploaded Fonts, priority should be higher the main CSS file
- */
+if ( ! function_exists( 'us_admin_bar_theme_options_link' ) ) {
+	/**
+	 * Add link to Theme Options to Admin Bar
+	 *
+	 * @param $wp_admin_bar
+	 */
+	function us_admin_bar_theme_options_link( $wp_admin_bar ) {
+		$wp_admin_bar->add_node(
+			array(
+				'id' => 'us_theme_otions',
+				'title' => __( 'Theme Options', 'us' ),
+				'href' => admin_url( 'admin.php?page=us-theme-options' ),
+				'parent' => 'site-name',
+			)
+		);
+	}
+}
+
+if ( ! function_exists( 'us_admin_bar_theme_options_link_init' ) ) {
+	add_action( 'init', 'us_admin_bar_theme_options_link_init' );
+	function us_admin_bar_theme_options_link_init() {
+		if ( ! is_admin() AND function_exists( 'current_user_can' ) AND function_exists( 'wp_get_current_user' ) AND current_user_can( 'administrator' ) ) {
+			add_action( 'admin_bar_menu', 'us_admin_bar_theme_options_link', 99 );
+		}
+	}
+}
+
 if ( ! function_exists( 'us_preload_uploaded_fonts' ) ) {
+	/**
+	 * Preload Uploaded Fonts, priority should be higher the main CSS file
+	 */
 	add_action( 'wp_head', 'us_preload_uploaded_fonts', 6 );
 	function us_preload_uploaded_fonts() {
 		if ( $uploaded_fonts = us_get_option( 'uploaded_fonts', array() ) ) {
@@ -592,10 +892,10 @@ if ( ! function_exists( 'us_preload_uploaded_fonts' ) ) {
 	}
 }
 
-/**
- * Add "no-touch" class to <html> on desktops
- */
 if ( ! function_exists( 'us_output_no_touch_script' ) ) {
+	/**
+	 * Add "no-touch" class to <html> on desktops
+	 */
 	add_action( 'wp_head', 'us_output_no_touch_script' );
 	function us_output_no_touch_script() {
 		// Do not proceed with this function if the current page is an AMP page
@@ -791,146 +1091,4 @@ if ( ! function_exists( 'us_admin_bar_menu' ) ) {
 			unset( $area_ids, $area_names, $post_args, $received_posts, $edit_menu );
 		}
 	}
-}
-
-if ( ! function_exists( 'us_hb_settings_fallback' ) ) {
-	/**
-	 * Apply fallback changes for old header settings on update
-	 *
-	 * @param $header_settings
-	 * @return array
-	 */
-	function us_hb_settings_fallback( $header_settings ) {
-		global $usof_options;
-
-		// Check if the settings are empty and abort following execution in this case
-		if ( ! is_array( $header_settings ) OR empty( $header_settings['default'] ) ) {
-			return $header_settings;
-		}
-
-		// Populate Laptops settings with values from the Default.
-		// Also set a custom breakpoint equals the Tablets breakpoint, needed to avoid fallback in metabox (Sticky and Transparent settings)
-		if ( ! isset( $header_settings['laptops'] ) ) {
-			$header_settings['laptops'] = $header_settings['default'];
-			$header_settings['laptops']['options']['custom_breakpoint'] = 1;
-			$header_settings['laptops']['options']['breakpoint'] = $header_settings['tablets']['options']['breakpoint'];
-		}
-
-		// Fallback for colors
-		if ( ! isset( $header_settings['default']['options']['top_transparent_text_hover_color'] ) ) {
-			$header_settings['default']['options']['top_transparent_text_hover_color'] =
-				isset( $usof_options['color_header_bottom_text_hover'] ) ? '_header_transparent_text_hover' : '_header_top_transparent_text_hover';
-		}
-		if ( ! isset( $header_settings['default']['options']['bottom_bg_color'] ) ) {
-			$header_settings['default']['options']['bottom_bg_color'] =
-				us_arr_path( $usof_options, 'color_header_bottom_bg', '_header_middle_bg' );
-		}
-		if ( ! isset( $header_settings['default']['options']['bottom_text_hover_color'] ) ) {
-			$header_settings['default']['options']['bottom_text_hover_color'] =
-				us_arr_path( $usof_options, 'color_header_bottom_text_hover', '_header_middle_text_hover' );
-		}
-		if ( ! isset( $header_settings['default']['options']['bottom_text_color'] ) ) {
-			$header_settings['default']['options']['bottom_text_color'] =
-				us_arr_path( $usof_options, 'color_header_bottom_text', '_header_middle_text' );
-		}
-
-		// Turn on the custom breakpoint option for Tablets and Mobiles, if it wasn't exist
-		if ( ! isset( $header_settings['tablets']['options']['custom_breakpoint'] ) ) {
-			$header_settings['tablets']['options']['custom_breakpoint'] = 1;
-		}
-		if ( ! isset( $header_settings['mobiles']['options']['custom_breakpoint'] ) ) {
-			$header_settings['mobiles']['options']['custom_breakpoint'] = 1;
-		}
-
-		// Fallback for elements
-		foreach ( $header_settings['data'] as $elm_id => $elm_data ) {
-
-			// Menu
-			if ( strpos( $elm_id, 'menu' ) === 0 ) {
-				if ( ! isset( $elm_data['color_active_bg'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_active_bg'] =
-						us_arr_path( $usof_options, 'color_menu_active_bg', 'transparent' );
-				}
-				if ( ! isset( $elm_data['color_active_text'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_active_text'] =
-						us_arr_path( $usof_options, 'color_menu_active_text', '_header_middle_text_hover' );
-				}
-				if ( ! isset( $elm_data['color_transparent_active_bg'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_transparent_active_bg'] =
-						us_arr_path( $usof_options, 'color_menu_transparent_active_bg', 'transparent' );
-				}
-				if ( ! isset( $elm_data['color_transparent_active_text'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_transparent_active_text'] =
-						us_arr_path( $usof_options, 'color_menu_transparent_active_text', '_header_transparent_text_hover' );
-				}
-				if ( ! isset( $elm_data['color_hover_bg'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_hover_bg'] =
-						us_arr_path( $usof_options, 'color_menu_hover_bg', 'transparent' );
-				}
-				if ( ! isset( $elm_data['color_hover_text'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_hover_text'] =
-						us_arr_path( $usof_options, 'color_menu_hover_text', '_header_middle_text_hover' );
-				}
-				if ( ! isset( $elm_data['color_drop_bg'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_drop_bg'] =
-						us_arr_path( $usof_options, 'color_drop_bg', '_header_middle_bg' );
-				}
-				if ( ! isset( $elm_data['color_drop_text'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_drop_text'] =
-						us_arr_path( $usof_options, 'color_drop_text', '_header_middle_text' );
-				}
-				if ( ! isset( $elm_data['color_drop_hover_bg'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_drop_hover_bg'] =
-						us_arr_path( $usof_options, 'color_drop_hover_bg', 'transparent' );
-				}
-				if ( ! isset( $elm_data['color_drop_hover_text'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_drop_hover_text'] =
-						us_arr_path( $usof_options, 'color_drop_hover_text', '_header_middle_text_hover' );
-				}
-				if ( ! isset( $elm_data['color_drop_active_bg'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_drop_active_bg'] =
-						us_arr_path( $usof_options, 'color_drop_active_bg', 'transparent' );
-				}
-				if ( ! isset( $elm_data['color_drop_active_text'] ) ) {
-					$header_settings['data'][ $elm_id ]['color_drop_active_text'] =
-						us_arr_path( $usof_options, 'color_drop_active_text', '_header_middle_text_hover' );
-				}
-			}
-
-			// Search
-			if ( strpos( $elm_id, 'search' ) === 0 ) {
-				if ( ! isset( $elm_data['field_bg_color'] ) ) {
-					$header_settings['data'][ $elm_id ]['field_bg_color'] =
-						us_arr_path( $usof_options, 'color_header_search_bg', '' );
-				}
-				if ( ! isset( $elm_data['field_text_color'] ) ) {
-					$header_settings['data'][ $elm_id ]['field_text_color'] =
-						us_arr_path( $usof_options, 'color_header_search_text', '' );
-				}
-
-				// Search Shop Products only
-				if ( ! empty( $elm_data['product_search'] ) ) {
-					$header_settings['data'][ $elm_id ]['search_post_type'] = 'product';
-					unset( $header_settings['data'][ $elm_id ]['product_search'] );
-				}
-			}
-
-		}
-
-		return $header_settings;
-	}
-}
-
-if ( ! function_exists( 'us_hb_post_edit_form_tag' ) ) {
-	/**
-	 * Block the submission of a standard form in the header builder.
-	 *
-	 * @param WP_Post $post The post
-	 */
-	function us_hb_post_edit_form_tag( WP_Post $post ) {
-		if ( $post->post_type === 'us_header' ) {
-			echo ' onsubmit="return false"';
-		}
-	}
-	add_action( 'post_edit_form_tag', 'us_hb_post_edit_form_tag', 1, 1 );
 }

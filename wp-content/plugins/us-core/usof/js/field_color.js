@@ -25,10 +25,10 @@
 			// Set white text color for dark backgrounds
 			this._toggleInputColor( this.getColor() );
 
-			// Init colpick on focus
+			// Init colpick on click
 			this.$input
-				.off( 'focus' )
-				.on( 'focus', this._events.initColpick.bind( this ) )
+				.off( 'click' )
+				.on( 'click', this._events.initColpick.bind( this ) )
 				.on( 'input', this._events.inputValue.bind( this ) )
 				.on( 'change', this._events.changeValue.bind( this ) );
 
@@ -48,7 +48,7 @@
 		},
 		_events: {
 			/**
-			 * Init colpick.
+			 * Init colpick
 			 */
 			initColpick: function() {
 				this.$input

@@ -3,6 +3,11 @@
 
 	var US_Colpick = {
 		init: function( options ) {
+			// The check init
+			if ( !! this.inited ) {
+				return;
+			}
+
 			// Get initial values
 			this.value = options.value;
 
@@ -224,6 +229,9 @@
 			that.timeout = setTimeout( function() {
 				that.$input.select();
 			}, 5 );
+
+			// Set the status that the color picker is init
+			this.inited = true;
 		},
 		colorPalette: function( ev ) {
 			var color, palette, colorId, max, currId,
@@ -355,7 +363,6 @@
 
 			this.change();
 			return false;
-
 		},
 		downSelector: function( ev, gradient ) {
 			var current = {
@@ -598,11 +605,15 @@
 		hide: function() {
 			var that = this;
 			that.$colpick.css( 'display', 'none' ).removeClass( 'type_gradient' );
-			clearTimeout( that.timeout );
+			if ( that.timeout ) {
+				clearTimeout( that.timeout );
+			}
 
-			if ( that.colors.initialColor != that.$input.val() ) {
+			var value = that.$input.val();
+			if ( that.colors.initialColor != value ) {
 				that.$input.trigger( 'change' );
 			}
+
 			// Detach event listeners
 			that.$hueContainer.off( 'mousedown touchstart' );
 			that.$gradientHueContainer.off( 'mousedown touchstart' );
@@ -617,6 +628,13 @@
 
 			// Delete cloned element
 			that.$colpick.remove();
+
+			// Reset selected text and trigger blur
+			that.$input[0].selectionStart = value.length;
+			that.$input[0].blur();
+
+			// Remove init status
+			that.inited = false;
 		},
 		isValidColor: function( value ) {
 			var gradient, valueG2, valueG1;

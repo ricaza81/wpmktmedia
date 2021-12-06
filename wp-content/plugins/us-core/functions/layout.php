@@ -139,7 +139,7 @@ class US_Layout {
 		}
 
 		// Add class for pages opened inside US Builder
-		if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+		if ( usb_is_preview_page() ) {
 			$classes .= ' usb_preview';
 		}
 

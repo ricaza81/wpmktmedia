@@ -16,6 +16,7 @@ global $us_grid_loop_running, $us_grid_no_items_message, $us_grid_no_items_actio
 if ( ! empty( $us_grid_loop_running ) ) {
 	return;
 }
+
 // DEV NOTE: always change $us_grid_loop_running to FALSE if you interrupt this file execution via return
 $us_grid_loop_running = TRUE;
 
@@ -82,8 +83,8 @@ if ( us_amp() AND $shortcode_base == 'us_carousel' ) {
 
 // Substituting specific post types instead of query depended for US Builder preview of content templates
 if (
-	apply_filters( 'usb_is_preview_page_for_template', NULL )
-	AND in_array(
+	usb_is_preview_page_for_template()
+	AND us_post_type_is_available(
 		$post_type,
 		array(
 			'related',
@@ -721,6 +722,9 @@ $template_vars = array(
 	'us_grid_index' => $us_grid_index,
 );
 
+// The constant defining nested grid or not
+global $us_is_nested_grid;
+
 // Apply Grid Filter params
 if (
 	! is_archive() // For archives, the us_inject_grid_filters_into_archive_pages() function will be used
@@ -729,24 +733,11 @@ if (
 	AND $shortcode_base != 'us_carousel'
 	AND empty( $filter_post )
 	AND empty( $us_grid_applied_params['grid_filters'] )
+	AND is_null( $us_is_nested_grid ) // Skip applying grid filters for nested grid
 ) {
 	// Use for all but archive pages
 	$us_grid_applied_params['grid_filters'] = TRUE;
 	us_apply_grid_filters( $post_id, $query_args );
-}
-
-// Apply Grid Filter params to Search page
-if ( is_search() ) {
-	$search_query_args = $query_args;
-	us_apply_grid_filters( $post_id, $search_query_args );
-
-	// Check for Grid Filter attributes
-	if ( ! empty( $search_query_args['tax_query'] ) ) {
-		$us_grid_applied_params['grid_filters'] = TRUE;
-		$query_args['tax_query'] = $search_query_args['tax_query'];
-		$query_args['s'] = get_search_query();
-		$query_args['paged'] = get_query_var('paged');
-	}
 }
 
 $template_vars['query_args'] = $query_args;

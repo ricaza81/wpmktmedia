@@ -24,6 +24,7 @@ $us_theme_supports = array(
 		'tiny_mce' => 'plugins-support/tiny_mce.php',
 		'Ultimate_VC_Addons' => 'plugins-support/Ultimate_VC_Addons.php',
 		'woocommerce' => 'plugins-support/woocommerce.php',
+		'wp_rocket' => 'plugins-support/wp_rocket.php',
 		'yoast' => 'plugins-support/yoast.php',
 	),
 	// Include plugins that relate to translations and can be used in helpers.php

@@ -53,6 +53,9 @@
 .ui-icon_duplicate:before {
 	content: '\e900';
 	}
+.ui-icon_copy:before {
+	content: '\e90d';
+	}
 .ui-icon_delete:before {
 	content: '\e903';
 	}

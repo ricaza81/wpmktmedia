@@ -232,6 +232,20 @@ function us_fallback_atts_vc_column( $atts, $content = '' ) {
 	return $atts;
 }
 
+// Tabs
+add_filter( 'vc_edit_form_fields_attributes_vc_tta_tabs', 'us_fallback_atts_vc_tta_tabs', 710, 1 );
+add_filter( 'usb_fallback_atts_vc_tta_tabs', 'us_fallback_atts_vc_tta_tabs', 710, 2 );
+function us_fallback_atts_vc_tta_tabs( $atts, $content = '' ) {
+
+	// Stretch (after version 8.4)
+	if ( ! empty( $atts['stretch'] ) ) {
+		$atts['tabs_alignment'] = 'justify';
+		$atts['stretch'] = '';
+	}
+
+	return $atts;
+}
+
 // TTA Section
 add_filter( 'vc_edit_form_fields_attributes_vc_tta_section', 'us_fallback_atts_vc_tta_section', 710, 1 );
 add_filter( 'usb_fallback_atts_vc_tta_section', 'us_fallback_atts_vc_tta_section', 710, 2 );

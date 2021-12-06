@@ -1,6 +1,10 @@
 /**
  * Base class to working with a $us.header.
  * Dev note: should be initialized after $us.canvas.
+ *
+ * TODO: Get rid of the use of `parseInt` here and other places where
+ * the functionality of this script is used (This can cause errors because
+ * the data is not accurate, for example when using page scale).
  */
 ! function( $, undefined ) {
 	"use strict";
@@ -244,7 +248,6 @@
 		 */
 		getAdminBarHeight: function() {
 			var wpAdminBar = document.getElementById('wpadminbar');
-
 			return wpAdminBar ? wpAdminBar.offsetHeight : 0;
 		},
 
@@ -326,7 +329,7 @@
 		 * @return {number} Scroll top.
 		 */
 		getScrollTop: function() {
-			return parseInt( $us.$window.scrollTop() ) || this.prevScrollTop;
+			return Math.ceil( $us.$window.scrollTop() ) || this.prevScrollTop;
 		},
 
 		/**

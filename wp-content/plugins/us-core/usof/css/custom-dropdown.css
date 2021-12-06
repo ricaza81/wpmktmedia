@@ -16,7 +16,7 @@
 		box-shadow: var(--usof-box-shadow);
 		transition: max-height 0.2s;
 		}
-	.usof-custom-dropdown-list:hover {
+	.usof-custom-dropdown-list.show {
 		max-height: 50vh;
 		z-index: 111;
 		}
@@ -32,7 +32,7 @@
 			transition: height 0.2s;
 			}
 		.usof-custom-dropdown-item.current,
-		.usof-custom-dropdown-list:hover .usof-custom-dropdown-item {
+		.usof-custom-dropdown-list.show .usof-custom-dropdown-item {
 			height: 3.5em;
 			}
 			.usof-custom-dropdown-item > * {

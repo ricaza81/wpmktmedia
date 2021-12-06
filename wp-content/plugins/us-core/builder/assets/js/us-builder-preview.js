@@ -1,6 +1,6 @@
 /**
  * Available spaces
- * _window.$usb - USBuilderPreview class instance
+ * _window.$usbp - USBuilderPreview class instance
  * _window.parent.$usb - USBuilder class instance
  * _window.parent.$usbcore - Mini library of various methods
  * _window.parent.$usbdata - Data for import into the USBuilder
@@ -31,6 +31,16 @@
 	}
 
 	/**
+	 * Default data
+	 *
+	 * @private
+	 * @type {{}}
+	 */
+	var _default = {
+		customPrefix: 'us_custom_' // For design options
+	}
+
+	/**
 	 * @class USBuilderPreview
 	 */
 	var USBuilderPreview = function() {
@@ -40,26 +50,6 @@
 		this.mainContainer = parent.$usb.mainContainer || 'container';
 		this._preloaders = {}; // All active preloaders
 		this._highlights = {}; // All highlights
-
-		/**
-		 * Settings for the css compiler
-		 * @var {{}}
-		 */
-		this._designOptions = $.extend(
-			{
-				// Prefix for class when using design options
-				customPrefix: 'us_custom_', // Default prefix
-				// Breakpoints of responsive states
-				breakpoints: {},
-				// List of fonts that have keys, css variables, etc.
-				fontVars: {},
-				// A general list of settings for option colors, since the definition of a
-				// prefixes occurs on a value (not a css variable or key)
-				colorVars: {}
-			},
-			// Get settings from the main object
-			this.config( 'designOptions', {} )
-		);
 
 		// Elements
 		this.$document = $( _document );
@@ -79,6 +69,7 @@
 			DOMContentLoaded: this._DOMContentLoaded.bind( this ),
 			elmAnimationEnd: this._elmAnimationEnd.bind( this ),
 			elmAnimationStart: this._elmAnimationStart.bind( this ),
+			elmCopy: this._elmCopy.bind( this ),
 			elmDelete: this._elmDelete.bind( this ),
 			elmDuplicate: this._elmDuplicate.bind( this ),
 			elmMove: this._elmMove.bind( this ),
@@ -122,6 +113,7 @@
 			// Highlight actions
 			.on( 'mousedown', '.usb-builder-hover-panel', this._events.clickedControlsHoverPanel )
 			.on( 'mouseup', '.ui-icon_duplicate', this._events.elmDuplicate )
+			.on( 'mouseup', '.ui-icon_copy', this._events.elmCopy )
 			.on( 'mouseup', '.ui-icon_delete', this._events.elmDelete )
 			// Track Drag and Drop events
 			.on( 'mousedown', this._events.maybeStartDrag )
@@ -181,9 +173,9 @@
 	 * TODO: Optimize and get rid of this extension.
 	 */
 	[
+		'_debugLog',
 		'canBeChildOf',
 		'config',
-		'escapeRegExp',
 		'flushTemp',
 		'getAttachmentUrl',
 		'getCurrentPreviewOffset',
@@ -201,18 +193,19 @@
 		'getTemp',
 		'hasSameTypeParent',
 		'hideTransit',
+		'isColumn',
 		'isElmContainer',
 		'isElmTab',
-		'isElmTTA',
 		'isEmptyTempContent',
-		'isFirefox',
 		'isHidePanel',
 		'isMainContainer',
 		'isMode',
 		'isParentDragging',
 		'isRootElmContainer',
+		'isRow',
 		'isSecondElmContainer',
 		'isSetTransit',
+		'isUpdateIncludeParent',
 		'isValidId',
 		'moveElm',
 		'restoreTempContent',
@@ -319,7 +312,7 @@
 					pageY: Math.ceil( currentPreviewOffset.y + e.pageY - _window.scrollY ) // Y axis
 				};
 
-			if ( ! this.isFirefox() && this.isParentDragging() ) {
+			if ( ! $usbcore.isFirefox && this.isParentDragging() ) {
 				// Determination of the place where the element can fall
 				this._maybeDrop( this._extractEventData( e ) );
 				// Set position for transit when adding a new element
@@ -358,10 +351,10 @@
 					// Moving in sections in the context of tabs
 					temp.isParentTab = !! this.isElmTab( this.getElmParentId( targetId ) );
 					// Show the transit, default pageX and pageY do not set for correct offset
-					this.showTransit( /*type*/this.getElmType( targetId ), /*pageX*/0, /*pageY*/0 );
+					this.showTransit( targetId, /*pageX*/0, /*pageY*/0 );
 					// Add helpers classes for visual control
 					$usbcore
-						.$addClass( temp.target, 'usb_transit' ) // TODO: Move to `this.showTransit()`
+						.$addClass( temp.target, 'usb_transit' )
 						.$addClass( _document.body, 'usb_draging' );
 					// Hide tab button
 					if ( temp.isParentTab ) {
@@ -421,8 +414,6 @@
 				currentId = this.isMode( 'drag:add' )
 					? this.getNewElmId()
 					: this.getElmId( temp.target ),
-				// Determine if the type or id is in the vc_tta_accordion, vc_tta_tab, vc_tta_tour group or vc_tta_section.
-				isCurrentTTA = this.isElmTTA( currentId ),
 				// Save a real target since the target can be replaced (Note: Replacement
 				// occurs when working with tabs and programmatic element borders).
 				realTarget = data.target;
@@ -458,21 +449,12 @@
 			targetContainer = targetContainer || this.elmMainContainer;
 
 			var // This is the target id that does not change and contains the container
-				targetContainerId = this.getElmId( targetContainer ),
-				// Get the type of the current id
-				currentType = this.getElmType( currentId );
+				targetContainerId = this.getElmId( targetContainer );
 
 			// If the cursor is on the border, then reload the target to add before or after
 			var  borderUnderMouse = this._getBorderUnderMouse( targetContainer, data.clientX, data.clientY );
 			if ( borderUnderMouse !== this._DIRECTION.UNKNOWN ) {
-				if (
-					! this.isElmContainer( currentId )
-					|| isCurrentTTA
-					|| (
-						currentType === 'vc_row_inner'
-						&& this.getElmType( targetContainerId ) === 'vc_column_inner'
-					)
-				) {
+				if ( this.isElmContainer( targetContainerId ) ) {
 					var parentId = this.getElmParentId( targetContainerId ) || this.mainContainer;
 					// Reload real target
 					if ( borderUnderMouse === this._DIRECTION.TOP && ! this.isSecondElmContainer( parentId ) ) {
@@ -490,10 +472,10 @@
 			}
 
 			var // The check if the moved element is a tab, accordion, tour or vc_column(_inner), if so, then enable strict mode
-				strictMode = ( isCurrentTTA || currentId.indexOf( 'vc_column' ) === 0 );
+				strictMode = this.isSecondElmContainer( currentId );
 
 			// If element and target are `vc_row` then change target to main container
-			if ( currentType === 'vc_row' && this.getElmType( targetContainerId ) === 'vc_row' ) {
+			if ( this.isRow( currentId ) && this.isRow( targetContainerId ) ) {
 				targetContainerId = this.mainContainer;
 			}
 
@@ -507,10 +489,8 @@
 			if ( ! this.canBeChildOf( currentId, targetContainerId, strictMode ) ) return;
 
 			// Determine which axis to determine the direction
-			var isMouseDirectionX = isCurrentTTA
-				// For `vc_tta_tabs` calculate along the X axis for other TTA of along the Y axis.
-				? this.getElmType( temp.parentId ) == 'vc_tta_tabs'
-				: this.isSecondElmContainer( currentId );
+			var isMouseDirectionX = this.config( 'moving_child_x_direction', [] )
+				.indexOf( this.getElmType( temp.parentId ) ) > -1;
 
 			var // Get the direction of the mouse movement relative to the target along Y or X axis
 				// Note: IMPORTANT: To determine the direction, you must use the real node `data.target`,
@@ -540,8 +520,8 @@
 
 			// Checking and searching for elements that are near the cursor
 			if (
-				! isCurrentTTA // Note: Ignore TTA elements as they are hidden.
-				&& currentId.indexOf( 'vc_column' ) === -1 // Skip calculate for `vc_column` and `vc_column_inner`.
+				currentId.indexOf( 'vc_tta_' ) != 0 // Note: Ignore Tabs/Tour/Accordion elements as they are hidden
+				&& ! this.isColumn( currentId ) // Skip calculate for `vc_column` and `vc_column_inner`
 				&& (
 					this.isSecondElmContainer( targetId )
 					|| ( // In the mode of adding new element to the main container, allow adding to the end of the list
@@ -581,7 +561,7 @@
 			temp.currentIndex = currentIndex;
 
 			// Saving data for Firefox since endDrag in the frame window does not work
-			if ( this.isFirefox() ) {
+			if ( $usbcore.isFirefox ) {
 				var parentTemp = this.getTemp( 'drag' );
 				parentTemp.parentId = temp.parentId;
 				parentTemp.currentId = currentId;
@@ -592,7 +572,7 @@
 			var insert = this.getInsertPosition( temp.parentId, currentIndex );
 
 			// Additional check for `insert` changes to reduce the number of document calls
-			if ( JSON.stringify( insert ) === JSON.stringify( temp.lastInsert ) ) {
+			if ( $usbcore.comparePlainObject( insert, temp.lastInsert ) ) {
 				return;
 			}
 			temp.lastInsert = insert;
@@ -638,7 +618,7 @@
 			 * Note: For FF, we ignore stop since the transmitted object is data, not an event object,
 			 * all due to the peculiarities of the FF from work the iframe
 			 */
-			if ( ! this.isFirefox() ) {
+			if ( ! $usbcore.isFirefox ) {
 				this._events.stop( e );
 			}
 
@@ -705,7 +685,7 @@
 			}
 			$usbcore
 				// Remove classes
-				.$removeClass( temp.target, 'usb_transit' ) // TODO: Move to `this.hideTransit()`
+				.$removeClass( temp.target, 'usb_transit' )
 				.$removeClass( temp.lastFoundContainer, 'usb_dropcontainer' )
 				.$removeClass( _document.body, 'usb_draging' )
 				// Remove dropplace element
@@ -1168,10 +1148,44 @@
 		_elmDuplicate: function( e ) {
 			var $highlight = $( e.currentTarget ).closest( '.usb-builder-hover' ),
 				elmId = $highlight.data( 'elmid' );
-			if ( ! elmId  ) {
+			if ( ! elmId ) {
 				return;
 			}
 			this.postMessage( 'elmDuplicate', elmId );
+		},
+
+		/**
+		 * Remove the class for the copy button, used instead of timeout to simplify logic
+		 * Note: The code is moved to a separate function since `debounced` must be initialized before calling.
+		 *
+		 * @private
+		 * @param {function} fn The function to be executed
+		 * @type debounced
+		 */
+		__removeClassInCopiedElm: $usbcore.debounce( $usbcore.fn, 1000 * 4 /* 4 second */ ),
+
+		/**
+		 * Handler for copying shortcode to clipboard
+		 *
+		 * @private
+		 * @event handler
+		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
+		 */
+		_elmCopy: function( e ) {
+			var $target = $( e.currentTarget ),
+				$highlight = $target.closest( '.usb-builder-hover' ),
+				elmId = $highlight.data( 'elmid' );
+			if ( ! elmId || ! this.isRow( elmId ) ) {
+				return;
+			}
+			// Send an event to the main window
+			this.postMessage( 'elmCopy', elmId );
+			$target // Add a temporary class that the item is copied to the clipboard
+				.addClass( 'copied' );
+			// Delete a temporary class after a specified time
+			this.__removeClassInCopiedElm( function() {
+				$target.removeClass( 'copied' );
+			} );
 		},
 
 		/**
@@ -1216,37 +1230,36 @@
 		 * @private
 		 * @param {string} id Shortcode's usbid, e.g. "us_btn:1"
 		 * @param {string} jsoncss The line of design settings from the $usof.field[ 'design_options' ]
+		 * @param {{}} specificClasses List of specific classes that will be added if there is a value by key name
 		 */
-		_addDesignOptions: function( id, jsoncss ) {
+		_addDesignOptions: function( id, jsoncss, specificClasses ) {
 			if ( ! id ) {
 				return;
 			}
-
-			//
-			var _styleElms = {};
-
 			jsoncss = '' + jsoncss;
+
+			var $style;
 			// Find element of styles for shortcode
 			_document.querySelectorAll( 'style[data-for="'+ id +'"]' )
-				.forEach( function( elm, i ) {
+				.forEach( function( style, i ) {
 					if ( i === 0 ) {
-						return _styleElms[ id ] = elm;
+						return $style = style;
 					}
 					// Delete all unnecessary if any
-					$usbcore.$remove( elm );
+					$usbcore.$remove( style );
 				}.bind( this ));
 
 			/**
 			 * Get animated properties in one line
 			 *
-			 * @param {node} elm
+			 * @param {node} node
 			 * @return {string|undefinded}
 			 */
-			var getAnimateProps = function( elm ) {
-				if ( ! $usbcore.isNode( elm ) ) {
+			var getAnimateProps = function( node ) {
+				if ( ! $usbcore.isNode( node ) ) {
 					return;
 				}
-				var style = _window.getComputedStyle( elm ),
+				var style = _window.getComputedStyle( node ),
 					name = style.getPropertyValue( 'animation-name' ),
 					delay = style.getPropertyValue( 'animation-delay' );
 				if ( name && name !== 'none' ) {
@@ -1256,34 +1269,34 @@
 			};
 
 			// Get shortcode element
-			var elm = this.getElmNode( id );
+			var node = this.getElmNode( id );
 
 			// Get the first child for buttons
 			// Note: Exception for elements that have wrapper that are not main.
-			if ( this.getElmType( id ) === 'us_btn' && $usbcore.isNode( elm ) ) {
-				elm = elm.firstChild || elm;
+			if ( this.getElmType( id ) === 'us_btn' && $usbcore.isNode( node ) ) {
+				node = node.firstChild || node;
 			}
 
 			// If there is no style element then create a new one
-			if ( ! _styleElms[ id ] ) {
+			if ( ! $style ) {
 				var // Custom prefix
-					customPrefix = this._designOptions[ 'customPrefix' ],
+					customPrefix = this.config( 'designOptions.customPrefix', _default.customPrefix ),
 					// Generate unique class name
 					className = $usbcore.uniqid( customPrefix );
 				// If the element is absent then we will complete the action
-				if ( ! $usbcore.isNode( elm ) ) return;
-				_styleElms[ id ] = $( '<style data-for="'+ id +'" data-classname="'+ className +'"></style>' )[0];
+				if ( ! $usbcore.isNode( node ) ) return;
+				$style = $( '<style data-for="'+ id +'" data-classname="'+ className +'"></style>' )[0];
 				// Add a new styling element to the page
-				elm.after( _styleElms[ id ] );
+				node.after( $style );
 				// Removing the old custom class in the absence of a styling element `<style data-for="..." data-classname="..."></style>`
-				if ( elm.className.indexOf( customPrefix ) > -1 ) {
-					elm.className = elm.className.replace(
-						new RegExp( '(' + this.escapeRegExp( customPrefix ) + '\\w+)' ),
+				if ( node.className.indexOf( customPrefix ) > -1 ) {
+					node.className = node.className.replace(
+						new RegExp( '(' + $usbcore.escapePcre( customPrefix ) + '\\w+)' ),
 						''
 					);
 				}
 				// Add a new class for custom styles
-				$usbcore.$addClass( elm, className );
+				$usbcore.$addClass( node, className );
 			}
 
 			// Determine the presence of an animation name
@@ -1291,28 +1304,31 @@
 				oldAnimateProp;
 
 			// Compile and add styles to document
-			if ( _styleElms[ id ] ) {
-				var _className = $usbcore.$attr( _styleElms[ id ], 'data-className' );
+			if ( $style ) {
+				var _className = $usbcore.$attr( $style, 'data-className' );
 				// If there are animation settings, keep the old value
 				if ( hasAnimateName ) {
-					oldAnimateProp = getAnimateProps( elm );
+					oldAnimateProp = getAnimateProps( node );
 				}
-				_styleElms[ id ].innerText = this._compileDesignOptions( _className, jsoncss );
+				$style.innerText = this._compileDesignOptions( _className, jsoncss );
 			}
 
 			// Checking classes and restarting animation
 			if ( hasAnimateName ) {
-				var currentAnimateProps = getAnimateProps( elm );
+				var currentAnimateProps = getAnimateProps( node );
 				if ( currentAnimateProps && currentAnimateProps !== oldAnimateProp ) {
 					// Adjusting classes for normal animation work
-					$usbcore.$addClass( elm, 'us_animate_this' );
-					$usbcore.$removeClass( elm, 'start' );
+					$usbcore.$addClass( node, 'us_animate_this' );
+					$usbcore.$removeClass( node, 'start' );
 					// Delayed start of CSS animation
-					this.__startAnimation( elm );
+					this.__startAnimation( node );
 				}
-			} else if ( ( '' + elm.className ).indexOf( 'us_animate_this' ) > -1 ) {
-				$usbcore.$removeClass( elm, 'us_animate_this start' );
+			} else if ( ( '' + node.className ).indexOf( 'us_animate_this' ) > -1 ) {
+				$usbcore.$removeClass( node, 'us_animate_this start' );
 			}
+
+			// Switching specific design classes depending on the given properties
+			this._toggleDesignSpecificClasses.apply( this, arguments );
 		},
 
 		/**
@@ -1385,7 +1401,7 @@
 					// masks to css properties )
 					collection = this._applyMaskToBackgroundCss( collections[ responsiveState ] ),
 					// Get breakpoint sizes
-					breakpoint = ( this._designOptions.breakpoints || {} )[ responsiveState ] || '';
+					breakpoint = this.config( 'designOptions.breakpoints.' + responsiveState, /* Default */'' );
 				// Collection to string options
 				for( var prop in collection ) {
 					if ( ! prop || ! collection[ prop ] ) {
@@ -1441,12 +1457,16 @@
 				 */
 				if ( /(^color|-color$)/.test( prop ) && ( '' + value ).charAt( 0 ) === '_' ) {
 					value = this.getColorValue( value );
+					// Remove gradient for text color
+					if ( prop == 'color' && this._isCssGradient( value ) ) {
+						value = value.replace( '-grad', '' );
+					}
 					options[ prop ] = value;
 				}
 
 				// Generate correct font-family value
 				if ( prop === 'font-family' ) {
-					options[ prop ] = ( this._designOptions.fontVars || {} )[ value ] || value;
+					options[ prop ] = this.config( 'designOptions.fontVars.' + value, /* Default */value );
 				}
 				// border-style to border-{position}-style provided that there is a width of this border
 				if ( prop === 'border-style' ) {
@@ -1561,8 +1581,38 @@
 		_isCssGradient: function( value ) {
 			value += ''; // To string
 			return value.indexOf( 'gradient' ) > -1 || /\s?var\(.*-grad\s?\)$/.test( value ); // The support css var(*-grad);
-		}
+		},
 
+		/**
+		 * Switching specific design classes depending on the given properties
+		 *
+		 * @private
+		 * @param {string} id Shortcode's usbid, e.g. "us_btn:1"
+		 * @param {string} jsoncss The line of design settings from the $usof.field[ 'design_options' ]
+		 * @param {{}} specificClasses List of specific classes that will be added if there is a value by key name
+		 */
+		_toggleDesignSpecificClasses: function( id, jsoncss, specificClasses ) {
+			var toggleClasses = {};
+			if ( ! $.isPlainObject( specificClasses ) ) {
+				return toggleClasses;
+			}
+			// Get shortcode element
+			var node = this.getElmNode( id );
+			// Get the first child for buttons
+			// Note: Exception for elements that have wrapper that are not main.
+			if ( this.getElmType( id ) === 'us_btn' && $usbcore.isNode( node ) ) {
+				node = elm.firstChild || node;
+			}
+			// Convert to json string
+			if ( jsoncss ) {
+				jsoncss = unescape( '' + jsoncss ) || '{}';
+			}
+			// Check jsoncss properties and adding or removing classes
+			for ( var prop in specificClasses ) {
+				var state = ( jsoncss.indexOf( '"'+ prop +'"' ) > -1 );
+				$usbcore.$toggleClass( node, specificClasses[ prop ], state );
+			}
+		},
 	} );
 
 	/**
@@ -1671,37 +1721,6 @@
 			return ( angle > -180 && angle <= -130 || angle <= 180 && angle > 130 )
 				? this._DIRECTION.LEFT
 				: this._DIRECTION.RIGHT;
-		},
-
-		/**
-		 * Get directions of mouse movement relative to target
-		 * Note: The code is not used.
-		 *
-		 * @private
-		 * @param {node} target The target node
-		 * @param {number} clientX The coordinates along the X axis
-		 * @param {number} clientY The coordinates along the Y axis
-		 * @return {string}
-		 */
-		// TODO: looks like unused, possibly delete this method
-		_getMouseDirection: function( target, clientX, clientY ) {
-			// Check if the target is a node
-			if ( ! $usbcore.isNode( target ) ) {
-				return this._DIRECTION.UNKNOWN;
-			}
-			// Get the mouse movement angle
-			var angle = this._getMouseAngle( target, clientX, clientY );
-			// Determine the direction depending on the angle of movement
-			if ( angle <= -45 && angle > -130 ) {
-				return this._DIRECTION.TOP;
-			} else if ( angle > -180 && angle <= -130 || angle <= 180 && angle > 130 ) {
-				return this._DIRECTION.LEFT;
-			} else if ( angle > 45 && angle <= 130 ) {
-				return this._DIRECTION.BOTTOM;
-			} else if ( angle <= 45 && angle > -45 ) {
-				return this._DIRECTION.RIGHT;
-			}
-			return this._DIRECTION.UNKNOWN;
 		},
 
 		/**
@@ -1859,7 +1878,7 @@
 		 */
 		getColorValue: function( value ) {
 			if ( ( '' + value ).indexOf( '_' ) > -1 ) {
-				return this._designOptions.colorVars[ value ] || value;
+				return this.config( 'designOptions.colorVars.' + value, /* Default */value );
 			}
 			return value;
 		},
@@ -1884,10 +1903,10 @@
 			var isMainContainer = this.isMainContainer( targetId ),
 				// Find parent element
 				// TODO:Optimize and implement without jQuery
-				$parentElm = $( this.getElmNode( isMainContainer ? this.mainContainer : targetId ) );
+				$targetElm = $( this.getElmNode( isMainContainer ? this.mainContainer : targetId ) );
 			// When positioned before or after, return the $parentElm unchanged
-			if ( ['before', 'after'].indexOf( position ) !== - 1 ) {
-				return $parentElm;
+			if ( [ 'before', 'after' ].indexOf( position ) !== - 1 ) {
+				return $targetElm;
 			}
 			/**
 			 * Parent adjustment for different shortcodes
@@ -1895,34 +1914,20 @@
 			 * Note: All searches for the location of the root element are strictly tied to
 			 * the structure and classes, see the switch construction!
 			 */
-			if ( ! isMainContainer && $parentElm.length ) {
-				switch ( parent.$usb.getElmType( targetId ) ) {
-					case 'vc_row':
-						$parentElm = $( '> .l-section-h > .g-cols', $parentElm );
-						break;
-					case 'vc_tta_accordion':
-					case 'vc_tta_tabs':
-					case 'vc_tta_tour':
-						$parentElm = $( '.w-tabs-sections:first', $parentElm );
-						break;
-					case 'vc_tta_section':
-						$parentElm = $( '.w-tabs-section-content-h:first', $parentElm );
-						break;
-					case 'vc_row_inner':
-						// Without changes!
-						break;
-					default:
-						var $columnWrapper = $( '.vc_column-inner:first', $parentElm ),
-							$legacyColumnWrapper = $( '.vc_column-inner:first > .wpb_wrapper', $parentElm );
-						if ( $legacyColumnWrapper.length ) {
-							$parentElm = $legacyColumnWrapper;
-						} else if ( $columnWrapper.length ) {
-							$parentElm = $columnWrapper;
-						}
-						break;
+			if ( ! isMainContainer && $targetElm.length ) {
+				var elmType = this.getElmType( targetId ),
+					elmRootSelector = this.config( 'rootContainerSelectors.' + elmType );
+				if ( ! elmRootSelector ) {
+					this._debugLog( 'Error: No selector set for container `'+ elmType +'` in rootContainerSelectors' );
+				}
+				if ( elmRootSelector ) {
+					// The settings can contain a list of containers `.container, .container > *`,
+					// but we only get the first one found.
+					$targetElm = $( '' + elmRootSelector, $targetElm ).first();
 				}
 			}
-			return $parentElm;
+
+			return $targetElm;
 		},
 
 		/**
@@ -1977,7 +1982,7 @@
 		getElmOuterHtml: function( id ) {
 			var node = this.getElmNode( id );
 			if ( $usbcore.isNode( node ) ) {
-				return node.outerHTML + ( _document.querySelector( 'style[data-for="'+ id +'"]' ) || {} ).outerHTML || '';
+				return node.outerHTML + ( ( _document.querySelector( 'style[data-for="'+ id +'"]' ) || {} ).outerHTML || '' );
 			}
 			return '';
 		},
@@ -1990,10 +1995,7 @@
 		 * @return {node|null}.
 		 */
 		_getSectionButtonById: function( sectionId ) {
-			if (
-				! this.isValidId( sectionId )
-				|| ! this.isElmTTA( sectionId )
-			) {
+			if ( ! this.isValidId( sectionId ) ) {
 				return null;
 			}
 			return _document.querySelector( '[data-related-to="'+ sectionId +'"]' );
@@ -2113,7 +2115,7 @@
 						$tabs = $node.closest( '.w-tabs' );
 
 					// Removing a button and opening a free section
-					if ( this.getElmType( node ) === 'vc_tta_section' ) {
+					if ( this.isUpdateIncludeParent( node ) ) {
 						$( '[aria-controls="content-'+ $node.attr( 'id' ) +'"]:first', $tabs )
 							.remove();
 						// The opening the first section
@@ -2293,7 +2295,13 @@
 			 * 		},
 			 * 		'toggle_class': '{class name}',
 			 * 		'toggle_class_inverse': '{class name}',
-			 * 		'design_options': true,
+			 * 		'design_options': {
+			 * 			//  List of specific classes that will be added if there is a value by key name
+			 * 			color: 'has_text_color',
+			 * 			width: 'has_width',
+			 * 			height: 'has_height',
+			 * 			...
+			 * 		},
 			 * }`
 			 * or array instructions: `
 			 * [
@@ -2335,7 +2343,7 @@
 					// Changing the class modifier of an element
 					if ( ! $usbcore.isUndefined( instruction[ 'mod' ] ) ) {
 						var mod = '' + instruction[ 'mod' ],
-							pcre = new RegExp( '((^| )'+ this.escapeRegExp( mod ) + '[a-zA-Z0-9\_\-]+)', 'g' );
+							pcre = new RegExp( '((^| )'+ $usbcore.escapePcre( mod ) + '[a-zA-Z0-9\_\-]+)', 'g' );
 						// Remove all classes from modifier
 						$elm.each( function( _, elm ) {
 							elm.className = elm.className.replace( pcre, '' );
@@ -2350,9 +2358,9 @@
 						// Changing the inline parameter
 					} else if ( ! $usbcore.isUndefined( instruction[ 'css' ] ) ) {
 						// For the font-family property, check for the presence of global keys `body`, 'h1`, `h2` etc.
-						if ( instruction[ 'css' ] === 'font-family' ) {
+						if ( 'font-family' === instruction[ 'css' ]  ) {
 							// Get the font family from the design options
-							value = ( this._designOptions.fontVars || {} )[ value ] || value;
+							value = this.config( 'designOptions.fontVars.' + value, /* Default */value );
 						}
 						$elm.css( instruction[ 'css' ], value );
 
@@ -2362,8 +2370,8 @@
 						 * force re-render by changing opacity property
 						 */
 						if (
-							/^((?!chrome|android).)*safari/i.test(navigator.userAgent) // safari detection
-							&& instruction[ 'css' ] === 'grid-gap'
+							$usbcore.isSafari // safari detection
+							&& 'grid-gap' === instruction[ 'css' ]
 						) {
 							$elm.css( 'opacity', '0.99' );
 							setTimeout( function() {
@@ -2431,13 +2439,16 @@
 
 						// Compiling and updating design styles
 					} else if ( ! $usbcore.isUndefined( instruction[ 'design_options' ] ) ) {
-						this._addDesignOptions( targetId, /* jsoncss string */value );
+						this._addDesignOptions( targetId, /* jsoncss string */value, /* specific classes */instruction[ 'design_options' ] );
 
 						// The error message
 					} else {
 						console.log( 'Unknown instruction:', { instruction: instruction, value: value } );
 					}
 				}
+
+				$target // Send event on element change in usbuilder
+					.trigger( 'usb.contentChange' );
 
 				// Set the highlight position
 				this.setHighlightsPosition();
@@ -2489,13 +2500,18 @@
 					return;
 				}
 				var columns = _this.getElmChildren( rootContainerId );
-				$( columns.map( function( usbid ) { return '[data-usbid="'+ usbid +'"]' } ).join(','), _this.$body )
+				$( columns.map( function( usbid ) { return '[data-usbid="'+ usbid +'"]' } ).join( ',' ), _this.$body )
 					.each( function( i, column ) {
 						// Get width depending on mesh type Grid/Flex
 						var width = '' + _this.getElmValue( columns[i], 'width' );
-						if ( _this.config( 'isGridColumnsLayout', /* default */false ) && /(\d+)\/(\d+)/.test( width ) ) {
-							var parts = width.split( '/' );
-							width = Math.ceil( parts[ /* x */0 ] / parts [ /* y */1 ] * 12 );
+						if ( /(\d+)\/(\d+)/.test( width ) ) {
+							var isGridColumnsLayout = this.config( 'isGridColumnsLayout', /* default */false );
+							if ( ! isGridColumnsLayout && width.indexOf( '/5') != -1 ) { // Specific to classes 1/5, 2/5, N/5
+								// do nothing
+							} else {
+								var parts = width.split( '/' );
+								width = Math.ceil( parts[ /* x */0 ] / parts [ /* y */1 ] * 12 );
+							}
 						}
 						if ( ! width ) {
 							return;
@@ -2515,6 +2531,6 @@
 	} );
 
 	$( function() {
-		_window.$usb = new USBuilderPreview;
+		_window.$usbp = new USBuilderPreview;
 	} );
 }( window.jQuery );

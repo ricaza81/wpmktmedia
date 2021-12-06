@@ -93,7 +93,6 @@ final class USBuilder_Assets {
 		}
 
 		global $wp_styles;
-
 		$result = array();
 		foreach ( $this->_handles as $handle ) {
 			if ( ! $style = us_arr_path( $wp_styles->registered, $handle ) ) {
@@ -103,7 +102,8 @@ final class USBuilder_Assets {
 				if ( $style->ver ) {
 					$src .= '?ver=' . $style->ver;
 				}
-				$result[] = "<link rel='stylesheet' id='" . esc_attr( $handle ) . "-css' href='" . esc_url( $style->src ) . "' />";
+				$src = site_url( $src );
+				$result[] = "<link rel='stylesheet' id='" . esc_attr( $handle ) . "-css' href='" . esc_url( $src ) . "' />";
 			}
 		}
 
@@ -126,7 +126,6 @@ final class USBuilder_Assets {
 		}
 
 		global $wp_scripts;
-
 		$result = array();
 		foreach ( $this->_handles as $handle ) {
 			if ( ! $script = $wp_scripts->registered[ $handle ] ) {
@@ -139,6 +138,7 @@ final class USBuilder_Assets {
 				if ( $script->ver ) {
 					$src .= '?ver=' . $script->ver;
 				}
+				$src = site_url( $src );
 				$result[] = "<script id='" . esc_attr( $handle ) . "-js' src='" . esc_url( $src ) . "'></script>";
 			}
 		}

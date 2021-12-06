@@ -15,10 +15,7 @@
  *
  */
 
-// Determines the called shortcode for the US Builder page
-$is_builder_preview_page = apply_filters( 'usb_is_preview_page', NULL );
-
-if ( ! function_exists( 'pvc_get_post_views' ) AND ! $is_builder_preview_page ) {
+if ( ! function_exists( 'pvc_get_post_views' ) AND ! usb_is_preview_page() ) {
 	return;
 }
 
@@ -44,7 +41,7 @@ $text_before = ( trim( $text_before ) != '' ) ? '<span class="w-post-elm-before"
 $text_after = ( trim( $text_after ) != '' ) ? '<span class="w-post-elm-after"> ' . trim( $text_after ) . '</span>' : '';
 
 // Get the value
-$value = ! $is_builder_preview_page
+$value = ! usb_is_preview_page()
 	? pvc_get_post_views()
 	: 0;
 $value = (int) $value;

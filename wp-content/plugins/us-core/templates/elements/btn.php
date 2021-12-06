@@ -98,7 +98,7 @@ if ( $link_type === 'none' ) {
 // Don't show the button if it has no link
 if (
 	empty( $link_atts['href'] )
-	AND ! apply_filters( 'usb_is_preview_page', NULL )
+	AND ! usb_is_preview_page()
 ) {
 	return;
 

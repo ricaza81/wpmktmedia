@@ -16,7 +16,8 @@ jQuery( function( $ ) {
 				jQueryDatePickerPath = $form.data( 'jquery-ui' ),
 				pickerOptions = {},
 				$requiredCheckboxes = $( '.for_checkboxes.required', $form );
-			$( '.w-form-json', $form ).remove();
+			// Delete data everywhere except for the preview of the USBuilder, the data may be needed again to restore the elements.
+			if ( ! $us.usbPreview ) $( '.w-form-json', $form ).remove();
 			// Init date pickers
 			if ( $dateField.length ) {
 				if ( jQueryDatePickerPath !== undefined ) {

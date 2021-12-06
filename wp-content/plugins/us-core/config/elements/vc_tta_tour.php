@@ -14,7 +14,13 @@ $general_params = array(
 		'title' => us_translate( 'Style' ),
 		'type' => 'select',
 		'options' => array(
-			'default' => __( 'Simple', 'us' ),
+			'default' => us_translate( 'Default' ),
+			'simple' => __( 'Simple', 'us' ),
+			'simple2' => __( 'Simple', 'us' ) . ' 2',
+			'simple3' => __( 'Simple', 'us' ) . ' 3',
+			'radio' => __( 'Radio', 'us' ),
+			'radio2' => __( 'Radio', 'us' ) . ' 2',
+			'radio3' => __( 'Radio', 'us' ) . ' 3',
 			'modern' => __( 'Modern', 'us' ),
 			'trendy' => __( 'Trendy', 'us' ),
 		),
@@ -202,6 +208,7 @@ return array(
 	'category' => __( 'Containers', 'us' ),
 	'icon' => 'fas fa-folder-plus',
 	'is_container' => TRUE,
+	'usb_root_container_selector' => '.w-tabs-sections:first',
 	'weight' => 350, // go after Tabs element, which has "360" weight
 	'as_child' => array(
 		'except' => 'vc_tta_section',

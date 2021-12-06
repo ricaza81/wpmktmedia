@@ -55,7 +55,7 @@ if ( $field['type'] == 'wrapper_start' ) {
 $field['std'] = isset( $field['std'] ) ? $field['std'] : NULL;
 $value = isset( $values[ $name ] ) ? $values[ $name ] : $field['std'];
 
-$usb_is_builder_page = apply_filters( 'usb_is_builder_page', NULL );
+$usb_is_builder_page = usb_is_builder_page();
 $usb_preview = $usb_is_builder_page
 	? us_arr_path( $field, 'usb_preview' )
 	: '';
@@ -233,7 +233,7 @@ if ( isset( $field['hints_for'] ) ) {
 			AND (
 
 				// Builder elements panel
-				apply_filters( 'usb_is_builder_page', FALSE )
+				$usb_is_builder_page
 
 				// Theme options, if the live builder is ON
 				OR (

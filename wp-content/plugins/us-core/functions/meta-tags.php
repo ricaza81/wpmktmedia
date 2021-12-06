@@ -85,7 +85,23 @@ if ( ! function_exists( 'us_output_meta_tags' ) ) {
 			}
 
 			// Get current id from request
-			$the_id = get_queried_object_id();
+			if ( ! $the_id = get_queried_object_id() ) {
+				// Get shop page ID
+				if ( function_exists( 'is_shop' ) AND is_shop() ) {
+					$the_id = get_option( 'woocommerce_shop_page_id' );
+				}
+
+				// Get search page ID
+				else if ( is_search() AND ! is_post_type_archive( 'product' ) ) {
+					$the_id = us_get_option( 'search_page' );
+				}
+
+				// Get 404 page ID
+				else if ( is_404() ) {
+					$the_id = us_get_option( 'page_404' );
+				}
+			}
+			$the_id = (int) $the_id;
 
 			// TODO: add hreflang attributes, if post has several language versions
 
@@ -141,7 +157,10 @@ if ( ! function_exists( 'us_output_meta_tags' ) ) {
 			}
 
 			// The og:image data
-			if ( has_post_thumbnail() ) {
+			if ( function_exists( 'is_shop' ) AND is_shop() ) {
+				$meta_tags['og:image'] = get_the_post_thumbnail_url( $the_id, 'large' );
+
+			} else if ( has_post_thumbnail() ) {
 				$meta_tags['og:image'] = get_the_post_thumbnail_url( NULL, 'large' );
 
 			} elseif ( $meta_image = get_metadata( $meta_type, $the_id, 'us_og_image', TRUE ) ) {

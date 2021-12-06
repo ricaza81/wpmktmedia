@@ -252,6 +252,11 @@ if ( ! wp_doing_ajax() ) {
 	if ( ! empty( $_default_query_args ) ) {
 		$query_args = array_merge( $query_args, $_default_query_args );
 	}
+
+	// Remove price range from `query_args`
+	if ( isset( $query_args['_us_product_meta_lookup_prices'] ) ) {
+		unset( $query_args['_us_product_meta_lookup_prices'] );
+	}
 }
 
 global $wp;
@@ -395,7 +400,8 @@ if ( ! us_amp() AND $overriding_link == 'popup_post' ) {
 
 // Output No results
 if ( $no_results ) {
-	us_grid_stop_loop( TRUE, FALSE );
+	global $us_is_nested_grid;
+	us_grid_stop_loop( TRUE, /* interrupt */is_null( $us_is_nested_grid ) );
 
 	if ( $use_custom_query ) {
 		us_close_wp_query_context();
@@ -405,5 +411,10 @@ if ( $no_results ) {
 // Reset grid item counter
 global $us_grid_item_counter;
 $us_grid_item_counter = 0;
+
+// Reset listing start
+global $us_grid_listing_start;
+$us_grid_listing_start = FALSE;
+
 
 echo '</div>';

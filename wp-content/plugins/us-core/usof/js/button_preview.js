@@ -114,7 +114,8 @@
 			}
 
 			// Font size
-			style.default += 'font-size:' + this.groupParams.getValue( 'font_size' ) + ' !important;';
+			// Used min() for correct appearance of the button with huge font-size value, e.g. 20em
+			style.default += 'font-size: min(' + this.groupParams.getValue( 'font_size' ) + ', 50px) !important;';
 
 			// Line height
 			style.default += 'line-height:' + this.groupParams.getValue( 'line_height' ) + ' !important;';

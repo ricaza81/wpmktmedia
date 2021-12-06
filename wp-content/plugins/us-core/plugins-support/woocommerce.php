@@ -539,9 +539,16 @@ if ( ! function_exists( 'us_wc_pre_get_posts' ) ) {
 		// Add meta_query for outofstock
 		if ( $include_outofstock_meta ) {
 			$query_vars['meta_query'][] = array(
-				'key' => '_stock_status',
-				'value' => 'outofstock',
-				'compare' => '!=',
+				'relation' => 'OR',
+				array(
+					'key' => '_stock_status',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key' => '_stock_status',
+					'value' => 'outofstock',
+					'compare' => '!=',
+				),
 			);
 		}
 	}
@@ -597,7 +604,6 @@ if ( ! function_exists( 'us_pre_get_posts_exclude_hidden_products' ) ) {
 
 	add_action( 'pre_get_posts', 'us_pre_get_posts_exclude_hidden_products' );
 }
-
 
 if ( ! function_exists( 'us_wc_get_min_max_price' ) ) {
 	/**

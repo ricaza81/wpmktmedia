@@ -44,6 +44,9 @@ return array(
 	'title' => __( 'Inner Row', 'us' ),
 	'category' => __( 'Containers', 'us' ),
 	'is_container' => TRUE,
+	// Since the tabs are located on axis X, we will enable
+	// movement along axis X for the current shortcode
+	'usb_moving_child_x_direction' => TRUE,
 	'icon' => 'fas fa-border-none',
 	'as_child' => array(
 		'only' => 'vc_column,vc_tta_section',

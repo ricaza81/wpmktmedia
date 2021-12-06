@@ -98,11 +98,6 @@ if ( ! empty( $columns_reverse ) ) {
 	$_atts['class'] .= ' reversed';
 }
 
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }

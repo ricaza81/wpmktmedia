@@ -73,6 +73,7 @@ if ( us_get_option( 'back_to_top', 1 ) ) {
 if ( $us_layout->header_show != 'never' ) {
 	$_header_show_atts['id'] = 'w-header-show';
 	$_header_show_atts['class'] = 'w-header-show';
+	$_header_show_atts['aria-label'] = us_translate( 'Menu' );
 	if ( us_amp() ) {
 		$_header_show_atts['on'] = 'tap:amp-body-id.toggleClass(class=\'header-show\')';
 	} else {

@@ -38,148 +38,6 @@ if ( ! function_exists( 'us_builder_admin_body_class' ) ) {
 	}
 }
 
-if ( ! function_exists( 'us_hb_load_header_settings' ) ) {
-	/**
-	 * Load header settings
-	 *
-	 * @param array $header_settings
-	 * @return array
-	 */
-	function us_hb_load_header_settings( $header_settings ) {
-		global $us_header_id;
-
-		// Get Header ID from Theme Options
-		$us_header_id = us_get_page_area_id( 'header' );
-
-		// Override Header ID and its settings for certain post when they set in metabox
-		$states = (array) us_get_responsive_states( /* Only keys */TRUE );
-		$override_options = array();
-		$is_shop = FALSE;
-		if ( is_singular() ) {
-			$postID = get_the_ID();
-		}
-		if ( is_404() ) {
-			$postID = us_get_option( 'page_404' );
-		}
-		if ( is_search() AND ! is_post_type_archive( 'product' ) ) {
-			$postID = us_get_option( 'search_page' );
-		}
-		if ( is_home() ) {
-			$postID = us_get_option( 'posts_page' );
-		}
-		if ( function_exists( 'is_shop' ) AND is_shop() AND ! is_search() ) {
-			$postID = wc_get_page_id( 'shop' );
-			$is_shop = TRUE;
-		}
-		if ( ! empty( $postID ) AND $postID != 'default' ) {
-			if ( usof_meta( 'us_header_id', $postID ) != '__defaults__' OR $is_shop ) {
-				// Do not try to translate header ID for shop pages - it is set at Theme Options now
-				if ( ! $is_shop AND has_filter( 'us_tr_default_language' ) ) {
-
-					$default_language = apply_filters( 'us_tr_default_language', NULL );
-					$current_language = apply_filters( 'us_tr_current_language', NULL );
-					if ( $default_language != $current_language ) {
-						$orig_postID = apply_filters( 'us_tr_object_id', $postID, get_post_type( $postID ), TRUE, $default_language );
-						if ( $orig_postID != $postID ) {
-							$us_header_id = usof_meta( 'us_header_id', $orig_postID );
-							$us_header_id = apply_filters( 'us_tr_object_id', $us_header_id,'us_header', TRUE, $current_language );
-						}
-					}
-				}
-				if ( usof_meta( 'us_header_sticky_override', $postID ) ) {
-					// Note: The value can be either an array or a delimited string.
-					$sticky_override = usof_meta( 'us_header_sticky', $postID );
-					if ( is_string( $sticky_override ) ) {
-						$sticky_override = explode( ',' , $sticky_override );
-					}
-					foreach ( $states as $state ) {
-						$override_options[ $state ]['options']['sticky'] = in_array( $state, (array) $sticky_override );
-					}
-				}
-				if ( usof_meta( 'us_header_transparent_override', $postID ) ) {
-					// Note: The value can be either an array or a delimited string.
-					$transparent_override = usof_meta( 'us_header_transparent', $postID );
-					if ( is_string( $transparent_override ) ) {
-						$transparent_override = explode( ',' , $transparent_override );
-					}
-					foreach ( $states as $state ) {
-						$override_options[ $state ]['options']['transparent'] = in_array( $state, (array) $transparent_override );
-					}
-				}
-				if ( usof_meta( 'us_header_shadow', $postID ) ) {
-					foreach ( $states as $state ) {
-						$override_options[ $state ]['options']['shadow'] = 'none';
-					}
-				}
-			}
-		}
-
-		// Reset Header ID to Defaults if set
-		if ( $us_header_id == '__defaults__' ) {
-			$us_header_id = us_get_option( 'header_id' );
-		}
-
-		// Generate header settings from Header post content
-		if ( $us_header_id != '' ) {
-			if (
-				has_filter( 'us_tr_object_id' )
-				AND $_header_id = apply_filters( 'us_tr_object_id', $us_header_id, 'us_header', TRUE )
-			) {
-				$us_header_id = $_header_id;
-			}
-
-			$header = get_post( (int) $us_header_id );
-			if ( $header instanceof WP_Post AND $header->post_type === 'us_header' ) {
-				if ( ! empty( $header->post_content ) AND strpos( $header->post_content, '{' ) === 0 ) {
-					try {
-						$header_settings = json_decode( $header->post_content, TRUE );
-					}
-					catch ( Exception $e ) {
-					}
-				}
-			}
-			// Add Header ID to settings
-			$header_settings['header_id'] = $us_header_id;
-
-			// Fallback
-			$header_settings = us_hb_settings_fallback( $header_settings );
-
-			/*
-			 * Applying global breakpoints where needed
-			 * Note: this should go after fallback because laptop state sometimes is not present before fallback
-			 */
-			foreach ( $states as $state ) {
-				if (
-					isset( $header_settings[ $state ]['options']['custom_breakpoint'] )
-					AND ! $header_settings[ $state ]['options']['custom_breakpoint']
-				) {
-					$header_settings[ $state ]['options']['breakpoint'] = us_get_option( $state . '_breakpoint' );
-				}
-			}
-
-		} else {
-			$header_settings['is_hidden'] = TRUE;
-		}
-
-		// Merge header settings with metabox settings
-		$header_settings = us_array_merge( $header_settings, $override_options );
-
-		// Casting values to the same data type
-		foreach ( $states as $state ) {
-			foreach ( array( 'sticky', 'sticky_auto_hide' ) as $option ) {
-				if ( isset( $header_settings[ $state ]['options'][ $option ] ) ) {
-					$value = &$header_settings[ $state ]['options'][ $option ];
-					$value = ! empty( $value );
-					unset( $value );
-				}
-			}
-		}
-
-		return $header_settings;
-	}
-	add_filter( 'us_load_header_settings', 'us_hb_load_header_settings', 9 );
-}
-
 if ( ! function_exists( 'us_hb_enqueue_scripts' ) ) {
 	function us_hb_enqueue_scripts() {
 
@@ -287,4 +145,18 @@ if ( ! function_exists( 'us_hb_post_row_actions' ) ) {
 
 		return $actions;
 	}
+}
+
+if ( ! function_exists( 'us_hb_post_edit_form_tag' ) ) {
+	/**
+	 * Block the submission of a standard form in the header builder.
+	 *
+	 * @param WP_Post $post The post
+	 */
+	function us_hb_post_edit_form_tag( WP_Post $post ) {
+		if ( $post->post_type === 'us_header' ) {
+			echo ' onsubmit="return false"';
+		}
+	}
+	add_action( 'post_edit_form_tag', 'us_hb_post_edit_form_tag', 1, 1 );
 }

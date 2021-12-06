@@ -3,9 +3,10 @@
  */
 ! function( $, undefined ) {
 	var _window = window,
-		_document = document;
+		_document = document,
+		_undefined = undefined;
 
-	if ( _window.$usof === undefined ) {
+	if ( _window.$usof === _undefined ) {
 		return;
 	}
 
@@ -165,24 +166,35 @@
 			 */
 			changeValue: function( field ) {
 				var resultValue = {},
-					valueStateChanged = {};
+					valueStateChanged = {},
+					enabledResponsives = {};
 				$.each( this.groupParams, function( responsiveState, groupParams ) {
+					// Definition for whom responsive is enabled
+					if ( 'default' === responsiveState ) {
+						for ( var k in groupParams.fields ) {
+							enabledResponsives[ k ] = !! $( groupParams.fields[ k ].$row )
+								.closest( '[data-accordion-content]' )
+								.prev( '[data-accordion-id].responsive' )
+								.length;
+						}
+					}
+					// Get group values
 					var groupValues = groupParams.getValues();
 					// Check the parameters, if the value is not default then add the setting to the result value
 					$.each( groupValues, function( param, value ) {
 						var defaultValue = this.defaultValues[ responsiveState ][ param ];
-						// For the `position`, `text-align` and `text-align` property, we additionally check for changes to
+						// For the `position`, `text-align`, `text-align` and `animation-name` property, we additionally check for changes to
 						// the value, this is necessary because the default value can be overriding the previous value
-						if ( [ 'position', 'border-style', 'text-align' ].indexOf( param ) > -1 && responsiveState !== 'default' ) {
-							if ( valueStateChanged[ param ] = ( value !== defaultValue || valueStateChanged[ param ] ) ) {
+						if ( [ 'position', 'border-style', 'text-align', 'animation-name' ].indexOf( param ) > -1 ) {
+							// Determine if there are changes in responsive states
+							valueStateChanged[ param ] = ( enabledResponsives[ param ] )
+								? ( value !== defaultValue || valueStateChanged[ param ] )
+								: valueStateChanged[ param ] || _undefined;
+
+							if ( valueStateChanged[ param ] ) {
 								// The value is set here intentionally, which cannot be,
 								// this is necessary to bypass the check for a default value
 								defaultValue = null;
-							}
-							// Note: When using responsive design, the default value will be `inherit`
-							// for the possibility of canceling other values.
-							if ( param === 'text-align' && ! value && !! valueStateChanged[ param ] ) {
-								value = 'inherit';
 							}
 						}
 						if ( value !== defaultValue ) {
@@ -209,7 +221,7 @@
 				this.$input.val( resultValue );
 
 				// Only when the result changes, then fire the change event.
-				if ( ! this._lastResultValue || this._lastResultValue !== resultValue) {
+				if ( ! this._lastResultValue || this._lastResultValue !== resultValue ) {
 					this._lastResultValue = resultValue;
 					this.trigger( 'change', resultValue );
 				}
@@ -281,7 +293,7 @@
 				var $target = $( e.currentTarget ),
 					isUnlink = $target.hasClass( 'fa-unlink' ),
 					relations = [];
-				if ( state !== undefined ) {
+				if ( state !== _undefined ) {
 					isUnlink = state;
 				}
 				if ( field.hasOwnProperty( '_data' ) && field.hasOwnProperty( 'responsiveState' ) ) {
@@ -600,7 +612,6 @@
 			} else if ( $.isPlainObject( value ) ) {
 				savedValues = value;
 			}
-
 			var pid = setTimeout( function() {
 				// Set values and check link
 				$.each( this.groupParams, function( responsiveState, groupParams ) {
@@ -629,7 +640,7 @@
 							var $row = field.$row,
 								value = $.trim( field.getValue() ),
 								isLink = [];
-							// // Matching all related parameters, and if necessary enable communication.
+							// Matching all related parameters, and if necessary enable communication.
 							( field._data.relations || [] ).map( function( name ) {
 								if ( value && this.groupParams[ field.responsiveState ].fields.hasOwnProperty( name ) ) {
 									isLink.push( value === $.trim( this.groupParams[ field.responsiveState ].fields[ name ].getValue() ) );

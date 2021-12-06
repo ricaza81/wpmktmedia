@@ -17,7 +17,7 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 	return;
 } elseif ( get_post_format() == 'link' ) {
 	return;
-} elseif ( ! comments_open() AND ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+} elseif ( ! comments_open() AND ! usb_is_preview_page() ) {
 	return;
 }
 
@@ -53,11 +53,6 @@ if ( $layout == 'amount' ) {
 		$_atts['class'] .= ' color_link_inherit';
 	}
 
-	// When text color is set in Design Options, add the specific class
-	if ( us_design_options_has_property( $css, 'color' ) ) {
-		$_atts['class'] .= ' has_text_color';
-	}
-
 	// Define no comments indication
 	$comments_none = '0';
 	if ( ! $number ) {
@@ -71,7 +66,7 @@ if ( $layout == 'amount' ) {
 	if ( $hide_zero AND empty( $comments_number ) ) {
 
 		// Output empty container for Live Builder
-		if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+		if ( usb_is_preview_page() ) {
 			echo '<div class="w-post-elm"></div>';
 		}
 		return;

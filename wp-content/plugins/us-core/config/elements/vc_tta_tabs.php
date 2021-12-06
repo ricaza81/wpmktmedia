@@ -14,7 +14,13 @@ $general_params = array(
 		'title' => us_translate( 'Style' ),
 		'type' => 'select',
 		'options' => array(
-			'default' => __( 'Simple', 'us' ),
+			'default' => us_translate( 'Default' ),
+			'simple' => __( 'Simple', 'us' ),
+			'simple2' => __( 'Simple', 'us' ) . ' 2',
+			'simple3' => __( 'Simple', 'us' ) . ' 3',
+			'radio' => __( 'Switch', 'us' ),
+			'radio2' => __( 'Switch', 'us' ) . ' 2',
+			'radio3' => __( 'Switch', 'us' ) . ' 3',
 			'modern' => __( 'Modern', 'us' ),
 			'trendy' => __( 'Trendy', 'us' ),
 			'timeline' => __( 'Timeline', 'us' ),
@@ -24,14 +30,20 @@ $general_params = array(
 		'group' => __( 'Tabs', 'us' ),
 		'usb_preview' => TRUE,
 	),
-	'stretch' => array(
-		'switch_text' => __( 'Stretch tabs to the full available width', 'us' ),
-		'type' => 'switch',
-		'std' => FALSE,
+	'tabs_alignment' => array(
+		'title' => us_translate( 'Alignment' ),
+		'type' => 'radio',
+		'labels_as_icons' => 'fas fa-align-*',
+		'options' => array(
+			'none' => us_translate( 'Default' ),
+			'center' => us_translate( 'Center' ),
+			'justify' => us_translate( 'Justify' ),
+		),
+		'std' => 'none',
 		'group' => __( 'Tabs', 'us' ),
 		'usb_preview' => array(
 			'elm' => '> .w-tabs-list',
-			'toggle_class' => 'stretch',
+			'mod' => 'align',
 		),
 	),
 	'switch_sections' => array(
@@ -162,6 +174,7 @@ return array(
 	'category' => __( 'Containers', 'us' ),
 	'icon' => 'fas fa-folder-plus',
 	'is_container' => TRUE,
+	'usb_root_container_selector' => '.w-tabs-sections:first',
 	'weight' => 360, // go after Accordion element, which has "370" weight
 	'as_child' => array(
 		'except' => 'vc_tta_section',
@@ -172,6 +185,9 @@ return array(
 	'params' => us_set_params_weight(
 		$general_params,
 		$design_options_params
+	),
+	'fallback_params' => array(
+		'stretch',
 	),
 
 	// Default VC params which are not supported by the theme
@@ -191,6 +207,10 @@ return array(
 		'tab_position',
 		'title',
 	),
+
+	// Since the tabs are located on axis X, we will enable
+	// movement along axis X for the current shortcode
+	'usb_moving_child_x_direction' => TRUE,
 
 	'usb_init_js' => '$elm.wTabs()',
 );

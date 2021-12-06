@@ -6,14 +6,14 @@
 final class USBuilder_Ajax {
 
 	/**
-	 * Prefix for internal AJAX request handlers to ensure uniqueness.
+	 * Prefix for internal AJAX request handlers to ensure uniqueness
 	 *
 	 * @var string
 	 */
 	const PREFIX_FOR_HANDLER = 'usb_';
 
 	/**
-	 * Prefix for actions that will be called from the Frontend.
+	 * Prefix for actions that will be called from the Frontend
 	 *
 	 * @var string
 	 */
@@ -63,7 +63,7 @@ final class USBuilder_Ajax {
 		}
 
 		// Setup postdata and add global $post, $wp_query for correct render of post related data (title, date, custom fields, etc.)
-		if ( $post_id = (int) us_arr_path( $_REQUEST, 'post_id' ) ) {
+		if ( $post_id = (int) us_arr_path( $_REQUEST, 'post' ) ) {
 			global $post, $wp_query;
 			$query_args = array(
 				'p' => $post_id,
@@ -92,7 +92,7 @@ final class USBuilder_Ajax {
 	 * Get the actions
 	 *
 	 * @access public
-	 * @return array The actions.
+	 * @return array The actions
 	 */
 	public static function get_actions() {
 		return array(
@@ -218,7 +218,7 @@ final class USBuilder_Ajax {
 	// TODO: check capabilities add support for translated posts
 	public static function save_post() {
 
-		if ( ! $post_id = us_arr_path( $_POST, 'post_id' ) ) {
+		if ( ! $post_id = us_arr_path( $_POST, 'post' ) ) {
 			wp_send_json_error( array( 'message' => us_translate( 'Post ID not set' ) ) );
 		}
 		if ( ! $post = get_post( (int) $post_id ) ) {

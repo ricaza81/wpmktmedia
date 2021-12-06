@@ -17,11 +17,6 @@
 $_atts['class'] = 'wpb_text_column';
 $_atts['class'] .= isset( $classes ) ? $classes : '';
 
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }

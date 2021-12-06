@@ -96,8 +96,15 @@ $post_id = (int) USBuilder::get_post_id();
 							if ( ! empty( $elm['is_container'] ) ) {
 								$elm_atts['data-isContainer'] = TRUE;
 							}
-							if ( ! empty( $elm['hide_on_adding_list'] ) ) {
+							if (
+								! empty( $elm['hide_on_adding_list'] )
+								OR (
+									! empty( $elm[ 'shortcode_post_type' ] )
+									AND ! in_array( $post_type, (array) $elm[ 'shortcode_post_type' ] )
+								)
+							) {
 								$elm_atts['class'] .= ' hidden';
+
 							} elseif( ! empty( $elm_atts['data-title'] ) ) {
 								$elm_atts['data-search-text'] = us_strtolower( $elm_atts['data-title'] );
 							}
@@ -250,7 +257,7 @@ $post_id = (int) USBuilder::get_post_id();
 		</div>
 		<!-- End Responsive Toolbar -->
 		<div class="us-builder-preview-iframe-wrapper">
-			<iframe src="<?php esc_attr_e( us_arr_path( $usb_settings, 'iframeSrc', '' ) ) ?>"></iframe>
+			<iframe src="<?php esc_attr_e( us_arr_path( $usb_settings, 'previewUrl', '' ) ) ?>"></iframe>
 		</div>
 	</main>
 </div>

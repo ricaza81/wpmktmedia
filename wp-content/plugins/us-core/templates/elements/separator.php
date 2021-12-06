@@ -36,9 +36,6 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' size_' . $size;
 
 // When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
 if ( us_design_options_has_property( $css, 'font-size' ) ) {
 	$_atts['class'] .= ' has_font_size';
 }

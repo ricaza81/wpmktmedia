@@ -83,6 +83,8 @@ return array(
 	'category' => __( 'Containers', 'us' ),
 	'is_container' => TRUE,
 	'hide_on_adding_list' => TRUE,
+	'usb_update_parent' => TRUE, // Updates to all elements that the section belongs to
+	'usb_root_container_selector' => '.w-tabs-section-content-h:first',
 	'as_child' => array(
 		'only' => 'vc_tta_tour,vc_tta_tabs,vc_tta_accordion',
 	),

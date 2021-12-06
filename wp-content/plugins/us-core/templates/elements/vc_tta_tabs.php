@@ -47,10 +47,11 @@ if ( ! $us_tabs_options ) {
 }
 $current_tabs_index = count( $us_tabs_options );
 
-// Identify is this FAQs page
+// Identify is this accordion should have FAQ markup
 $us_tabs_options[ $current_tabs_index ]['us_faq_markup'] = (
 	$shortcode_base == 'vc_tta_accordion'
-	AND ( us_is_faqs_page() OR $faq_markup )
+	AND us_get_option( 'schema_markup' )
+	AND $faq_markup
 );
 
 // Extract tab attributes for future html preparations
@@ -74,7 +75,7 @@ $func_parse_vc_tta_section = function( $matches ) use( &$us_tabs_atts, &$active_
 	// If the content is empty then skip the section
 	if (
 		// For the USBuilder page, leave the display of empty tabs
-		! apply_filters( 'usb_is_preview_page', NULL )
+		! usb_is_preview_page()
 		AND (
 			empty( $matches[5] )
 			OR empty( $content )
@@ -144,9 +145,14 @@ if ( $shortcode_base == 'vc_tta_tabs' ) {
 
 } elseif ( $shortcode_base == 'vc_tta_tour' ) {
 	$_atts['class'] .= ' layout_ver';
-	$_atts['class'] .= ' navpos_' . $tab_position;
 	$_atts['class'] .= ' navwidth_' . $controls_size;
-	$list_class .= ' align_' . $c_align;
+
+	// Swap left and right values for RTL page
+	if ( is_rtl() ) {
+		$tab_position = ( $tab_position === 'right' ) ? 'left' : 'right';
+	}
+
+	$_atts['class'] .= ' navpos_' . $tab_position;
 }
 
 if ( empty( $layout ) ) {
@@ -164,8 +170,17 @@ if ( trim( $accordion_at_width ) !== '' ) {
 	$_atts['data-accordion-at-width'] = (int) $accordion_at_width;
 }
 
+// Fallback since 8.4
+if (
+	! empty( $stretch )
+	OR $tabs_alignment === 'none'
+	AND in_array( $layout, array( 'timeline', 'timeline2' ) )
+) {
+	$tabs_alignment = 'justify';
+}
+
 $list_class .= ' items_' . count( $us_tabs_atts );
-$list_class .= ( $stretch ) ? ' stretch' : '';
+$list_class .= ' align_' . $tabs_alignment;
 
 // Sections HTML attributes
 $sections_atts['class'] = 'w-tabs-sections';
@@ -244,7 +259,7 @@ if ( $shortcode_base != 'vc_tta_accordion' ) {
 
 		// For USBuilder add to the `usbid` attributes of the related section.
 		if (
-			apply_filters( 'usb_is_preview_page', NULL )
+			usb_is_preview_page()
 			AND ! empty( $tab_atts['usbid'] )
 		) {
 			$tabs_item_atts['data-related-to'] = $tab_atts['usbid'];

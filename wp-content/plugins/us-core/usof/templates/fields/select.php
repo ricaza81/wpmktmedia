@@ -61,7 +61,7 @@ $func_gen_option = function ( $key, $title ) use ( $value, $field, $name ) {
 	 * and adding data for links to those templates edit pages
 	 */
 	if (
-		apply_filters( 'usb_is_builder_page', FALSE )
+		usb_is_builder_page()
 		AND isset( $field['hints_for'] )
 		AND in_array(
 			$name, array(

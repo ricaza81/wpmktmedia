@@ -39,11 +39,6 @@ if ( $content == '' ) {
 	$_atts['class'] .= ' no_text';
 }
 
-// When text color is set in Design Options, add the specific class
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
-}
-
 if ( ! empty( $el_id ) ) {
 	$_atts['id'] = $el_id;
 }
@@ -145,7 +140,7 @@ if ( $title != '' ) {
 	$output .= '<' . $title_tag . ' class="w-iconbox-title"' . $title_inline_css . '>' . $title . '</' . $title_tag . '>';
 	$output .= $link_closer;
 }
-if ( ! empty( $content ) OR apply_filters( 'usb_is_preview_page', NULL ) ) {
+if ( ! empty( $content ) OR usb_is_preview_page() ) {
 	$output .= '<div class="w-iconbox-text">' . do_shortcode( wpautop( $content ) ) . '</div>';
 }
 if ( in_array( $iconpos, array( 'top', 'left' ) ) ) {

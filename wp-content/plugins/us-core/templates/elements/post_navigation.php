@@ -55,7 +55,7 @@ foreach ( $prevnext as $key => $item ) {
 		}
 		$output .= '<div class="post_navigation-item-title"><span>' . $item['title'] . '</span></div>';
 		$output .= '</a>';
-	} else if( ! apply_filters( 'usb_is_preview_page', NULL ) ) {
+	} else if( ! usb_is_preview_page() ) {
 		$output .= '<div class="post_navigation-item order_' . $item_order . ' to_' . $key . '"></div>';
 	}
 

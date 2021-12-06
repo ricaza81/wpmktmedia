@@ -214,6 +214,15 @@ class US_Shortcodes {
 			}
 		}
 
+		// Add specific class if some value is set in Design options
+		if ( ! empty( $filled_atts['css'] ) AND us_design_options_has_property( $filled_atts['css'], 'color' ) ) {
+			if ( ! isset( $filled_atts['classes'] ) ) {
+				$filled_atts['classes'] = ' has_text_color';
+			} else {
+				$filled_atts['classes'] .= ' has_text_color';
+			}
+		}
+
 		// Add animation class if set in Design options
 		if ( ! us_amp() AND ! empty( $filled_atts['css'] ) AND us_design_options_has_property( $filled_atts['css'], 'animation-name' ) ) {
 			if ( ! isset( $filled_atts['classes'] ) ) {

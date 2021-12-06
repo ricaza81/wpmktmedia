@@ -27,13 +27,13 @@ if ( $us_elm_context == 'grid' AND $us_grid_object_type == 'term' ) {
 		OR ! taxonomy_exists( $taxonomy_name )
 		OR ! is_object_in_taxonomy( get_post_type(), $taxonomy_name )
 	)
-	AND ! apply_filters( 'usb_is_preview_page', NULL )
+	AND ! usb_is_preview_page()
 ) {
 	return;
 }
 
 // In Live Builder for Page Block / Content template show placeholder for shortcode
-if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_context == 'shortcode' ) {
+if ( usb_is_preview_page_for_template() AND $us_elm_context == 'shortcode' ) {
 	$terms = get_terms(
 		array(
 			'taxonomy' => $taxonomy_name,
@@ -48,7 +48,7 @@ if ( apply_filters( 'usb_is_preview_page_for_template', NULL ) AND $us_elm_conte
 if ( ! is_array( $terms ) OR count( $terms ) == 0 ) {
 
 	// Output empty container for USBuilder
-	if ( apply_filters( 'usb_is_preview_page', NULL ) ) {
+	if ( usb_is_preview_page() ) {
 		echo '<div class="w-post-elm"></div>';
 	}
 	return;
@@ -72,11 +72,6 @@ $_atts['class'] .= isset( $classes ) ? $classes : '';
 $_atts['class'] .= ' style_' . $style;
 if ( $color_link ) {
 	$_atts['class'] .= ' color_link_inherit';
-}
-
-// When some values are set in Design options, add the specific classes
-if ( us_design_options_has_property( $css, 'color' ) ) {
-	$_atts['class'] .= ' has_text_color';
 }
 
 if ( ! empty( $el_id ) AND $us_elm_context == 'shortcode' ) {

@@ -168,6 +168,32 @@ return array(
 			),
 		),
 
+		// JS code that will be executed when initializing an element in the builder
+		'usb_init_js' => 'console.log( \'init element\' )',
+
+		// Inclusion of settings for an element in the main output, otherwise all settings
+		// will be loaded after AJAX ( AJAX loading is enabled by default )
+		'usb_preload' => TRUE,
+
+		// Metaboxes that are displayed in the context of the builder
+		'usb_context' => TRUE,
+
+		// The parameter is intended for TTA sections, which means updating the entire
+		// element to which the section belongs
+		'usb_update_parent' => TRUE,
+
+		// By default, all movement occurs along axis 1, but for some elements it is
+		// necessary to move along axis 2, this parameter enables this option.
+		// For example, this is necessary for horizontal tabs.
+		'usb_moving_child_x_direction' => TRUE,
+
+		// IMPORTANT! This is required for all containers that have multiple children up to the target.
+		// This is a selector to override the root container on an element, parameter is only used
+		// in containers to traverse wrappers or extra markup.
+		// Multiple containers can be written here, separated by commas `.container, .container> *`,
+		// but only the first one found will be retrieved.
+		'usb_root_container_selector' => '.w-tabs-sections:first', // with respect to `.w-tabs`
+
 		/************ OPTIONS TYPES ************/
 
 		// TEXT: single line text field with free user input, based on <input type="text">

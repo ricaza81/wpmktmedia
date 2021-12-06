@@ -86,6 +86,7 @@ return array(
 		'only' => 'vc_row',
 	),
 	'usb_preload' => TRUE,
+	'usb_root_container_selector' => '.vc_column-inner:first, .vc_column-inner:first > .wpb_wrapper',
 	'params' => us_set_params_weight(
 		$general_params,
 		$design_options_params

@@ -86,6 +86,9 @@ a {
 .us-builder-notification.type_error {
 	background: var(--usof-color-red-30);
 	}
+.us-builder-notification.type_info {
+	background: var(--usof-color-gray-30);
+	}
 	.us-builder-notification .ui-icon_close {
 		flex-shrink: 0;
 		cursor: pointer;
@@ -321,6 +324,11 @@ a {
 	overflow-x: hidden;
 	padding-top: 0 !important;
 	}
+	.us-builder-panel-body .usof-colpick.type_gradient {
+		flex-direction: column;
+		width: auto;
+		}
+
 .mce-fullscreen .us-builder-panel-body {
 	overflow: visible;
 	}
